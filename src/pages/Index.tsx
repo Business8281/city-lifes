@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import SearchBar from "@/components/SearchBar";
 import CategoryCard from "@/components/CategoryCard";
 import PropertyCard from "@/components/PropertyCard";
-import BottomNav from "@/components/BottomNav";
 import { propertyTypes, sampleProperties } from "@/data/properties";
 import heroImage from "@/assets/hero-cityscape.jpg";
 import { MapPin } from "lucide-react";
@@ -127,8 +126,6 @@ const Index = () => {
           </Button>
         </section>
       </div>
-
-      <BottomNav />
     </div>
   );
 };
