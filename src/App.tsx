@@ -11,6 +11,10 @@ import PropertyDetails from "./pages/PropertyDetails";
 import Favorites from "./pages/Favorites";
 import MapView from "./pages/MapView";
 import Profile from "./pages/Profile";
+import Messages from "./pages/Messages";
+import AddProperty from "./pages/AddProperty";
+import MyListings from "./pages/MyListings";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -29,6 +33,10 @@ const App = () => (
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/map" element={<MapView />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/add-property" element={<AddProperty />} />
+            <Route path="/my-listings" element={<MyListings />} />
+            <Route path="/notifications" element={<Notifications />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
