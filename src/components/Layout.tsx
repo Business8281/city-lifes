@@ -1,13 +1,9 @@
-import { ReactNode } from "react";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import BottomNav from "./BottomNav";
+import { Outlet } from "react-router-dom";
 
-interface LayoutProps {
-  children: ReactNode;
-}
-
-export function Layout({ children }: LayoutProps) {
+export function Layout() {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
@@ -25,7 +21,7 @@ export function Layout({ children }: LayoutProps) {
           
           {/* Page Content */}
           <div className="flex-1">
-            {children}
+            <Outlet />
           </div>
         </SidebarInset>
 
