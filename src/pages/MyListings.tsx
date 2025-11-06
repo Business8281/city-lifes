@@ -10,7 +10,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,62 +20,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import apartmentImg from "@/assets/sample-apartment.jpg";
-import houseImg from "@/assets/sample-house.jpg";
-
-interface Listing {
-  id: string;
-  title: string;
-  location: string;
-  price: string;
-  status: "active" | "pending" | "expired";
-  views: number;
-  inquiries: number;
-  image: string;
-  postedDate: string;
-}
-
-const mockListings: Listing[] = [
-  {
-    id: "1",
-    title: "Luxury 3BHK Apartment in South Delhi",
-    location: "Green Park, Delhi",
-    price: "₹45,000",
-    status: "active",
-    views: 124,
-    inquiries: 8,
-    image: apartmentImg,
-    postedDate: "2 days ago",
-  },
-  {
-    id: "2",
-    title: "Independent House with Garden",
-    location: "Koramangala, Bangalore",
-    price: "₹75,000",
-    status: "pending",
-    views: 0,
-    inquiries: 0,
-    image: houseImg,
-    postedDate: "1 hour ago",
-  },
-];
+import { useAuth } from "@/contexts/AuthContext";
+import { useMyListings } from "@/hooks/useProperties";
+import { format } from "date-fns";
+import { toast } from "sonner";
 
 const MyListings = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [listings, setListings] = useState<Listing[]>(mockListings);
+  const { user } = useAuth();
+  const { properties, loading, deleteProperty } = useMyListings(user?.id);
   const [deleteDialog, setDeleteDialog] = useState<string | null>(null);
 
-  const handleDelete = (id: string) => {
-    setListings(listings.filter((l) => l.id !== id));
-    setDeleteDialog(null);
-    toast({
-      title: "Listing Deleted",
-      description: "Your property listing has been removed.",
-    });
+  const handleDelete = async () => {
+    if (deleteDialog) {
+      await deleteProperty(deleteDialog);
+      setDeleteDialog(null);
+    }
   };
 
-  const getStatusBadge = (status: Listing["status"]) => {
+  const getStatusBadge = (status: string) => {
     const variants = {
       active: "default",
       pending: "secondary",
@@ -84,11 +46,28 @@ const MyListings = () => {
     } as const;
 
     return (
-      <Badge variant={variants[status]}>
+      <Badge variant={variants[status as keyof typeof variants] || "default"}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
     );
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background pb-20 md:pb-0">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="text-6xl mb-4">🔒</div>
+            <h3 className="text-xl font-semibold mb-2">Login Required</h3>
+            <p className="text-muted-foreground mb-6">
+              Please login to view your listings
+            </p>
+            <Button onClick={() => navigate("/auth")}>Go to Login</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-8">
@@ -106,7 +85,7 @@ const MyListings = () => {
               <div>
                 <h1 className="text-xl font-bold">My Listings</h1>
                 <p className="text-sm text-muted-foreground">
-                  {listings.length} active listings
+                  {properties.length} listing{properties.length !== 1 ? 's' : ''}
                 </p>
               </div>
             </div>
@@ -119,14 +98,18 @@ const MyListings = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
-        {listings.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <div className="text-muted-foreground">Loading your listings...</div>
+          </div>
+        ) : properties.length > 0 ? (
           <div className="grid gap-4">
-            {listings.map((listing) => (
+            {properties.map((listing) => (
               <Card key={listing.id} className="overflow-hidden">
                 <div className="flex flex-col md:flex-row">
                   <div className="md:w-64 h-48 md:h-auto">
                     <img
-                      src={listing.image}
+                      src={listing.images[0] || '/placeholder.svg'}
                       alt={listing.title}
                       className="w-full h-full object-cover"
                     />
@@ -142,10 +125,10 @@ const MyListings = () => {
                           {getStatusBadge(listing.status)}
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">
-                          {listing.location}
+                          {listing.location}, {listing.city}
                         </p>
                         <p className="text-xl font-bold text-primary">
-                          {listing.price}
+                          ₹{listing.price.toLocaleString()}
                           <span className="text-sm font-normal text-muted-foreground">
                             /month
                           </span>
@@ -165,7 +148,7 @@ const MyListings = () => {
                             <Eye className="h-4 w-4 mr-2" />
                             View
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => toast.info("Edit feature coming soon!")}>
                             <Edit className="h-4 w-4 mr-2" />
                             Edit
                           </DropdownMenuItem>
@@ -186,12 +169,8 @@ const MyListings = () => {
                         <p className="font-semibold">{listing.views}</p>
                       </div>
                       <div>
-                        <p className="text-muted-foreground">Inquiries</p>
-                        <p className="font-semibold">{listing.inquiries}</p>
-                      </div>
-                      <div>
                         <p className="text-muted-foreground">Posted</p>
-                        <p className="font-semibold">{listing.postedDate}</p>
+                        <p className="font-semibold">{format(new Date(listing.created_at), 'PPP')}</p>
                       </div>
                     </div>
 
@@ -238,7 +217,7 @@ const MyListings = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteDialog && handleDelete(deleteDialog)}
+              onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete

@@ -1,5 +1,4 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { sampleProperties } from "@/data/properties";
 import { ArrowLeft, Heart, Share2, MapPin, Phone, MessageCircle, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,17 +8,30 @@ import BottomNav from "@/components/BottomNav";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useProperty } from "@/hooks/useProperties";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useAuth } from "@/contexts/AuthContext";
+import { format } from "date-fns";
 
 const PropertyDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const property = sampleProperties.find((p) => p.id === id);
-
+  const { user } = useAuth();
+  const { property, loading } = useProperty(id);
+  const { favoriteIds, toggleFavorite } = useFavorites(user?.id);
   const [currentImage, setCurrentImage] = useState(0);
-  const [isFavorite, setIsFavorite] = useState(() => {
-    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    return favorites.includes(id);
-  });
+
+  const isFavorite = id ? favoriteIds.has(id) : false;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-2">Loading...</h2>
+        </div>
+      </div>
+    );
+  }
 
   if (!property) {
     return (
@@ -31,21 +43,6 @@ const PropertyDetails = () => {
       </div>
     );
   }
-
-  const toggleFavorite = () => {
-    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    
-    if (isFavorite) {
-      const newFavorites = favorites.filter((fav: string) => fav !== id);
-      localStorage.setItem("favorites", JSON.stringify(newFavorites));
-      toast.success("Removed from favorites");
-    } else {
-      localStorage.setItem("favorites", JSON.stringify([...favorites, id]));
-      toast.success("Added to favorites");
-    }
-    
-    setIsFavorite(!isFavorite);
-  };
 
   const handleShare = () => {
     if (navigator.share) {
@@ -84,7 +81,7 @@ const PropertyDetails = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={toggleFavorite}
+              onClick={() => id && toggleFavorite(id)}
             >
               <Heart
                 className={cn(
@@ -100,25 +97,27 @@ const PropertyDetails = () => {
       {/* Image Gallery */}
       <div className="relative aspect-[4/3] bg-muted">
         <img
-          src={property.images[currentImage]}
+          src={property.images[currentImage] || '/placeholder.svg'}
           alt={property.title}
           className="w-full h-full object-cover"
         />
         
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-          {property.images.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentImage(index)}
-              className={cn(
-                "w-2 h-2 rounded-full transition-all",
-                currentImage === index
-                  ? "bg-white w-6"
-                  : "bg-white/50"
-              )}
-            />
-          ))}
-        </div>
+        {property.images.length > 1 && (
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+            {property.images.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImage(index)}
+                className={cn(
+                  "w-2 h-2 rounded-full transition-all",
+                  currentImage === index
+                    ? "bg-white w-6"
+                    : "bg-white/50"
+                )}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
@@ -126,18 +125,18 @@ const PropertyDetails = () => {
         <div>
           <div className="flex items-start justify-between gap-4 mb-2">
             <h1 className="text-2xl font-bold text-foreground">{property.title}</h1>
-            {property.verified && (
-              <Badge className="bg-secondary shrink-0">Verified</Badge>
+            {property.status === 'active' && (
+              <Badge className="bg-secondary shrink-0">Active</Badge>
             )}
           </div>
           
           <div className="flex items-center gap-2 text-muted-foreground mb-4">
             <MapPin className="h-4 w-4" />
-            <span>{property.location}</span>
+            <span>{property.location}, {property.city}</span>
           </div>
           
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-primary">{property.price}</span>
+            <span className="text-3xl font-bold text-primary">₹{property.price.toLocaleString()}</span>
             <span className="text-muted-foreground">/month</span>
           </div>
         </div>
@@ -164,8 +163,8 @@ const PropertyDetails = () => {
                 )}
                 {property.area && (
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{property.area.split(' ')[0]}</div>
-                    <div className="text-sm text-muted-foreground">{property.area.split(' ')[1]}</div>
+                    <div className="text-2xl font-bold text-primary">{property.area}</div>
+                    <div className="text-sm text-muted-foreground">sq.ft</div>
                   </div>
                 )}
               </div>
@@ -183,52 +182,52 @@ const PropertyDetails = () => {
         <Separator />
 
         {/* Amenities */}
-        <div>
-          <h3 className="font-semibold mb-3">Amenities</h3>
-          <div className="flex flex-wrap gap-2">
-            {property.amenities.map((amenity) => (
-              <Badge key={amenity} variant="secondary">
-                {amenity}
-              </Badge>
-            ))}
-          </div>
-        </div>
-
-        <Separator />
+        {property.amenities.length > 0 && (
+          <>
+            <div>
+              <h3 className="font-semibold mb-3">Amenities</h3>
+              <div className="flex flex-wrap gap-2">
+                {property.amenities.map((amenity) => (
+                  <Badge key={amenity} variant="secondary">
+                    {amenity}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            <Separator />
+          </>
+        )}
 
         {/* Owner Details */}
-        <Card className="p-4">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
-              {property.owner.name.charAt(0)}
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h4 className="font-semibold">{property.owner.name}</h4>
-                {property.owner.isAgent && (
-                  <Badge variant="outline" className="text-xs">Agent</Badge>
-                )}
+        {property.profiles && (
+          <Card className="p-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                {property.profiles.full_name?.charAt(0) || 'U'}
               </div>
-              <p className="text-sm text-muted-foreground">{property.owner.phone}</p>
+              <div className="flex-1">
+                <h4 className="font-semibold">{property.profiles.full_name || 'User'}</h4>
+                <p className="text-sm text-muted-foreground">{property.profiles.phone || property.profiles.email}</p>
+              </div>
             </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-3">
-            <Button className="gap-2" onClick={() => window.location.href = `tel:${property.owner.phone}`}>
-              <Phone className="h-4 w-4" />
-              Call
-            </Button>
-            <Button variant="outline" className="gap-2" onClick={() => toast.info("Messaging coming soon!")}>
-              <MessageCircle className="h-4 w-4" />
-              Chat
-            </Button>
-          </div>
-        </Card>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <Button className="gap-2" onClick={() => property.profiles?.phone && (window.location.href = `tel:${property.profiles.phone}`)}>
+                <Phone className="h-4 w-4" />
+                Call
+              </Button>
+              <Button variant="outline" className="gap-2" onClick={() => toast.info("Messaging coming soon!")}>
+                <MessageCircle className="h-4 w-4" />
+                Chat
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Posted Date */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Calendar className="h-4 w-4" />
-          <span>Posted {property.postedDate}</span>
+          <span>Posted {format(new Date(property.created_at), 'PPP')}</span>
         </div>
       </div>
 

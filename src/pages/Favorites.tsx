@@ -1,41 +1,62 @@
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PropertyCard from "@/components/PropertyCard";
 import BottomNav from "@/components/BottomNav";
-import { sampleProperties } from "@/data/properties";
 import { Button } from "@/components/ui/button";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useAuth } from "@/contexts/AuthContext";
+import { propertyTypes } from "@/data/properties";
 
 const Favorites = () => {
   const navigate = useNavigate();
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const { user } = useAuth();
+  const { favorites, loading } = useFavorites(user?.id);
 
-  useEffect(() => {
-    const storedFavorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    setFavorites(storedFavorites);
-  }, []);
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background pb-20 md:pb-0">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="text-6xl mb-4">🔒</div>
+            <h3 className="text-xl font-semibold mb-2">Login Required</h3>
+            <p className="text-muted-foreground mb-6">
+              Please login to view your favorites
+            </p>
+            <Button onClick={() => navigate("/auth")}>Go to Login</Button>
+          </div>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
 
-  const favoriteProperties = sampleProperties.filter((p) => favorites.includes(p.id));
+  const favoriteProperties = favorites
+    .map(f => f.properties)
+    .filter(Boolean);
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       <div className="max-w-7xl mx-auto px-4 py-6">
         <h1 className="text-2xl font-bold mb-6">My Favorites</h1>
 
-        {favoriteProperties.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <div className="text-muted-foreground">Loading favorites...</div>
+          </div>
+        ) : favoriteProperties.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {favoriteProperties.map((property) => (
+            {favoriteProperties.map((property: any) => (
               <PropertyCard
                 key={property.id}
                 id={property.id}
-                image={property.images[0]}
+                image={property.images[0] || '/placeholder.svg'}
                 title={property.title}
-                type={property.icon}
-                price={property.price}
+                type={propertyTypes.find(t => t.type === property.type)?.icon || '🏠'}
+                price={`₹${property.price.toLocaleString()}`}
                 location={property.location}
-                bedrooms={property.bedrooms}
-                bathrooms={property.bathrooms}
-                area={property.area}
-                verified={property.verified}
+                bedrooms={property.bedrooms || undefined}
+                bathrooms={property.bathrooms || undefined}
+                area={property.area ? `${property.area} sq.ft` : undefined}
+                verified={property.status === 'active'}
                 onClick={() => navigate(`/property/${property.id}`)}
               />
             ))}

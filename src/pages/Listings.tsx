@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import SearchBar from "@/components/SearchBar";
 import PropertyCard from "@/components/PropertyCard";
 import BottomNav from "@/components/BottomNav";
-import { sampleProperties, propertyTypes } from "@/data/properties";
-import { ArrowLeft, SlidersHorizontal } from "lucide-react";
+import { propertyTypes } from "@/data/properties";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useProperties } from "@/hooks/useProperties";
 
 const Listings = () => {
   const [searchParams] = useSearchParams();
@@ -20,8 +21,9 @@ const Listings = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState(searchParams.get("type") || "all");
   const [sortBy, setSortBy] = useState("recent");
+  const { properties, loading } = useProperties();
 
-  const filteredProperties = sampleProperties.filter((property) => {
+  const filteredProperties = properties.filter((property) => {
     const matchesSearch =
       searchQuery === "" ||
       property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -35,12 +37,12 @@ const Listings = () => {
 
   const sortedProperties = [...filteredProperties].sort((a, b) => {
     if (sortBy === "price-low") {
-      return parseInt(a.price.replace(/[^0-9]/g, "")) - parseInt(b.price.replace(/[^0-9]/g, ""));
+      return a.price - b.price;
     }
     if (sortBy === "price-high") {
-      return parseInt(b.price.replace(/[^0-9]/g, "")) - parseInt(a.price.replace(/[^0-9]/g, ""));
+      return b.price - a.price;
     }
-    return 0; // recent (default order)
+    return 0; // recent (default order from DB)
   });
 
   return (
@@ -91,7 +93,7 @@ const Listings = () => {
 
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {sortedProperties.length} properties found
+              {loading ? 'Loading...' : `${sortedProperties.length} properties found`}
             </p>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-[160px] h-9">
@@ -109,21 +111,25 @@ const Listings = () => {
 
       {/* Properties Grid */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {sortedProperties.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-20">
+            <div className="text-muted-foreground">Loading properties...</div>
+          </div>
+        ) : sortedProperties.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {sortedProperties.map((property) => (
               <PropertyCard
                 key={property.id}
                 id={property.id}
-                image={property.images[0]}
+                image={property.images[0] || '/placeholder.svg'}
                 title={property.title}
-                type={property.icon}
-                price={property.price}
+                type={propertyTypes.find(t => t.type === property.type)?.icon || '🏠'}
+                price={`₹${property.price.toLocaleString()}`}
                 location={property.location}
-                bedrooms={property.bedrooms}
-                bathrooms={property.bathrooms}
-                area={property.area}
-                verified={property.verified}
+                bedrooms={property.bedrooms || undefined}
+                bathrooms={property.bathrooms || undefined}
+                area={property.area ? `${property.area} sq.ft` : undefined}
+                verified={property.status === 'active'}
                 onClick={() => navigate(`/property/${property.id}`)}
               />
             ))}

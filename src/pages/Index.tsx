@@ -3,16 +3,18 @@ import { useNavigate } from "react-router-dom";
 import SearchBar from "@/components/SearchBar";
 import CategoryCard from "@/components/CategoryCard";
 import PropertyCard from "@/components/PropertyCard";
-import { propertyTypes, sampleProperties } from "@/data/properties";
+import { propertyTypes } from "@/data/properties";
 import heroImage from "@/assets/hero-cityscape.jpg";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useProperties } from "@/hooks/useProperties";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const { properties } = useProperties();
 
-  const featuredProperties = sampleProperties.filter(p => p.verified).slice(0, 4);
+  const featuredProperties = properties.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
@@ -96,15 +98,15 @@ const Index = () => {
               <PropertyCard
                 key={property.id}
                 id={property.id}
-                image={property.images[0]}
+                image={property.images[0] || '/placeholder.svg'}
                 title={property.title}
-                type={property.icon}
-                price={property.price}
+                type={propertyTypes.find(t => t.type === property.type)?.icon || '🏠'}
+                price={`₹${property.price.toLocaleString()}`}
                 location={property.location}
-                bedrooms={property.bedrooms}
-                bathrooms={property.bathrooms}
-                area={property.area}
-                verified={property.verified}
+                bedrooms={property.bedrooms || undefined}
+                bathrooms={property.bathrooms || undefined}
+                area={property.area ? `${property.area} sq.ft` : undefined}
+                verified={property.status === 'active'}
                 onClick={() => navigate(`/property/${property.id}`)}
               />
             ))}
@@ -121,6 +123,7 @@ const Index = () => {
             size="lg"
             variant="secondary"
             className="font-semibold"
+            onClick={() => navigate("/add-property")}
           >
             Post Your Property
           </Button>
