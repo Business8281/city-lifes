@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { MapPin, Navigation, Building, MapPinned, Hash } from 'lucide-react';
+import { MapPin, Navigation, Building, MapPinned, Hash, Check, ChevronsUpDown } from 'lucide-react';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { useLocation, LocationMethod } from '@/contexts/LocationContext';
 import { toast } from 'sonner';
 import { allCities, areas, pinCodes } from '@/data/indianLocations';
+import { cn } from '@/lib/utils';
 
 interface LocationSelectorProps {
   open: boolean;
@@ -16,6 +18,7 @@ const LocationSelector = ({ open, onOpenChange }: LocationSelectorProps) => {
   const { setLocationMethod, setLocationValue, getCurrentLocation, location } = useLocation();
   const [selectedMethod, setSelectedMethod] = useState<LocationMethod | null>(location.method);
   const [inputValue, setInputValue] = useState(location.value);
+  const [comboboxOpen, setComboboxOpen] = useState(false);
 
   const handleLiveLocation = async () => {
     try {
@@ -113,22 +116,83 @@ const LocationSelector = ({ open, onOpenChange }: LocationSelectorProps) => {
 
           {selectedMethod && selectedMethod !== 'live' && (
             <div className="space-y-3">
-              <Select value={inputValue} onValueChange={setInputValue}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={`Select ${selectedMethod}...`} />
-                </SelectTrigger>
-                <SelectContent className="bg-background z-50">
-                  {selectedMethod === 'city' && allCities.map((city) => (
-                    <SelectItem key={city} value={city}>{city}</SelectItem>
-                  ))}
-                  {selectedMethod === 'area' && areas.map((area) => (
-                    <SelectItem key={area} value={area}>{area}</SelectItem>
-                  ))}
-                  {selectedMethod === 'pincode' && pinCodes.map((pincode) => (
-                    <SelectItem key={pincode} value={pincode}>{pincode}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={comboboxOpen}
+                    className="w-full justify-between"
+                  >
+                    {inputValue || `Select ${selectedMethod}...`}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0 bg-background z-50" align="start">
+                  <Command>
+                    <CommandInput placeholder={`Search ${selectedMethod}...`} />
+                    <CommandList>
+                      <CommandEmpty>No {selectedMethod} found.</CommandEmpty>
+                      <CommandGroup>
+                        {selectedMethod === 'city' && allCities.map((city) => (
+                          <CommandItem
+                            key={city}
+                            value={city}
+                            onSelect={(currentValue) => {
+                              setInputValue(currentValue);
+                              setComboboxOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                inputValue === city ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {city}
+                          </CommandItem>
+                        ))}
+                        {selectedMethod === 'area' && areas.map((area) => (
+                          <CommandItem
+                            key={area}
+                            value={area}
+                            onSelect={(currentValue) => {
+                              setInputValue(currentValue);
+                              setComboboxOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                inputValue === area ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {area}
+                          </CommandItem>
+                        ))}
+                        {selectedMethod === 'pincode' && pinCodes.map((pincode) => (
+                          <CommandItem
+                            key={pincode}
+                            value={pincode}
+                            onSelect={(currentValue) => {
+                              setInputValue(currentValue);
+                              setComboboxOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                inputValue === pincode ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {pincode}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
               <Button onClick={handleSubmit} className="w-full">
                 Set Location
               </Button>
