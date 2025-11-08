@@ -2,10 +2,9 @@ import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { User, Home, Heart, TrendingUp, Settings, Shield, ChevronRight, LogOut } from "lucide-react";
+import { User, Home, TrendingUp, Settings, Shield, ChevronRight, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyListings } from "@/hooks/useProperties";
-import { useFavorites } from "@/hooks/useFavorites";
 import { useMessages } from "@/hooks/useMessages";
 import { toast } from "sonner";
 
@@ -13,13 +12,11 @@ const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { properties } = useMyListings(user?.id);
-  const { favorites } = useFavorites(user?.id);
   const { conversations } = useMessages(user?.id);
 
   const menuItems = [
     { icon: User, label: "Edit Profile", path: "/profile/edit" },
     { icon: Home, label: "My Listings", path: "/my-listings" },
-    { icon: Heart, label: "Favorites", path: "/favorites" },
     { icon: TrendingUp, label: "Ad Campaign", path: "/ad-campaign" },
     { icon: Settings, label: "Settings", path: "/settings" },
     { icon: Shield, label: "Admin Dashboard", path: "/admin-dashboard" },
@@ -48,14 +45,10 @@ const Profile = () => {
           </div>
 
           {/* Statistics */}
-          <div className="grid grid-cols-3 gap-4 pt-6 border-t">
+          <div className="grid grid-cols-2 gap-4 pt-6 border-t">
             <div className="text-center">
               <div className="text-3xl font-bold text-primary">{properties.length}</div>
               <div className="text-sm text-muted-foreground mt-1">Listings</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-primary">{favorites.length}</div>
-              <div className="text-sm text-muted-foreground mt-1">Favorites</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-primary">{conversations.length}</div>
