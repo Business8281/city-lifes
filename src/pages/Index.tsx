@@ -140,7 +140,7 @@ const Index = () => {
               <CarouselContent className="-ml-2">
                 {categorySlides.map((slide, slideIndex) => (
                   <CarouselItem key={slideIndex} className="pl-2">
-                    <div className="grid grid-cols-3 gap-3 py-2">
+                    <div className="grid grid-cols-3 gap-2 md:gap-3 py-2">
                       {slide.map((category) => (
                         <CategoryCard
                           key={category.type}
@@ -156,7 +156,7 @@ const Index = () => {
             </Carousel>
 
             {/* Dot Indicators */}
-            <div className="flex justify-center gap-1.5 mt-4">
+            <div className="flex justify-center gap-1 mt-3">
               {categorySlides.map((_, index) => (
                 <button
                   key={index}
@@ -166,10 +166,10 @@ const Index = () => {
                       // This will be handled by the carousel API
                     }
                   }}
-                  className={`h-1.5 rounded-full transition-all ${
+                  className={`h-1 rounded-full transition-all ${
                     index === currentSlide 
-                      ? 'w-4 bg-primary' 
-                      : 'w-1.5 bg-muted-foreground/30'
+                      ? 'w-3 bg-primary' 
+                      : 'w-1 bg-muted-foreground/30'
                   }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
