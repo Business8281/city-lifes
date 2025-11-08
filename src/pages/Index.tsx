@@ -118,26 +118,28 @@ const Index = () => {
             </Button>
           </div>
           
-          <Carousel className="w-full">
-            <CarouselContent>
-              {categoriesChunks.map((chunk, slideIndex) => (
-                <CarouselItem key={slideIndex}>
-                  <div className="grid grid-cols-3 md:grid-cols-6 grid-rows-2 gap-3">
-                    {chunk.map((category) => (
-                      <CategoryCard
-                        key={category.type}
-                        icon={category.icon}
-                        label={category.label}
-                        onClick={() => navigate(`/listings?type=${category.type}`)}
-                      />
-                    ))}
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
-          </Carousel>
+          <div className="relative px-4 md:px-12">
+            <Carousel className="w-full" opts={{ align: "start", loop: true }}>
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {categoriesChunks.map((chunk, slideIndex) => (
+                  <CarouselItem key={slideIndex} className="pl-2 md:pl-4">
+                    <div className="grid grid-cols-3 md:grid-cols-6 grid-rows-2 gap-2 md:gap-4 py-2">
+                      {chunk.map((category) => (
+                        <CategoryCard
+                          key={category.type}
+                          icon={category.icon}
+                          label={category.label}
+                          onClick={() => navigate(`/listings?type=${category.type}`)}
+                        />
+                      ))}
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="left-0 md:-left-4" />
+              <CarouselNext className="right-0 md:-right-4" />
+            </Carousel>
+          </div>
         </section>
 
         {/* Featured Properties */}
