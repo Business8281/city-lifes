@@ -4,92 +4,33 @@ import { ArrowLeft, Bell, MessageSquare, Heart, Home, CheckCheck } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-interface Notification {
-  id: string;
-  type: "message" | "inquiry" | "favorite" | "listing";
-  title: string;
-  description: string;
-  timestamp: string;
-  read: boolean;
-  actionUrl?: string;
-}
-
-const mockNotifications: Notification[] = [
-  {
-    id: "1",
-    type: "message",
-    title: "New message from Rajesh Kumar",
-    description: "Regarding: Luxury 3BHK Apartment",
-    timestamp: "2 hours ago",
-    read: false,
-    actionUrl: "/messages",
-  },
-  {
-    id: "2",
-    type: "inquiry",
-    title: "New inquiry on your property",
-    description: "Someone is interested in viewing your property",
-    timestamp: "5 hours ago",
-    read: false,
-    actionUrl: "/my-listings",
-  },
-  {
-    id: "3",
-    type: "favorite",
-    title: "Property added to favorites",
-    description: "Modern Office Space has been added to your favorites",
-    timestamp: "1 day ago",
-    read: true,
-    actionUrl: "/favorites",
-  },
-  {
-    id: "4",
-    type: "listing",
-    title: "Your listing is now live",
-    description: "Independent House with Garden has been approved",
-    timestamp: "2 days ago",
-    read: true,
-    actionUrl: "/my-listings",
-  },
-  {
-    id: "5",
-    type: "message",
-    title: "New message from Priya Sharma",
-    description: "Regarding: Modern Office Space",
-    timestamp: "3 days ago",
-    read: true,
-    actionUrl: "/messages",
-  },
-];
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/hooks/useNotifications";
+import { formatDistanceToNow } from "date-fns";
 
 const Notifications = () => {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const { user } = useAuth();
+  const { notifications, loading, markAsRead } = useNotifications(user?.id);
   const [filter, setFilter] = useState<"all" | "unread">("all");
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const markAsRead = (id: string) => {
-    setNotifications(
-      notifications.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+  const markAllAsRead = async () => {
+    for (const notification of notifications.filter(n => !n.read)) {
+      await markAsRead(notification.id);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map((n) => ({ ...n, read: true })));
-  };
-
-  const getIcon = (type: Notification["type"]) => {
+  const getIcon = (type: string) => {
     const icons = {
       message: MessageSquare,
       inquiry: Bell,
       favorite: Heart,
       listing: Home,
     };
-    const Icon = icons[type];
+    const Icon = icons[type as keyof typeof icons] || Bell;
     return <Icon className="h-5 w-5" />;
   };
 
@@ -97,6 +38,14 @@ const Notifications = () => {
     filter === "unread"
       ? notifications.filter((n) => !n.read)
       : notifications;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background pb-20 md:pb-8 flex items-center justify-center">
+        <div className="text-muted-foreground">Loading notifications...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-8 overflow-x-hidden max-w-full">
@@ -157,8 +106,8 @@ const Notifications = () => {
                 }`}
                 onClick={() => {
                   markAsRead(notification.id);
-                  if (notification.actionUrl) {
-                    navigate(notification.actionUrl);
+                  if (notification.link) {
+                    navigate(notification.link);
                   }
                 }}
               >
@@ -189,10 +138,10 @@ const Notifications = () => {
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground mb-2">
-                      {notification.description}
+                      {notification.message}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {notification.timestamp}
+                      {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                     </p>
                   </div>
                 </div>

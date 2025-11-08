@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Send, Search, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,124 +6,55 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNavigate } from "react-router-dom";
-
-interface Message {
-  id: string;
-  senderId: string;
-  text: string;
-  timestamp: string;
-  isOwn: boolean;
-}
-
-interface Chat {
-  id: string;
-  propertyTitle: string;
-  ownerName: string;
-  lastMessage: string;
-  timestamp: string;
-  unread: number;
-  avatar: string;
-}
-
-const mockChats: Chat[] = [
-  {
-    id: "1",
-    propertyTitle: "Luxury 3BHK Apartment",
-    ownerName: "Rajesh Kumar",
-    lastMessage: "The property is available for viewing tomorrow",
-    timestamp: "2h ago",
-    unread: 2,
-    avatar: "RK",
-  },
-  {
-    id: "2",
-    propertyTitle: "Independent House with Garden",
-    ownerName: "Priya Sharma",
-    lastMessage: "Thank you for your interest!",
-    timestamp: "1d ago",
-    unread: 0,
-    avatar: "PS",
-  },
-  {
-    id: "3",
-    propertyTitle: "Modern Office Space",
-    ownerName: "Metro Properties",
-    lastMessage: "Can we schedule a call?",
-    timestamp: "3d ago",
-    unread: 1,
-    avatar: "MP",
-  },
-];
-
-const mockMessages: Message[] = [
-  {
-    id: "1",
-    senderId: "other",
-    text: "Hi! I saw your inquiry about the property.",
-    timestamp: "10:30 AM",
-    isOwn: false,
-  },
-  {
-    id: "2",
-    senderId: "me",
-    text: "Yes, I'm interested. Is it still available?",
-    timestamp: "10:32 AM",
-    isOwn: true,
-  },
-  {
-    id: "3",
-    senderId: "other",
-    text: "Yes, it's available! Would you like to schedule a viewing?",
-    timestamp: "10:35 AM",
-    isOwn: false,
-  },
-  {
-    id: "4",
-    senderId: "me",
-    text: "That would be great! When are you available?",
-    timestamp: "10:37 AM",
-    isOwn: true,
-  },
-  {
-    id: "5",
-    senderId: "other",
-    text: "The property is available for viewing tomorrow between 2-5 PM. Would that work for you?",
-    timestamp: "10:40 AM",
-    isOwn: false,
-  },
-];
+import { useAuth } from "@/contexts/AuthContext";
+import { useMessages } from "@/hooks/useMessages";
+import { formatDistanceToNow } from "date-fns";
 
 const Messages = () => {
   const navigate = useNavigate();
-  const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+  const { user } = useAuth();
+  const { conversations, loading, sendMessage } = useMessages(user?.id);
+  const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [messages, setMessages] = useState<Message[]>(mockMessages);
 
-  const handleSendMessage = () => {
-    if (messageText.trim()) {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        senderId: "me",
-        text: messageText,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isOwn: true,
-      };
-      setMessages([...messages, newMessage]);
+  const handleSendMessage = async () => {
+    if (messageText.trim() && selectedConversation) {
+      await sendMessage(
+        selectedConversation.user.id,
+        messageText,
+        selectedConversation.messages[0]?.property_id
+      );
       setMessageText("");
     }
   };
 
-  const filteredChats = mockChats.filter(
-    (chat) =>
-      chat.propertyTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      chat.ownerName.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredConversations = conversations.filter(
+    (conv) =>
+      conv.user?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conv.lastMessage?.content?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const getInitials = (name: string) => {
+    return name
+      ?.split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase() || '?';
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-[100dvh] items-center justify-center bg-background">
+        <div className="text-muted-foreground">Loading messages...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-[100dvh] bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
       {/* Chat List */}
-      <div className={`${selectedChat ? 'hidden md:flex' : 'flex'} w-full md:w-96 flex-col border-r`}>
+      <div className={`${selectedConversation ? 'hidden md:flex' : 'flex'} w-full md:w-96 flex-col border-r`}>
         <div className="p-4 border-b space-y-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold">Messages</h1>
@@ -140,37 +71,38 @@ const Messages = () => {
         </div>
 
         <ScrollArea className="flex-1">
-          {filteredChats.length > 0 ? (
+          {filteredConversations.length > 0 ? (
             <div className="divide-y">
-              {filteredChats.map((chat) => (
+              {filteredConversations.map((conversation) => (
                 <button
-                  key={chat.id}
-                  onClick={() => setSelectedChat(chat)}
+                  key={conversation.user?.id}
+                  onClick={() => setSelectedConversation(conversation)}
                   className={`w-full p-4 hover:bg-muted transition-colors text-left ${
-                    selectedChat?.id === chat.id ? 'bg-muted' : ''
+                    selectedConversation?.user?.id === conversation.user?.id ? 'bg-muted' : ''
                   }`}
                 >
                   <div className="flex gap-3">
                     <Avatar className="h-12 w-12 shrink-0">
                       <AvatarFallback className="bg-primary text-primary-foreground">
-                        {chat.avatar}
+                        {getInitials(conversation.user?.full_name)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <h3 className="font-semibold text-sm truncate">{chat.ownerName}</h3>
-                        <span className="text-xs text-muted-foreground shrink-0">{chat.timestamp}</span>
+                        <h3 className="font-semibold text-sm truncate">
+                          {conversation.user?.full_name || 'Unknown User'}
+                        </h3>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {formatDistanceToNow(new Date(conversation.lastMessage?.created_at), { addSuffix: true })}
+                        </span>
                       </div>
-                      <p className="text-xs text-muted-foreground mb-1 truncate">
-                        {chat.propertyTitle}
-                      </p>
                       <p className="text-sm text-muted-foreground truncate">
-                        {chat.lastMessage}
+                        {conversation.lastMessage?.content}
                       </p>
                     </div>
-                    {chat.unread > 0 && (
+                    {conversation.unreadCount > 0 && (
                       <div className="h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center shrink-0">
-                        {chat.unread}
+                        {conversation.unreadCount}
                       </div>
                     )}
                   </div>
@@ -180,33 +112,33 @@ const Messages = () => {
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center p-8">
               <div className="text-6xl mb-4">💬</div>
-              <p className="text-muted-foreground">No conversations found</p>
+              <p className="text-muted-foreground">No conversations yet</p>
             </div>
           )}
         </ScrollArea>
       </div>
 
       {/* Chat Window */}
-      {selectedChat ? (
+      {selectedConversation ? (
         <div className="flex-1 flex flex-col">
           {/* Chat Header */}
           <div className="p-4 border-b flex items-center gap-3">
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setSelectedChat(null)}
+              onClick={() => setSelectedConversation(null)}
               className="md:hidden"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <Avatar className="h-10 w-10">
               <AvatarFallback className="bg-primary text-primary-foreground">
-                {selectedChat.avatar}
+                {getInitials(selectedConversation.user?.full_name)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <h2 className="font-semibold">{selectedChat.ownerName}</h2>
-              <p className="text-xs text-muted-foreground">{selectedChat.propertyTitle}</p>
+              <h2 className="font-semibold">{selectedConversation.user?.full_name}</h2>
+              <p className="text-xs text-muted-foreground">{selectedConversation.user?.email}</p>
             </div>
             <Button variant="ghost" size="icon">
               <MoreVertical className="h-5 w-5" />
@@ -216,29 +148,35 @@ const Messages = () => {
           {/* Messages */}
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.isOwn ? 'justify-end' : 'justify-start'}`}
-                >
+              {selectedConversation.messages.map((message: any) => {
+                const isOwn = message.sender_id === user?.id;
+                return (
                   <div
-                    className={`max-w-[70%] rounded-lg p-3 ${
-                      message.isOwn
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-muted'
-                    }`}
+                    key={message.id}
+                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
                   >
-                    <p className="text-sm">{message.text}</p>
-                    <p
-                      className={`text-xs mt-1 ${
-                        message.isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                    <div
+                      className={`max-w-[70%] rounded-lg p-3 ${
+                        isOwn
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
                       }`}
                     >
-                      {message.timestamp}
-                    </p>
+                      <p className="text-sm">{message.content}</p>
+                      <p
+                        className={`text-xs mt-1 ${
+                          isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                        }`}
+                      >
+                        {new Date(message.created_at).toLocaleTimeString([], { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </ScrollArea>
 
