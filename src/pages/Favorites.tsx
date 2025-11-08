@@ -11,23 +11,6 @@ const Favorites = () => {
   const { user } = useAuth();
   const { favorites, loading } = useFavorites(user?.id);
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background pb-20 md:pb-0">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="text-6xl mb-4">🔒</div>
-            <h3 className="text-xl font-semibold mb-2">Login Required</h3>
-            <p className="text-muted-foreground mb-6">
-              Please login to view your favorites
-            </p>
-            <Button onClick={() => navigate("/auth")}>Go to Login</Button>
-          </div>
-        </div>
-        <BottomNav />
-      </div>
-    );
-  }
 
   const favoriteProperties = favorites
     .map(f => f.properties)

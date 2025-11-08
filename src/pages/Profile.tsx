@@ -22,23 +22,6 @@ const Profile = () => {
     navigate("/auth");
   };
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-background pb-20 md:pb-0">
-        <div className="max-w-3xl mx-auto px-4 py-6">
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="text-6xl mb-4">🔒</div>
-            <h3 className="text-xl font-semibold mb-2">Not Logged In</h3>
-            <p className="text-muted-foreground mb-6">
-              Please login to view your profile
-            </p>
-            <Button onClick={() => navigate("/auth")}>Go to Login</Button>
-          </div>
-        </div>
-        <BottomNav />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
@@ -52,8 +35,8 @@ const Profile = () => {
               <User className="h-10 w-10 text-primary" />
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-semibold">{user.user_metadata?.full_name || 'User'}</h2>
-              <p className="text-muted-foreground">{user.email}</p>
+              <h2 className="text-xl font-semibold">{user?.user_metadata?.full_name || 'Guest User'}</h2>
+              <p className="text-muted-foreground">{user?.email || 'guest@example.com'}</p>
             </div>
           </div>
           
