@@ -34,7 +34,7 @@ export function useFavorites(userId: string | undefined) {
 
       if (error) throw error;
       
-      setFavorites(data || []);
+      setFavorites((data || []) as Favorite[]);
       setFavoriteIds(new Set(data?.map(f => f.property_id) || []));
     } catch (error: any) {
       console.error('Error fetching favorites:', error);

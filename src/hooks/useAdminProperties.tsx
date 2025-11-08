@@ -24,7 +24,7 @@ export function useAdminProperties() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProperties(data || []);
+      setProperties((data || []) as Property[]);
     } catch (error: any) {
       console.error('Error fetching pending properties:', error);
       toast.error('Failed to load pending properties');

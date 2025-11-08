@@ -53,7 +53,7 @@ export function useProperties(filters?: PropertyFilters) {
         });
 
         if (error) throw error;
-        setProperties(data || []);
+        setProperties((data || []) as Property[]);
       } else {
         // Fallback to regular query if no location filter
         const { data, error } = await supabase
@@ -64,7 +64,7 @@ export function useProperties(filters?: PropertyFilters) {
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        setProperties(data || []);
+        setProperties((data || []) as Property[]);
       }
     } catch (error: any) {
       console.error('Error fetching properties:', error);
@@ -122,7 +122,7 @@ export function useProperty(id: string | undefined) {
           .update({ views: (data.views || 0) + 1 })
           .eq('id', id);
 
-        setProperty(data);
+        setProperty(data as Property);
       } catch (error: any) {
         console.error('Error fetching property:', error);
         toast.error('Failed to load property details');
@@ -156,7 +156,7 @@ export function useMyListings(userId: string | undefined) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProperties(data || []);
+      setProperties((data || []) as Property[]);
     } catch (error: any) {
       console.error('Error fetching my listings:', error);
       toast.error('Failed to load your listings');

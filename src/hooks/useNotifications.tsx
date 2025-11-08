@@ -22,7 +22,7 @@ export function useNotifications(userId: string | undefined) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setNotifications(data || []);
+      setNotifications((data || []) as Notification[]);
     } catch (error: any) {
       console.error('Error fetching notifications:', error);
       toast.error('Failed to load notifications');

@@ -30,7 +30,7 @@ export interface Property {
   images: string[];
   amenities: string[];
   // Status
-  status: 'active' | 'inactive' | 'rented' | 'sold';
+  status: string;
   verified: boolean;
   available: boolean;
   // Contact info
@@ -72,7 +72,7 @@ export interface Message {
 export interface Notification {
   id: string;
   user_id: string;
-  type: 'message' | 'inquiry' | 'favorite' | 'listing';
+  type: string;
   title: string;
   message: string;
   read: boolean;
