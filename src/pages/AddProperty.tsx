@@ -553,65 +553,57 @@ const AddProperty = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="city">City *</Label>
-                <Select
+                <Input
+                  id="city"
+                  list="cities-list"
+                  placeholder="Type or select city"
                   value={formData.city}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, city: value })
+                  onChange={(e) =>
+                    setFormData({ ...formData, city: e.target.value })
                   }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select city" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allCities.map((city) => (
-                      <SelectItem key={city} value={city}>
-                        {city}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
+                <datalist id="cities-list">
+                  {allCities.map((city) => (
+                    <option key={city} value={city} />
+                  ))}
+                </datalist>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="area">Area/Locality *</Label>
-                <Select
+                <Input
+                  id="area"
+                  list="areas-list"
+                  placeholder="Type or select area"
                   value={formData.area}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, area: value })
+                  onChange={(e) =>
+                    setFormData({ ...formData, area: e.target.value })
                   }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select area" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {areas.map((area) => (
-                      <SelectItem key={area} value={area}>
-                        {area}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
+                <datalist id="areas-list">
+                  {areas.map((area) => (
+                    <option key={area} value={area} />
+                  ))}
+                </datalist>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="pinCode">PIN Code *</Label>
-                <Select
+                <Input
+                  id="pinCode"
+                  list="pincode-list"
+                  placeholder="Type or select PIN code"
                   value={formData.pinCode}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, pinCode: value })
+                  onChange={(e) =>
+                    setFormData({ ...formData, pinCode: e.target.value })
                   }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select PIN code" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {pinCodes.map((pin) => (
-                      <SelectItem key={pin} value={pin}>
-                        {pin}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  maxLength={6}
+                />
+                <datalist id="pincode-list">
+                  {pinCodes.map((pin) => (
+                    <option key={pin} value={pin} />
+                  ))}
+                </datalist>
               </div>
 
               <div className="space-y-2">
