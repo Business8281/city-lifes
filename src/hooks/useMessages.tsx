@@ -27,19 +27,37 @@ export function useMessages(userId: string | undefined) {
       setLoading(true);
       const { data, error } = await supabase
         .from('messages')
-        .select(`
-          *,
-          sender:sender_id (id, full_name, email),
-          receiver:receiver_id (id, full_name, email),
-          properties:property_id (id, title)
-        `)
+        .select('*')
         .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
+      // Fetch sender and receiver profiles separately
+      const userIds = new Set<string>();
+      (data || []).forEach((msg: any) => {
+        userIds.add(msg.sender_id);
+        userIds.add(msg.receiver_id);
+      });
+
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, full_name, email')
+        .in('id', Array.from(userIds));
+
+      const profilesMap = new Map(
+        (profilesData || []).map(p => [p.id, p])
+      );
+
+      // Enrich messages with profile data
+      const enrichedData = (data || []).map((msg: any) => ({
+        ...msg,
+        sender: profilesMap.get(msg.sender_id),
+        receiver: profilesMap.get(msg.receiver_id)
+      }));
+
       // Group messages by conversation
-      const grouped = (data || []).reduce((acc: any, msg: any) => {
+      const grouped = (enrichedData || []).reduce((acc: any, msg: any) => {
         const otherUserId = msg.sender_id === userId ? msg.receiver_id : msg.sender_id;
         if (!acc[otherUserId]) {
           acc[otherUserId] = {
@@ -67,6 +85,30 @@ export function useMessages(userId: string | undefined) {
 
   useEffect(() => {
     fetchConversations();
+
+    if (!userId) return;
+
+    // Set up real-time subscription for live messages
+    const channel = supabase
+      .channel('messages-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `or(sender_id.eq.${userId},receiver_id.eq.${userId})`
+        },
+        (payload) => {
+          console.log('Real-time message update:', payload);
+          fetchConversations();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [userId]);
 
   const sendMessage = async (receiverId: string, content: string, propertyId?: string) => {
