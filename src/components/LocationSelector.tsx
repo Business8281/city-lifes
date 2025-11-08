@@ -116,24 +116,33 @@ const LocationSelector = ({ open, onOpenChange }: LocationSelectorProps) => {
 
           {selectedMethod && selectedMethod !== 'live' && (
             <div className="space-y-3">
-              <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
+              <Popover open={comboboxOpen} onOpenChange={setComboboxOpen} modal={true}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     role="combobox"
                     aria-expanded={comboboxOpen}
                     className="w-full justify-between"
+                    onClick={() => setComboboxOpen(true)}
                   >
                     {inputValue || `Select ${selectedMethod}...`}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-full p-0 bg-background z-50" align="start">
-                  <Command>
-                    <CommandInput placeholder={`Search ${selectedMethod}...`} />
+                <PopoverContent 
+                  className="w-[var(--radix-popover-trigger-width)] p-0 bg-background border shadow-md z-50" 
+                  align="start"
+                  side="bottom"
+                  sideOffset={4}
+                >
+                  <Command shouldFilter={true}>
+                    <CommandInput 
+                      placeholder={`Type to search ${selectedMethod}...`}
+                      className="h-9"
+                    />
                     <CommandList>
                       <CommandEmpty>No {selectedMethod} found.</CommandEmpty>
-                      <CommandGroup>
+                      <CommandGroup className="max-h-[300px] overflow-auto">
                         {selectedMethod === 'city' && allCities.map((city) => (
                           <CommandItem
                             key={city}
@@ -142,6 +151,7 @@ const LocationSelector = ({ open, onOpenChange }: LocationSelectorProps) => {
                               setInputValue(currentValue);
                               setComboboxOpen(false);
                             }}
+                            className="cursor-pointer"
                           >
                             <Check
                               className={cn(
@@ -160,6 +170,7 @@ const LocationSelector = ({ open, onOpenChange }: LocationSelectorProps) => {
                               setInputValue(currentValue);
                               setComboboxOpen(false);
                             }}
+                            className="cursor-pointer"
                           >
                             <Check
                               className={cn(
@@ -178,6 +189,7 @@ const LocationSelector = ({ open, onOpenChange }: LocationSelectorProps) => {
                               setInputValue(currentValue);
                               setComboboxOpen(false);
                             }}
+                            className="cursor-pointer"
                           >
                             <Check
                               className={cn(
