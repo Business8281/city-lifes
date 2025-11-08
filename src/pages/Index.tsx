@@ -14,9 +14,8 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -24,6 +23,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { properties } = useProperties();
   const { location } = useLocation();
+  const isMobile = useIsMobile();
 
   // Chunk property types into groups of 6 (2x3 grid)
   const ITEMS_PER_SLIDE = 6;
@@ -122,45 +122,55 @@ const Index = () => {
           </div>
           
           <div className="relative">
-            <Carousel 
-              className="w-full"
-              opts={{
-                align: "start",
-                loop: false,
-              }}
-            >
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {categorySlides.map((slide, slideIndex) => (
-                  <CarouselItem key={slideIndex} className="pl-2 md:pl-4 basis-full">
-                    <div className="grid grid-cols-3 gap-2 md:gap-4 py-2">
-                      {slide.map((category) => (
-                        <CategoryCard
-                          key={category.type}
-                          icon={category.icon}
-                          label={category.label}
-                          onClick={() => navigate(`/listings?type=${category.type}`)}
-                        />
-                      ))}
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              
-              {/* Navigation arrows - hidden on mobile, shown on desktop */}
-              <CarouselPrevious className="hidden md:flex -left-4" />
-              <CarouselNext className="hidden md:flex -right-4" />
-            </Carousel>
-
-            {/* Dot Indicators - only show if multiple slides */}
-            {categorySlides.length > 1 && (
-              <div className="flex justify-center gap-1 mt-3">
-                {categorySlides.map((_, index) => (
-                  <div
-                    key={index}
-                    className={`h-1 rounded-full w-1 bg-muted-foreground/30 transition-all`}
+            {isMobile ? (
+              <div className="grid grid-cols-3 gap-2">
+                {propertyTypes.map((category) => (
+                  <CategoryCard
+                    key={category.type}
+                    icon={category.icon}
+                    label={category.label}
+                    onClick={() => navigate(`/listings?type=${category.type}`)}
                   />
                 ))}
               </div>
+            ) : (
+              <>
+                <Carousel 
+                  className="w-full"
+                  opts={{
+                    align: "start",
+                    loop: false,
+                  }}
+                >
+                  <CarouselContent className="-ml-2 md:-ml-4">
+                    {categorySlides.map((slide, slideIndex) => (
+                      <CarouselItem key={slideIndex} className="pl-2 md:pl-4 basis-full">
+                        <div className="grid grid-cols-3 gap-2 md:gap-4 py-2">
+                          {slide.map((category) => (
+                            <CategoryCard
+                              key={category.type}
+                              icon={category.icon}
+                              label={category.label}
+                              onClick={() => navigate(`/listings?type=${category.type}`)}
+                            />
+                          ))}
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                </Carousel>
+
+                {categorySlides.length > 1 && (
+                  <div className="flex justify-center gap-1 mt-3">
+                    {categorySlides.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`h-1 rounded-full w-1 bg-muted-foreground/30 transition-all`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
