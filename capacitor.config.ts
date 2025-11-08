@@ -4,10 +4,11 @@ const config: CapacitorConfig = {
   appId: 'com.citylifes.marketplace',
   appName: 'Citylifes Marketplace',
   webDir: 'dist',
-  server: {
-    url: 'https://2e849b3d-19e5-4563-af82-15ad125ce954.lovableproject.com?forceHideBadge=true',
-    cleartext: true
-  },
+  // Uncomment the server config below for live reload during development
+  // server: {
+  //   url: 'https://2e849b3d-19e5-4563-af82-15ad125ce954.lovableproject.com?forceHideBadge=true',
+  //   cleartext: true
+  // },
   ios: {
     contentInset: 'automatic'
   },
