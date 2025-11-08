@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -7,14 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Mail } from "lucide-react";
+import { Mail, AlertCircle } from "lucide-react";
 import Logo from "@/components/Logo";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const [loginData, setLoginData] = useState({ email: "", password: "" });
   const [signupData, setSignupData] = useState({
@@ -24,17 +26,69 @@ const Auth = () => {
     confirmPassword: "",
   });
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate("/");
+    }
+  }, [user, authLoading, navigate]);
+
+  const getErrorMessage = (error: any): string => {
+    const message = error?.message || "";
+    
+    if (message.includes("Invalid login credentials")) {
+      return "Invalid email or password. Please check your credentials and try again.";
+    }
+    if (message.includes("Email not confirmed")) {
+      return "Please verify your email address. Check your inbox for the verification link.";
+    }
+    if (message.includes("User already registered")) {
+      return "This email is already registered. Please login instead.";
+    }
+    if (message.includes("Password should be at least 6 characters")) {
+      return "Password must be at least 6 characters long.";
+    }
+    if (message.includes("Unable to validate email address")) {
+      return "Please enter a valid email address.";
+    }
+    if (message.includes("Signups not allowed")) {
+      return "Signups are currently disabled. Please contact support.";
+    }
+    
+    return message || "An unexpected error occurred. Please try again.";
+  };
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
+
+    if (!validateEmail(loginData.email)) {
+      setError("Please enter a valid email address.");
+      setLoading(false);
+      return;
+    }
+
+    if (loginData.password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      setLoading(false);
+      return;
+    }
 
     const { error } = await signIn(loginData.email, loginData.password);
 
     if (error) {
+      const errorMessage = getErrorMessage(error);
+      setError(errorMessage);
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message,
+        description: errorMessage,
       });
     } else {
       toast({
@@ -48,22 +102,25 @@ const Auth = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
 
-    if (signupData.password !== signupData.confirmPassword) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Passwords don't match",
-      });
+    if (!signupData.fullName.trim()) {
+      setError("Please enter your full name.");
+      return;
+    }
+
+    if (!validateEmail(signupData.email)) {
+      setError("Please enter a valid email address.");
       return;
     }
 
     if (signupData.password.length < 6) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Password must be at least 6 characters",
-      });
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    if (signupData.password !== signupData.confirmPassword) {
+      setError("Passwords don't match. Please try again.");
       return;
     }
 
@@ -72,19 +129,37 @@ const Auth = () => {
     const { error } = await signUp(signupData.email, signupData.password, signupData.fullName);
 
     if (error) {
+      const errorMessage = getErrorMessage(error);
+      setError(errorMessage);
       toast({
         variant: "destructive",
         title: "Signup Failed",
-        description: error.message,
+        description: errorMessage,
       });
     } else {
       toast({
         title: "Account Created!",
         description: "Check your email to verify your account.",
       });
+      setError("");
+      // Clear form
+      setSignupData({
+        email: "",
+        password: "",
+        fullName: "",
+        confirmPassword: "",
+      });
     }
     setLoading(false);
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[hsl(var(--auth-gradient-start))] to-[hsl(var(--auth-gradient-end))] flex items-center justify-center">
+        <div className="text-white text-lg">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[hsl(var(--auth-gradient-start))] to-[hsl(var(--auth-gradient-end))] flex items-center justify-center p-4 overflow-x-hidden max-w-full">
@@ -108,17 +183,23 @@ const Auth = () => {
               </TabsList>
 
               <TabsContent value="login" className="space-y-4">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="login-email" className="text-base font-medium">
-                      Email or Phone Number
+                      Email
                     </Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                       <Input
                         id="login-email"
                         type="email"
-                        placeholder="you@example.com or +1234567890"
+                        placeholder="you@example.com"
                         className="pl-10 h-12 text-base"
                         value={loginData.email}
                         onChange={(e) =>
@@ -196,6 +277,12 @@ const Auth = () => {
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
                 <form onSubmit={handleSignup} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="signup-name" className="text-base font-medium">
@@ -215,14 +302,14 @@ const Auth = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-email" className="text-base font-medium">
-                      Email or Phone Number
+                      Email
                     </Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                       <Input
                         id="signup-email"
                         type="email"
-                        placeholder="you@example.com or +1234567890"
+                        placeholder="you@example.com"
                         className="pl-10 h-12 text-base"
                         value={signupData.email}
                         onChange={(e) =>
