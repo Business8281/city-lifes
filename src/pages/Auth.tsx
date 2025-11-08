@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Mail, Building2 } from "lucide-react";
+import { Mail } from "lucide-react";
+import Logo from "@/components/Logo";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -91,7 +92,7 @@ const Auth = () => {
         {/* Logo and Branding */}
         <div className="flex flex-col items-center space-y-4 text-white">
           <div className="w-24 h-24 bg-white/20 rounded-3xl flex items-center justify-center backdrop-blur-sm">
-            <Building2 className="w-14 h-14 text-white" strokeWidth={2.5} />
+            <Logo className="w-16 h-16" color="white" />
           </div>
           <h1 className="text-4xl font-bold">citylifes</h1>
           <p className="text-lg text-white/90">Find your perfect space</p>
