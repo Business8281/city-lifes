@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { useProperties } from "@/hooks/useProperties";
 import { useLocation } from "@/contexts/LocationContext";
 import LocationSelector from "@/components/LocationSelector";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,6 +19,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { properties } = useProperties();
   const { location } = useLocation();
+  const isMobile = useIsMobile();
 
   // Filter properties based on location
   const filteredProperties = properties.filter((property) => {
@@ -41,6 +44,13 @@ const Index = () => {
   });
 
   const featuredProperties = filteredProperties.slice(0, 4);
+
+  // Split categories into chunks for carousel (2x3 for mobile, 2x6 for desktop)
+  const itemsPerSlide = isMobile ? 6 : 12;
+  const categoriesChunks = [];
+  for (let i = 0; i < propertyTypes.length; i += itemsPerSlide) {
+    categoriesChunks.push(propertyTypes.slice(i, i + itemsPerSlide));
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
@@ -108,16 +118,26 @@ const Index = () => {
             </Button>
           </div>
           
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-w-full">
-            {propertyTypes.slice(0, 12).map((category) => (
-              <CategoryCard
-                key={category.type}
-                icon={category.icon}
-                label={category.label}
-                onClick={() => navigate(`/listings?type=${category.type}`)}
-              />
-            ))}
-          </div>
+          <Carousel className="w-full">
+            <CarouselContent>
+              {categoriesChunks.map((chunk, slideIndex) => (
+                <CarouselItem key={slideIndex}>
+                  <div className="grid grid-cols-3 md:grid-cols-6 grid-rows-2 gap-3">
+                    {chunk.map((category) => (
+                      <CategoryCard
+                        key={category.type}
+                        icon={category.icon}
+                        label={category.label}
+                        onClick={() => navigate(`/listings?type=${category.type}`)}
+                      />
+                    ))}
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
         </section>
 
         {/* Featured Properties */}
