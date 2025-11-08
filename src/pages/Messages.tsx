@@ -121,7 +121,7 @@ const Messages = () => {
   );
 
   return (
-    <div className="flex h-[100dvh] bg-background pb-20 md:pb-0">
+    <div className="flex h-[100dvh] bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
       {/* Chat List */}
       <div className={`${selectedChat ? 'hidden md:flex' : 'flex'} w-full md:w-96 flex-col border-r`}>
         <div className="p-4 border-b space-y-4">

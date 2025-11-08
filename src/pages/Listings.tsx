@@ -46,10 +46,10 @@ const Listings = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
+    <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 py-4 space-y-4">
+      <div className="sticky top-0 z-40 bg-background border-b border-border max-w-full overflow-x-hidden">
+        <div className="max-w-7xl mx-auto px-4 py-4 space-y-4 overflow-x-hidden">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -110,13 +110,13 @@ const Listings = () => {
       </div>
 
       {/* Properties Grid */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 py-6 overflow-x-hidden">
         {loading ? (
           <div className="flex justify-center py-20">
             <div className="text-muted-foreground">Loading properties...</div>
           </div>
         ) : sortedProperties.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-full">
             {sortedProperties.map((property) => (
               <PropertyCard
                 key={property.id}

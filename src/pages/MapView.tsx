@@ -4,7 +4,7 @@ import { MapPin } from "lucide-react";
 
 const MapView = () => {
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
+    <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
       <div className="flex items-center justify-center h-[calc(100vh-5rem)] px-4">
         <div className="text-center max-w-md">
           <MapPin className="h-20 w-20 text-primary mx-auto mb-4" />

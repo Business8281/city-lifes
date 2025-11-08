@@ -6,21 +6,21 @@ import { Outlet } from "react-router-dom";
 export function Layout() {
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen w-full max-w-[100vw] overflow-x-hidden">
         {/* Desktop Sidebar - hidden on mobile */}
         <div className="hidden md:block">
           <AppSidebar />
         </div>
 
         {/* Main Content */}
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1 overflow-x-hidden max-w-full">
           {/* Header with sidebar trigger for desktop */}
-          <header className="sticky top-0 z-40 hidden md:flex h-14 items-center gap-4 border-b bg-background px-4">
+          <header className="sticky top-0 z-40 hidden md:flex h-14 items-center gap-4 border-b bg-background px-4 max-w-full">
             <SidebarTrigger />
           </header>
           
           {/* Page Content */}
-          <div className="flex-1">
+          <div className="flex-1 overflow-x-hidden max-w-full">
             <Outlet />
           </div>
         </SidebarInset>

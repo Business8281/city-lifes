@@ -17,7 +17,7 @@ const Index = () => {
   const featuredProperties = properties.slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
+    <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
       {/* Hero Section */}
       <div className="relative h-[280px] md:h-[400px] overflow-hidden">
         <img
@@ -45,7 +45,7 @@ const Index = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-8 overflow-x-hidden">
         {/* Location */}
         <div className="flex items-center gap-2 text-muted-foreground">
           <MapPin className="h-5 w-5 text-primary" />
@@ -68,7 +68,7 @@ const Index = () => {
             </Button>
           </div>
           
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-w-full">
             {propertyTypes.slice(0, 12).map((category) => (
               <CategoryCard
                 key={category.type}
@@ -93,7 +93,7 @@ const Index = () => {
             </Button>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-full">
             {featuredProperties.map((property) => (
               <PropertyCard
                 key={property.id}

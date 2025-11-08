@@ -58,10 +58,10 @@ const PropertyDetails = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
+    <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="flex items-center justify-between px-4 py-3">
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border max-w-full overflow-x-hidden">
+        <div className="flex items-center justify-between px-4 py-3 max-w-full">
           <Button
             variant="ghost"
             size="icon"
@@ -120,7 +120,7 @@ const PropertyDetails = () => {
         )}
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6 overflow-x-hidden">
         {/* Title and Price */}
         <div>
           <div className="flex items-start justify-between gap-4 mb-2">

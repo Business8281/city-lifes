@@ -34,8 +34,8 @@ const Favorites = () => {
     .filter(Boolean);
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0">
-      <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
+      <div className="max-w-7xl mx-auto px-4 py-6 overflow-x-hidden">
         <h1 className="text-2xl font-bold mb-6">My Favorites</h1>
 
         {loading ? (
@@ -43,7 +43,7 @@ const Favorites = () => {
             <div className="text-muted-foreground">Loading favorites...</div>
           </div>
         ) : favoriteProperties.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-full">
             {favoriteProperties.map((property: any) => (
               <PropertyCard
                 key={property.id}
