@@ -254,6 +254,7 @@ const AddProperty = () => {
         is_agent: false,
         status: 'active',
         available: true,
+        verified: true,
       };
 
       const { error } = await supabase
