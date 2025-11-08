@@ -122,7 +122,7 @@ export function useProperty(id: string | undefined) {
           .update({ views: (data.views || 0) + 1 })
           .eq('id', id);
 
-        setProperty(data as Property);
+        setProperty(data as unknown as Property);
       } catch (error: any) {
         console.error('Error fetching property:', error);
         toast.error('Failed to load property details');

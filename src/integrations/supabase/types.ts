@@ -35,10 +35,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "favorites_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "favorites_property_id_fkey"
+            columns: ["property_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "properties"
             referencedColumns: ["id"]
           },
         ]
