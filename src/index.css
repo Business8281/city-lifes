@@ -44,6 +44,10 @@ All colors MUST be HSL.
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Auth page gradient background */
+    --auth-gradient-start: 203 47% 50%;
+    --auth-gradient-end: 203 35% 38%;
   }
 
   .dark {
