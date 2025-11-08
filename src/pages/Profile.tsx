@@ -1,14 +1,16 @@
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { User, Home, Heart, TrendingUp, Settings, Shield, ChevronRight } from "lucide-react";
+import { User, Home, Heart, TrendingUp, Settings, Shield, ChevronRight, LogOut } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyListings } from "@/hooks/useProperties";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useMessages } from "@/hooks/useMessages";
+import { toast } from "sonner";
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { properties } = useMyListings(user?.id);
   const { favorites } = useFavorites(user?.id);
@@ -22,6 +24,12 @@ const Profile = () => {
     { icon: Settings, label: "Settings", path: "/settings" },
     { icon: Shield, label: "Admin Dashboard", path: "/admin-dashboard" },
   ];
+
+  const handleLogout = async () => {
+    await signOut();
+    toast.success("Logged out successfully");
+    navigate("/auth");
+  };
 
 
   return (
@@ -77,6 +85,16 @@ const Profile = () => {
             );
           })}
         </div>
+
+        {/* Logout Button */}
+        <Button
+          variant="outline"
+          className="w-full gap-2 text-destructive border-destructive hover:bg-destructive hover:text-white"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-5 w-5" />
+          Logout
+        </Button>
       </div>
 
       <BottomNav />
