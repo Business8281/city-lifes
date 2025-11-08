@@ -41,8 +41,9 @@ const MyListings = () => {
   const getStatusBadge = (status: string) => {
     const variants = {
       active: "default",
-      pending: "secondary",
-      expired: "destructive",
+      inactive: "secondary",
+      rented: "secondary",
+      sold: "destructive",
     } as const;
 
     return (
@@ -109,7 +110,7 @@ const MyListings = () => {
                           {getStatusBadge(listing.status)}
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">
-                          {listing.location}, {listing.city}
+                          {listing.area}, {listing.city} - {listing.pin_code}
                         </p>
                         <p className="text-xl font-bold text-primary">
                           ₹{listing.price.toLocaleString()}
@@ -157,15 +158,6 @@ const MyListings = () => {
                         <p className="font-semibold">{format(new Date(listing.created_at), 'PPP')}</p>
                       </div>
                     </div>
-
-                    {listing.status === "pending" && (
-                      <div className="mt-4 p-3 bg-secondary/10 rounded-lg">
-                        <p className="text-sm text-muted-foreground">
-                          Your listing is under review and will be published
-                          within 24 hours.
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </div>
               </Card>

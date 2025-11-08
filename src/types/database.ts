@@ -12,22 +12,40 @@ export interface Property {
   id: string;
   user_id: string;
   title: string;
-  type: string;
+  description: string | null;
+  property_type: string;
   price: number;
-  location: string;
+  price_type: string;
+  // Location fields
   city: string;
-  state: string;
-  images: string[];
-  description: string;
+  area: string;
+  pin_code: string;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  // Property details
   bedrooms: number | null;
   bathrooms: number | null;
-  area: number | null;
+  area_sqft: number | null;
+  images: string[];
   amenities: string[];
-  status: 'active' | 'pending' | 'expired';
+  // Status
+  status: 'active' | 'inactive' | 'rented' | 'sold';
+  verified: boolean;
+  available: boolean;
+  // Contact info
+  contact_name: string | null;
+  contact_phone: string | null;
+  contact_email: string | null;
+  is_agent: boolean;
+  // Metadata
   views: number;
   created_at: string;
   updated_at: string;
+  // Relations
   profiles?: Profile;
+  // Distance (from search function)
+  distance_km?: number;
 }
 
 export interface Favorite {

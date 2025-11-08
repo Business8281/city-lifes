@@ -132,7 +132,7 @@ const PropertyDetails = () => {
           
           <div className="flex items-center gap-2 text-muted-foreground mb-4">
             <MapPin className="h-4 w-4" />
-            <span>{property.location}, {property.city}</span>
+            <span>{property.area}, {property.city} - {property.pin_code}</span>
           </div>
           
           <div className="flex items-baseline gap-2">

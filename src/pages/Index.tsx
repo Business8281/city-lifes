@@ -28,10 +28,9 @@ const Index = () => {
       case 'city':
         return property.city?.toLowerCase().includes(searchValue);
       case 'area':
-        return property.location?.toLowerCase().includes(searchValue);
+        return property.area?.toLowerCase().includes(searchValue);
       case 'pincode':
-        // Assuming pincode might be part of location string
-        return property.location?.includes(location.value);
+        return property.pin_code?.includes(location.value);
       case 'live':
         // For live location, show all for now (can add proximity logic later)
         return true;
@@ -132,7 +131,6 @@ const Index = () => {
               See More
             </Button>
           </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-full">
             {featuredProperties.map((property) => (
               <PropertyCard
@@ -140,13 +138,13 @@ const Index = () => {
                 id={property.id}
                 image={property.images[0] || '/placeholder.svg'}
                 title={property.title}
-                type={propertyTypes.find(t => t.type === property.type)?.icon || '🏠'}
+                type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
                 price={`₹${property.price.toLocaleString()}`}
-                location={property.location}
+                location={`${property.area}, ${property.city}`}
                 bedrooms={property.bedrooms || undefined}
                 bathrooms={property.bathrooms || undefined}
-                area={property.area ? `${property.area} sq.ft` : undefined}
-                verified={property.status === 'active'}
+                area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
+                verified={property.verified}
                 onClick={() => navigate(`/property/${property.id}`)}
               />
             ))}

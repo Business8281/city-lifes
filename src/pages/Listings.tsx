@@ -29,10 +29,10 @@ const Listings = () => {
     const matchesSearch =
       searchQuery === "" ||
       property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      property.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      property.area.toLowerCase().includes(searchQuery.toLowerCase()) ||
       property.city.toLowerCase().includes(searchQuery.toLowerCase());
 
-    const matchesType = selectedType === "all" || property.type === selectedType;
+    const matchesType = selectedType === "all" || property.property_type === selectedType;
 
     // Location filter
     let matchesLocation = true;
@@ -44,10 +44,10 @@ const Listings = () => {
           matchesLocation = property.city?.toLowerCase().includes(searchValue);
           break;
         case 'area':
-          matchesLocation = property.location?.toLowerCase().includes(searchValue);
+          matchesLocation = property.area?.toLowerCase().includes(searchValue);
           break;
         case 'pincode':
-          matchesLocation = property.location?.includes(location.value);
+          matchesLocation = property.pin_code?.includes(location.value);
           break;
         case 'live':
           matchesLocation = true; // Show all for live location
@@ -146,13 +146,13 @@ const Listings = () => {
                 id={property.id}
                 image={property.images[0] || '/placeholder.svg'}
                 title={property.title}
-                type={propertyTypes.find(t => t.type === property.type)?.icon || '🏠'}
+                type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
                 price={`₹${property.price.toLocaleString()}`}
-                location={property.location}
+                location={`${property.area}, ${property.city}`}
                 bedrooms={property.bedrooms || undefined}
                 bathrooms={property.bathrooms || undefined}
-                area={property.area ? `${property.area} sq.ft` : undefined}
-                verified={property.status === 'active'}
+                area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
+                verified={property.verified}
                 onClick={() => navigate(`/property/${property.id}`)}
               />
             ))}
