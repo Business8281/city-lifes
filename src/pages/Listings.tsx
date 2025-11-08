@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { useProperties } from "@/hooks/useProperties";
 import { useLocation } from "@/contexts/LocationContext";
+import { useSponsoredProperties } from "@/hooks/useSponsoredProperties";
 
 const Listings = () => {
   const [searchParams] = useSearchParams();
@@ -26,6 +27,7 @@ const Listings = () => {
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const { properties, loading } = useProperties();
   const { location } = useLocation();
+  const { sponsoredProperties, loading: sponsoredLoading, incrementClicks } = useSponsoredProperties(location);
 
   const filteredProperties = properties.filter((property) => {
     const matchesSearch =
@@ -175,29 +177,67 @@ const Listings = () => {
       </div>
 
       {/* Properties Grid */}
-      <div className="max-w-7xl mx-auto px-4 py-6 overflow-x-hidden">
+      <div className="max-w-7xl mx-auto px-4 py-6 overflow-x-hidden space-y-6">
+        {/* Sponsored Ads Section */}
+        {!sponsoredLoading && sponsoredProperties.length > 0 && (
+          <div className="space-y-3">
+            <h2 className="text-lg font-semibold">Sponsored</h2>
+            <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
+              <div className="flex gap-4 pb-2">
+                {sponsoredProperties.map((property) => (
+                  <div key={property.id} className="w-[280px] shrink-0">
+                    <PropertyCard
+                      id={property.id}
+                      image={property.images[0] || '/placeholder.svg'}
+                      title={property.title}
+                      type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
+                      price={`₹${property.price.toLocaleString()}`}
+                      location={`${property.area}, ${property.city}`}
+                      bedrooms={property.bedrooms || undefined}
+                      bathrooms={property.bathrooms || undefined}
+                      area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
+                      verified={property.verified}
+                      sponsored={true}
+                      onClick={() => {
+                        if (property.campaign_id) {
+                          incrementClicks(property.campaign_id);
+                        }
+                        navigate(`/property/${property.id}`);
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Regular Properties Grid */}
         {loading ? (
           <div className="flex justify-center py-20">
             <div className="text-muted-foreground">Loading properties...</div>
           </div>
         ) : sortedProperties.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-full">
-            {sortedProperties.map((property) => (
-              <PropertyCard
-                key={property.id}
-                id={property.id}
-                image={property.images[0] || '/placeholder.svg'}
-                title={property.title}
-                type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
-                price={`₹${property.price.toLocaleString()}`}
-                location={`${property.area}, ${property.city}`}
-                bedrooms={property.bedrooms || undefined}
-                bathrooms={property.bathrooms || undefined}
-                area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
-                verified={property.verified}
-                onClick={() => navigate(`/property/${property.id}`)}
-              />
-            ))}
+          <div>
+            <h2 className="text-lg font-semibold mb-3">All Properties</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-full">
+              {sortedProperties.map((property) => (
+                <PropertyCard
+                  key={property.id}
+                  id={property.id}
+                  image={property.images[0] || '/placeholder.svg'}
+                  title={property.title}
+                  type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
+                  price={`₹${property.price.toLocaleString()}`}
+                  location={`${property.area}, ${property.city}`}
+                  bedrooms={property.bedrooms || undefined}
+                  bathrooms={property.bathrooms || undefined}
+                  area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
+                  verified={property.verified}
+                  onClick={() => navigate(`/property/${property.id}`)}
+                />
+              ))}
+            </div>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">

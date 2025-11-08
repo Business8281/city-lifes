@@ -14,6 +14,7 @@ interface PropertyCardProps {
   bathrooms?: number;
   area?: string;
   verified?: boolean;
+  sponsored?: boolean;
   onClick?: () => void;
   className?: string;
 }
@@ -29,6 +30,7 @@ const PropertyCard = ({
   bathrooms,
   area,
   verified = false,
+  sponsored = false,
   onClick,
   className,
 }: PropertyCardProps) => {
@@ -76,11 +78,18 @@ const PropertyCard = ({
             )}
           />
         </button>
-        {verified && (
-          <Badge className="absolute top-3 left-3 bg-secondary">
-            Verified
-          </Badge>
-        )}
+        <div className="absolute top-3 left-3 flex flex-col gap-2">
+          {sponsored && (
+            <Badge className="bg-amber-500 hover:bg-amber-600">
+              Sponsored
+            </Badge>
+          )}
+          {verified && (
+            <Badge className="bg-secondary">
+              Verified
+            </Badge>
+          )}
+        </div>
       </div>
       
       <div className="p-4 space-y-2 overflow-hidden">

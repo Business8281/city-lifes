@@ -14,6 +14,62 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_campaigns: {
+        Row: {
+          budget: number
+          clicks: number
+          created_at: string
+          end_date: string
+          id: string
+          impressions: number
+          property_id: string
+          spent: number
+          start_date: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          budget?: number
+          clicks?: number
+          created_at?: string
+          end_date: string
+          id?: string
+          impressions?: number
+          property_id: string
+          spent?: number
+          start_date?: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          budget?: number
+          clicks?: number
+          created_at?: string
+          end_date?: string
+          id?: string
+          impressions?: number
+          property_id?: string
+          spent?: number
+          start_date?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_campaigns_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorites: {
         Row: {
           created_at: string
@@ -655,6 +711,48 @@ export type Database = {
           id: string
         }[]
       }
+      get_sponsored_properties: {
+        Args: {
+          filter_area?: string
+          filter_city?: string
+          filter_lat?: number
+          filter_lng?: number
+          filter_pin_code?: string
+          radius_km?: number
+        }
+        Returns: {
+          address: string
+          amenities: string[]
+          area: string
+          area_sqft: number
+          available: boolean
+          bathrooms: number
+          bedrooms: number
+          campaign_id: string
+          city: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          created_at: string
+          description: string
+          distance_km: number
+          id: string
+          images: string[]
+          is_agent: boolean
+          latitude: number
+          longitude: number
+          pin_code: string
+          price: number
+          price_type: string
+          property_type: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+          verified: boolean
+          views: number
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -666,6 +764,14 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_campaign_clicks: {
+        Args: { campaign_id: string }
+        Returns: undefined
+      }
+      increment_campaign_impressions: {
+        Args: { campaign_id: string }
+        Returns: undefined
       }
       longtransactionsenabled: { Args: never; Returns: boolean }
       populate_geometry_columns:
