@@ -17,21 +17,72 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { propertyTypes } from "@/data/properties";
 
-const amenitiesList = [
-  "Parking",
-  "Gym",
-  "Swimming Pool",
-  "Security",
-  "Lift",
-  "Power Backup",
-  "Garden",
-  "Club House",
-  "Water Supply",
-  "Maintenance Staff",
-  "High-Speed Internet",
-  "Cafeteria",
-  "Conference Room",
-];
+const categoryConfigs = {
+  apartment: { 
+    amenities: ["Parking", "Gym", "Swimming Pool", "Security", "Lift", "Power Backup", "Garden", "Club House", "Water Supply", "Maintenance Staff"],
+    fields: ["bedrooms", "bathrooms", "area"]
+  },
+  house: { 
+    amenities: ["Garden", "Parking", "Security", "Power Backup", "Water Supply"],
+    fields: ["bedrooms", "bathrooms", "area"]
+  },
+  flat: { 
+    amenities: ["Parking", "Lift", "Security", "Water Supply", "Maintenance Staff"],
+    fields: ["bedrooms", "bathrooms", "area"]
+  },
+  commercial: { 
+    amenities: ["Parking", "Security", "Water Supply", "Power Backup"],
+    fields: ["area"]
+  },
+  office: { 
+    amenities: ["Parking", "Cafeteria", "Conference Room", "High-Speed Internet", "Security"],
+    fields: ["area"]
+  },
+  farmland: { 
+    amenities: ["Water Supply", "Power Backup"],
+    fields: ["area"]
+  },
+  pg: { 
+    amenities: ["Parking", "Gym", "Security", "Lift", "Power Backup", "Water Supply", "Maintenance Staff"],
+    fields: ["bedrooms", "bathrooms"]
+  },
+  hostel: { 
+    amenities: ["Cafeteria", "Gym", "Security", "Lift", "Power Backup", "Water Supply", "Maintenance Staff"],
+    fields: ["bedrooms", "bathrooms"]
+  },
+  restaurant: { 
+    amenities: ["Parking", "Security", "Water Supply", "Power Backup"],
+    fields: ["area", "seatingCapacity"]
+  },
+  cafe: { 
+    amenities: ["Parking", "Security", "Water Supply", "Power Backup"],
+    fields: ["area", "seatingCapacity"]
+  },
+  farmhouse: { 
+    amenities: ["Garden", "Parking", "Security", "Power Backup", "Water Supply"],
+    fields: ["bedrooms", "bathrooms", "area"]
+  },
+  warehouse: { 
+    amenities: ["Parking", "Security", "Power Backup"],
+    fields: ["area"]
+  },
+  cars: { 
+    amenities: [],
+    fields: ["brand", "model", "year", "fuelType", "transmission"]
+  },
+  bikes: { 
+    amenities: [],
+    fields: ["brand", "model", "year", "fuelType"]
+  },
+  hotels: { 
+    amenities: ["Parking", "Gym", "Swimming Pool", "Security", "Lift", "Power Backup", "Cafeteria", "Conference Room", "Water Supply"],
+    fields: ["rooms", "area"]
+  },
+  business: { 
+    amenities: [],
+    fields: ["businessType", "revenue", "employees"]
+  },
+};
 
 const AddProperty = () => {
   const navigate = useNavigate();
@@ -50,6 +101,19 @@ const AddProperty = () => {
     amenities: [] as string[],
     ownerName: "",
     ownerPhone: "",
+    // Vehicle fields
+    brand: "",
+    model: "",
+    year: "",
+    fuelType: "",
+    transmission: "",
+    // Hotels/Restaurant fields
+    rooms: "",
+    seatingCapacity: "",
+    // Business fields
+    businessType: "",
+    revenue: "",
+    employees: "",
   });
   const [images, setImages] = useState<string[]>([]);
 
@@ -162,59 +226,228 @@ const AddProperty = () => {
                 </Select>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="price">Monthly Rent *</Label>
-                  <Input
-                    id="price"
-                    placeholder="₹25,000"
-                    value={formData.price}
-                    onChange={(e) =>
-                      setFormData({ ...formData, price: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="area">Area</Label>
-                  <Input
-                    id="area"
-                    placeholder="1,200 sq.ft"
-                    value={formData.area}
-                    onChange={(e) =>
-                      setFormData({ ...formData, area: e.target.value })
-                    }
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="price">
+                  {formData.type === "cars" || formData.type === "bikes" ? "Price" : 
+                   formData.type === "business" ? "Business Value" : "Monthly Rent"} *
+                </Label>
+                <Input
+                  id="price"
+                  placeholder={formData.type === "cars" || formData.type === "bikes" ? "₹5,00,000" : "₹25,000"}
+                  value={formData.price}
+                  onChange={(e) =>
+                    setFormData({ ...formData, price: e.target.value })
+                  }
+                />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="bedrooms">Bedrooms</Label>
-                  <Input
-                    id="bedrooms"
-                    type="number"
-                    placeholder="3"
-                    value={formData.bedrooms}
-                    onChange={(e) =>
-                      setFormData({ ...formData, bedrooms: e.target.value })
-                    }
-                  />
-                </div>
+              {/* Dynamic fields based on property type */}
+              {formData.type && categoryConfigs[formData.type as keyof typeof categoryConfigs] && (
+                <>
+                  {categoryConfigs[formData.type as keyof typeof categoryConfigs].fields.includes("bedrooms") && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="bedrooms">Bedrooms</Label>
+                        <Input
+                          id="bedrooms"
+                          type="number"
+                          placeholder="3"
+                          value={formData.bedrooms}
+                          onChange={(e) =>
+                            setFormData({ ...formData, bedrooms: e.target.value })
+                          }
+                        />
+                      </div>
+                      {categoryConfigs[formData.type as keyof typeof categoryConfigs].fields.includes("bathrooms") && (
+                        <div className="space-y-2">
+                          <Label htmlFor="bathrooms">Bathrooms</Label>
+                          <Input
+                            id="bathrooms"
+                            type="number"
+                            placeholder="2"
+                            value={formData.bathrooms}
+                            onChange={(e) =>
+                              setFormData({ ...formData, bathrooms: e.target.value })
+                            }
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="bathrooms">Bathrooms</Label>
-                  <Input
-                    id="bathrooms"
-                    type="number"
-                    placeholder="2"
-                    value={formData.bathrooms}
-                    onChange={(e) =>
-                      setFormData({ ...formData, bathrooms: e.target.value })
-                    }
-                  />
-                </div>
-              </div>
+                  {categoryConfigs[formData.type as keyof typeof categoryConfigs].fields.includes("area") && (
+                    <div className="space-y-2">
+                      <Label htmlFor="area">
+                        {formData.type === "farmland" ? "Area (Acres)" : "Area (sq.ft)"}
+                      </Label>
+                      <Input
+                        id="area"
+                        placeholder={formData.type === "farmland" ? "5 acres" : "1,200 sq.ft"}
+                        value={formData.area}
+                        onChange={(e) =>
+                          setFormData({ ...formData, area: e.target.value })
+                        }
+                      />
+                    </div>
+                  )}
+
+                  {/* Vehicle fields */}
+                  {(formData.type === "cars" || formData.type === "bikes") && (
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="brand">Brand *</Label>
+                          <Input
+                            id="brand"
+                            placeholder="e.g., Honda, Maruti"
+                            value={formData.brand}
+                            onChange={(e) =>
+                              setFormData({ ...formData, brand: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="model">Model *</Label>
+                          <Input
+                            id="model"
+                            placeholder="e.g., City, Swift"
+                            value={formData.model}
+                            onChange={(e) =>
+                              setFormData({ ...formData, model: e.target.value })
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="year">Year *</Label>
+                          <Input
+                            id="year"
+                            placeholder="2023"
+                            value={formData.year}
+                            onChange={(e) =>
+                              setFormData({ ...formData, year: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="fuelType">Fuel Type *</Label>
+                          <Select
+                            value={formData.fuelType}
+                            onValueChange={(value) =>
+                              setFormData({ ...formData, fuelType: value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select fuel type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="petrol">Petrol</SelectItem>
+                              <SelectItem value="diesel">Diesel</SelectItem>
+                              <SelectItem value="electric">Electric</SelectItem>
+                              <SelectItem value="hybrid">Hybrid</SelectItem>
+                              <SelectItem value="cng">CNG</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      {formData.type === "cars" && (
+                        <div className="space-y-2">
+                          <Label htmlFor="transmission">Transmission *</Label>
+                          <Select
+                            value={formData.transmission}
+                            onValueChange={(value) =>
+                              setFormData({ ...formData, transmission: value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select transmission" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="manual">Manual</SelectItem>
+                              <SelectItem value="automatic">Automatic</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {/* Hotels fields */}
+                  {formData.type === "hotels" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="rooms">Number of Rooms</Label>
+                      <Input
+                        id="rooms"
+                        type="number"
+                        placeholder="50"
+                        value={formData.rooms}
+                        onChange={(e) =>
+                          setFormData({ ...formData, rooms: e.target.value })
+                        }
+                      />
+                    </div>
+                  )}
+
+                  {/* Restaurant/Cafe fields */}
+                  {(formData.type === "restaurant" || formData.type === "cafe") && (
+                    <div className="space-y-2">
+                      <Label htmlFor="seatingCapacity">Seating Capacity</Label>
+                      <Input
+                        id="seatingCapacity"
+                        type="number"
+                        placeholder="50"
+                        value={formData.seatingCapacity}
+                        onChange={(e) =>
+                          setFormData({ ...formData, seatingCapacity: e.target.value })
+                        }
+                      />
+                    </div>
+                  )}
+
+                  {/* Business fields */}
+                  {formData.type === "business" && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="businessType">Business Type *</Label>
+                        <Input
+                          id="businessType"
+                          placeholder="e.g., Retail, Manufacturing"
+                          value={formData.businessType}
+                          onChange={(e) =>
+                            setFormData({ ...formData, businessType: e.target.value })
+                          }
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="revenue">Annual Revenue</Label>
+                          <Input
+                            id="revenue"
+                            placeholder="₹50,00,000"
+                            value={formData.revenue}
+                            onChange={(e) =>
+                              setFormData({ ...formData, revenue: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="employees">Number of Employees</Label>
+                          <Input
+                            id="employees"
+                            type="number"
+                            placeholder="25"
+                            value={formData.employees}
+                            onChange={(e) =>
+                              setFormData({ ...formData, employees: e.target.value })
+                            }
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
 
               <Button
                 onClick={() => setStep(2)}
@@ -288,26 +521,28 @@ const AddProperty = () => {
             <div className="space-y-6">
               <h2 className="text-2xl font-bold">Amenities & Images</h2>
 
-              <div className="space-y-3">
-                <Label>Select Amenities</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {amenitiesList.map((amenity) => (
-                    <div key={amenity} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={amenity}
-                        checked={formData.amenities.includes(amenity)}
-                        onCheckedChange={() => toggleAmenity(amenity)}
-                      />
-                      <label
-                        htmlFor={amenity}
-                        className="text-sm cursor-pointer"
-                      >
-                        {amenity}
-                      </label>
-                    </div>
-                  ))}
+              {formData.type && categoryConfigs[formData.type as keyof typeof categoryConfigs]?.amenities.length > 0 && (
+                <div className="space-y-3">
+                  <Label>Select Amenities</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {categoryConfigs[formData.type as keyof typeof categoryConfigs].amenities.map((amenity) => (
+                      <div key={amenity} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={amenity}
+                          checked={formData.amenities.includes(amenity)}
+                          onCheckedChange={() => toggleAmenity(amenity)}
+                        />
+                        <label
+                          htmlFor={amenity}
+                          className="text-sm cursor-pointer"
+                        >
+                          {amenity}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="space-y-3">
                 <Label>Upload Images</Label>
