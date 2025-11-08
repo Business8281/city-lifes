@@ -95,7 +95,7 @@ const PropertyDetails = () => {
       </div>
 
       {/* Image Gallery */}
-      <div className="relative aspect-[4/3] bg-muted">
+      <div className="relative aspect-[4/3] md:aspect-[16/9] bg-muted">
         <img
           src={property.images[currentImage] || '/placeholder.svg'}
           alt={property.title}

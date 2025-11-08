@@ -99,7 +99,7 @@ const Notifications = () => {
       : notifications;
 
   return (
-    <div className="min-h-screen bg-background pb-8">
+    <div className="min-h-screen bg-background pb-20 md:pb-8">
       <div className="sticky top-0 z-40 bg-background border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">

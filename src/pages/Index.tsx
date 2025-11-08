@@ -19,7 +19,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0">
       {/* Hero Section */}
-      <div className="relative h-[280px] overflow-hidden">
+      <div className="relative h-[280px] md:h-[400px] overflow-hidden">
         <img
           src={heroImage}
           alt="City skyline"
