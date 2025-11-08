@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { MapPin, Navigation, Building, MapPinned, Hash } from 'lucide-react';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useLocation, LocationMethod } from '@/contexts/LocationContext';
 import { toast } from 'sonner';
+import { allCities, areas, pinCodes } from '@/data/indianLocations';
 
 interface LocationSelectorProps {
   open: boolean;
@@ -112,12 +113,22 @@ const LocationSelector = ({ open, onOpenChange }: LocationSelectorProps) => {
 
           {selectedMethod && selectedMethod !== 'live' && (
             <div className="space-y-3">
-              <Input
-                placeholder={`Enter ${selectedMethod}...`}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                className="w-full"
-              />
+              <Select value={inputValue} onValueChange={setInputValue}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={`Select ${selectedMethod}...`} />
+                </SelectTrigger>
+                <SelectContent className="bg-background z-50">
+                  {selectedMethod === 'city' && allCities.map((city) => (
+                    <SelectItem key={city} value={city}>{city}</SelectItem>
+                  ))}
+                  {selectedMethod === 'area' && areas.map((area) => (
+                    <SelectItem key={area} value={area}>{area}</SelectItem>
+                  ))}
+                  {selectedMethod === 'pincode' && pinCodes.map((pincode) => (
+                    <SelectItem key={pincode} value={pincode}>{pincode}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button onClick={handleSubmit} className="w-full">
                 Set Location
               </Button>
