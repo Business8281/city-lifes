@@ -5,18 +5,33 @@ import CategoryCard from "@/components/CategoryCard";
 import PropertyCard from "@/components/PropertyCard";
 import { propertyTypes } from "@/data/properties";
 import heroImage from "@/assets/hero-cityscape.jpg";
-import { MapPin } from "lucide-react";
+import { MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProperties } from "@/hooks/useProperties";
 import { useLocation } from "@/contexts/LocationContext";
 import LocationSelector from "@/components/LocationSelector";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationSelectorOpen, setLocationSelectorOpen] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
   const { properties } = useProperties();
   const { location } = useLocation();
+
+  // Chunk property types into groups of 6 (2x3 grid)
+  const ITEMS_PER_SLIDE = 6;
+  const categorySlides = [];
+  for (let i = 0; i < propertyTypes.length; i += ITEMS_PER_SLIDE) {
+    categorySlides.push(propertyTypes.slice(i, i + ITEMS_PER_SLIDE));
+  }
 
   // Filter properties based on location
   const filteredProperties = properties.filter((property) => {
@@ -107,15 +122,61 @@ const Index = () => {
             </Button>
           </div>
           
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-w-full">
-            {propertyTypes.slice(0, 16).map((category) => (
-              <CategoryCard
-                key={category.type}
-                icon={category.icon}
-                label={category.label}
-                onClick={() => navigate(`/listings?type=${category.type}`)}
-              />
-            ))}
+          <div className="relative">
+            <Carousel 
+              className="w-full"
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              setApi={(api) => {
+                if (api) {
+                  api.on('select', () => {
+                    setCurrentSlide(api.selectedScrollSnap());
+                  });
+                }
+              }}
+            >
+              <CarouselContent>
+                {categorySlides.map((slide, slideIndex) => (
+                  <CarouselItem key={slideIndex}>
+                    <div className="grid grid-cols-3 grid-rows-2 gap-3 md:gap-4">
+                      {slide.map((category) => (
+                        <CategoryCard
+                          key={category.type}
+                          icon={category.icon}
+                          label={category.label}
+                          onClick={() => navigate(`/listings?type=${category.type}`)}
+                        />
+                      ))}
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex -left-12" />
+              <CarouselNext className="hidden md:flex -right-12" />
+            </Carousel>
+
+            {/* Dot Indicators */}
+            <div className="flex justify-center gap-2 mt-4">
+              {categorySlides.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    const carousel = document.querySelector('[data-carousel]');
+                    if (carousel) {
+                      // This will be handled by the carousel API
+                    }
+                  }}
+                  className={`h-2 rounded-full transition-all ${
+                    index === currentSlide 
+                      ? 'w-6 bg-primary' 
+                      : 'w-2 bg-muted-foreground/30'
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
           </div>
         </section>
 
