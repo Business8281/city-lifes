@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import SearchBar from "@/components/SearchBar";
 import PropertyCard from "@/components/PropertyCard";
 import BottomNav from "@/components/BottomNav";
+import LocationSelector from "@/components/LocationSelector";
 import { propertyTypes } from "@/data/properties";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ const Listings = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState(searchParams.get("type") || "all");
   const [sortBy, setSortBy] = useState("recent");
+  const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const { properties, loading } = useProperties();
   const { location } = useLocation();
 
@@ -90,6 +92,31 @@ const Listings = () => {
               />
             </div>
           </div>
+
+          {/* Location Selector */}
+          <Button 
+            variant="outline" 
+            className="w-full justify-start gap-2"
+            onClick={() => setLocationDialogOpen(true)}
+          >
+            {location.method === 'live' && location.coordinates ? (
+              <>
+                <span className="text-green-500">📍</span>
+                Live Location
+              </>
+            ) : location.value ? (
+              <>
+                <span>📍</span>
+                {location.value}
+              </>
+            ) : (
+              <>
+                <span>📍</span>
+                Select Location
+              </>
+            )}
+          </Button>
+          <LocationSelector open={locationDialogOpen} onOpenChange={setLocationDialogOpen} />
 
           <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
             <Button
