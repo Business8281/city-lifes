@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Mail, AlertCircle } from "lucide-react";
 import Logo from "@/components/Logo";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { authSchema } from "@/schemas/validationSchemas";
+import { z } from "zod";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -58,26 +60,24 @@ const Auth = () => {
     return message || "An unexpected error occurred. Please try again.";
   };
 
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    if (!validateEmail(loginData.email)) {
-      setError("Please enter a valid email address.");
-      setLoading(false);
-      return;
-    }
-
-    if (loginData.password.length < 6) {
-      setError("Password must be at least 6 characters long.");
-      setLoading(false);
-      return;
+    // Validate using zod schema
+    try {
+      authSchema.parse({
+        email: loginData.email,
+        password: loginData.password,
+      });
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        const firstError = validationError.errors[0];
+        setError(firstError.message);
+        setLoading(false);
+        return;
+      }
     }
 
     const { error } = await signIn(loginData.email, loginData.password);
@@ -104,19 +104,19 @@ const Auth = () => {
     e.preventDefault();
     setError("");
 
-    if (!signupData.fullName.trim()) {
-      setError("Please enter your full name.");
-      return;
-    }
-
-    if (!validateEmail(signupData.email)) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
-    if (signupData.password.length < 6) {
-      setError("Password must be at least 6 characters long.");
-      return;
+    // Validate using zod schema
+    try {
+      authSchema.parse({
+        email: signupData.email,
+        password: signupData.password,
+        fullName: signupData.fullName,
+      });
+    } catch (validationError) {
+      if (validationError instanceof z.ZodError) {
+        const firstError = validationError.errors[0];
+        setError(firstError.message);
+        return;
+      }
     }
 
     if (signupData.password !== signupData.confirmPassword) {

@@ -53,33 +53,31 @@ export function useAdminProperties() {
 
   const approveProperty = async (propertyId: string) => {
     try {
-      const { error } = await supabase
-        .from('properties')
-        .update({ verified: true })
-        .eq('id', propertyId);
+      const { error } = await supabase.rpc('approve_property', {
+        property_id: propertyId
+      });
 
       if (error) throw error;
       toast.success('Property approved successfully');
       fetchPendingProperties();
     } catch (error: any) {
       console.error('Error approving property:', error);
-      toast.error('Failed to approve property');
+      toast.error(error.message || 'Failed to approve property');
     }
   };
 
   const rejectProperty = async (propertyId: string) => {
     try {
-      const { error } = await supabase
-        .from('properties')
-        .update({ verified: false, status: 'inactive' })
-        .eq('id', propertyId);
+      const { error } = await supabase.rpc('reject_property', {
+        property_id: propertyId
+      });
 
       if (error) throw error;
       toast.success('Property rejected');
       fetchPendingProperties();
     } catch (error: any) {
       console.error('Error rejecting property:', error);
-      toast.error('Failed to reject property');
+      toast.error(error.message || 'Failed to reject property');
     }
   };
 

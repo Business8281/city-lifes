@@ -22,6 +22,8 @@ import { useLocation } from "@/contexts/LocationContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Geolocation } from "@capacitor/geolocation";
+import { propertySchema } from "@/schemas/validationSchemas";
+import { z } from "zod";
 
 const categoryConfigs = {
   apartment: { 
@@ -194,13 +196,47 @@ const AddProperty = () => {
     try {
       setSubmitting(true);
 
-      // Prepare property data
+      // Validate form data using zod
+      const validationData = {
+        title: formData.title,
+        description: formData.description || undefined,
+        propertyType: formData.type,
+        price: parseFloat(formData.price),
+        priceType: "monthly" as const,
+        city: formData.city,
+        area: formData.area,
+        pinCode: formData.pinCode,
+        address: formData.address || undefined,
+        bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : undefined,
+        bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : undefined,
+        areaSqft: formData.areaSqft ? parseInt(formData.areaSqft) : undefined,
+        ownerName: formData.ownerName,
+        ownerPhone: formData.ownerPhone,
+        ownerEmail: undefined,
+        isAgent: false,
+        amenities: formData.amenities,
+        images: images,
+      };
+
+      try {
+        propertySchema.parse(validationData);
+      } catch (validationError) {
+        if (validationError instanceof z.ZodError) {
+          const firstError = validationError.errors[0];
+          sonnerToast.error(`Validation error: ${firstError.message}`);
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      // Prepare property data for database
       const propertyData = {
         user_id: user.id,
         title: formData.title,
         description: formData.description,
         property_type: formData.type,
         price: parseFloat(formData.price),
+        price_type: 'monthly',
         city: formData.city,
         area: formData.area,
         pin_code: formData.pinCode,
@@ -214,6 +250,8 @@ const AddProperty = () => {
         images: images,
         contact_name: formData.ownerName,
         contact_phone: formData.ownerPhone,
+        contact_email: null,
+        is_agent: false,
         status: 'active',
         available: true,
       };
