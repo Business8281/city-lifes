@@ -13,7 +13,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { signIn, signUp, user, loading: authLoading } = useAuth();
+  const { signIn, signUp, signInWithGoogle, user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -153,6 +153,25 @@ const Auth = () => {
     setLoading(false);
   };
 
+  const handleGoogleSignIn = async () => {
+    setError("");
+    setLoading(true);
+    
+    const { error } = await signInWithGoogle();
+    
+    if (error) {
+      const errorMessage = getErrorMessage(error);
+      setError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Google Sign-In Failed",
+        description: errorMessage,
+      });
+      setLoading(false);
+    }
+    // Note: User will be redirected to Google, so we don't set loading to false here
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-[hsl(var(--auth-gradient-start))] to-[hsl(var(--auth-gradient-end))] flex items-center justify-center">
@@ -247,12 +266,8 @@ const Auth = () => {
                   type="button"
                   variant="outline"
                   className="w-full h-12 text-base gap-2"
-                  onClick={() => {
-                    toast({
-                      title: "Coming Soon",
-                      description: "Google sign-in will be available soon.",
-                    });
-                  }}
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path
@@ -376,12 +391,8 @@ const Auth = () => {
                   type="button"
                   variant="outline"
                   className="w-full h-12 text-base gap-2"
-                  onClick={() => {
-                    toast({
-                      title: "Coming Soon",
-                      description: "Google sign-in will be available soon.",
-                    });
-                  }}
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path
