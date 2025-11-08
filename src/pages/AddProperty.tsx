@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Upload, X } from "lucide-react";
+import { ArrowLeft, Upload, X, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +15,13 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { toast as sonnerToast } from "sonner";
 import { propertyTypes } from "@/data/properties";
+import { allCities, areas, pinCodes } from "@/data/indianLocations";
+import { useLocation } from "@/contexts/LocationContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Geolocation } from "@capacitor/geolocation";
 
 const categoryConfigs = {
   apartment: { 
@@ -87,16 +93,23 @@ const categoryConfigs = {
 const AddProperty = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { location } = useLocation();
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     type: "",
     price: "",
     city: "",
-    location: "",
+    area: "",
+    pinCode: "",
+    address: "",
+    latitude: "",
+    longitude: "",
     bedrooms: "",
     bathrooms: "",
-    area: "",
+    areaSqft: "",
     description: "",
     amenities: [] as string[],
     ownerName: "",
@@ -116,6 +129,23 @@ const AddProperty = () => {
     employees: "",
   });
   const [images, setImages] = useState<string[]>([]);
+
+  // Pre-fill location data from context
+  useEffect(() => {
+    if (location.method === 'city' && location.value) {
+      setFormData(prev => ({ ...prev, city: location.value }));
+    } else if (location.method === 'area' && location.value) {
+      setFormData(prev => ({ ...prev, area: location.value }));
+    } else if (location.method === 'pincode' && location.value) {
+      setFormData(prev => ({ ...prev, pinCode: location.value }));
+    } else if (location.method === 'live' && location.coordinates) {
+      setFormData(prev => ({ 
+        ...prev, 
+        latitude: location.coordinates!.lat.toString(),
+        longitude: location.coordinates!.lng.toString()
+      }));
+    }
+  }, [location]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -140,16 +170,72 @@ const AddProperty = () => {
     });
   };
 
-  const handleSubmit = () => {
-    toast({
-      title: "Property Submitted!",
-      description: "Your property listing has been submitted for review.",
-    });
-    navigate("/my-listings");
+  const getCurrentLocation = async () => {
+    try {
+      const position = await Geolocation.getCurrentPosition();
+      setFormData(prev => ({
+        ...prev,
+        latitude: position.coords.latitude.toString(),
+        longitude: position.coords.longitude.toString(),
+      }));
+      sonnerToast.success("Location captured successfully");
+    } catch (error) {
+      sonnerToast.error("Could not get your location");
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!user) {
+      sonnerToast.error("Please login to add a property");
+      navigate("/auth");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      // Prepare property data
+      const propertyData = {
+        user_id: user.id,
+        title: formData.title,
+        description: formData.description,
+        property_type: formData.type,
+        price: parseFloat(formData.price),
+        city: formData.city,
+        area: formData.area,
+        pin_code: formData.pinCode,
+        address: formData.address,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+        bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
+        bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
+        area_sqft: formData.areaSqft ? parseInt(formData.areaSqft) : null,
+        amenities: formData.amenities,
+        images: images,
+        contact_name: formData.ownerName,
+        contact_phone: formData.ownerPhone,
+        status: 'active',
+        available: true,
+      };
+
+      const { error } = await supabase
+        .from('properties')
+        .insert([propertyData]);
+
+      if (error) throw error;
+
+      sonnerToast.success("Property submitted successfully!");
+      navigate("/my-listings");
+    } catch (error: any) {
+      console.error('Error submitting property:', error);
+      sonnerToast.error(error.message || "Failed to submit property");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const isStep1Valid = formData.title && formData.type && formData.price;
-  const isStep2Valid = formData.city && formData.location && formData.description;
+  const isStep2Valid = formData.city && formData.area && formData.pinCode && formData.description;
   const isStep3Valid = formData.ownerName && formData.ownerPhone;
 
   return (
@@ -277,15 +363,16 @@ const AddProperty = () => {
 
                   {categoryConfigs[formData.type as keyof typeof categoryConfigs].fields.includes("area") && (
                     <div className="space-y-2">
-                      <Label htmlFor="area">
+                      <Label htmlFor="areaSqft">
                         {formData.type === "farmland" ? "Area (Acres)" : "Area (sq.ft)"}
                       </Label>
                       <Input
-                        id="area"
-                        placeholder={formData.type === "farmland" ? "5 acres" : "1,200 sq.ft"}
-                        value={formData.area}
+                        id="areaSqft"
+                        type="number"
+                        placeholder={formData.type === "farmland" ? "5" : "1200"}
+                        value={formData.areaSqft}
                         onChange={(e) =>
-                          setFormData({ ...formData, area: e.target.value })
+                          setFormData({ ...formData, areaSqft: e.target.value })
                         }
                       />
                     </div>
@@ -466,26 +553,108 @@ const AddProperty = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="city">City *</Label>
-                <Input
-                  id="city"
-                  placeholder="e.g., Delhi, Mumbai, Bangalore"
+                <Select
                   value={formData.city}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, city: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select city" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {allCities.map((city) => (
+                      <SelectItem key={city} value={city}>
+                        {city}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="area">Area/Locality *</Label>
+                <Select
+                  value={formData.area}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, area: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select area" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {areas.map((area) => (
+                      <SelectItem key={area} value={area}>
+                        {area}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="pinCode">PIN Code *</Label>
+                <Select
+                  value={formData.pinCode}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, pinCode: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select PIN code" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pinCodes.map((pin) => (
+                      <SelectItem key={pin} value={pin}>
+                        {pin}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="address">Full Address (Optional)</Label>
+                <Textarea
+                  id="address"
+                  placeholder="Building name, street, landmark..."
+                  rows={2}
+                  value={formData.address}
                   onChange={(e) =>
-                    setFormData({ ...formData, city: e.target.value })
+                    setFormData({ ...formData, address: e.target.value })
                   }
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="location">Location *</Label>
-                <Input
-                  id="location"
-                  placeholder="e.g., Green Park, South Delhi"
-                  value={formData.location}
-                  onChange={(e) =>
-                    setFormData({ ...formData, location: e.target.value })
-                  }
-                />
+              <div className="space-y-3">
+                <Label>GPS Coordinates (Optional)</Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Latitude"
+                    value={formData.latitude}
+                    onChange={(e) =>
+                      setFormData({ ...formData, latitude: e.target.value })
+                    }
+                  />
+                  <Input
+                    placeholder="Longitude"
+                    value={formData.longitude}
+                    onChange={(e) =>
+                      setFormData({ ...formData, longitude: e.target.value })
+                    }
+                  />
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={getCurrentLocation}
+                  className="w-full"
+                >
+                  <MapPin className="h-4 w-4 mr-2" />
+                  Use Current Location
+                </Button>
               </div>
 
               <div className="space-y-2">
@@ -630,10 +799,10 @@ const AddProperty = () => {
                   {formData.title || "Property Title"}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {formData.location || "Location"}, {formData.city || "City"}
+                  {formData.area || "Area"}, {formData.city || "City"} - {formData.pinCode || "PIN"}
                 </p>
                 <p className="text-sm font-semibold text-primary">
-                  {formData.price || "Price"}/month
+                  ₹{formData.price || "Price"}/month
                 </p>
               </div>
 
@@ -644,9 +813,9 @@ const AddProperty = () => {
                 <Button
                   onClick={handleSubmit}
                   className="flex-1"
-                  disabled={!isStep3Valid}
+                  disabled={!isStep3Valid || submitting}
                 >
-                  Submit Property
+                  {submitting ? "Submitting..." : "Submit Property"}
                 </Button>
               </div>
             </div>
