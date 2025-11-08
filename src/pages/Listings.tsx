@@ -5,7 +5,7 @@ import PropertyCard from "@/components/PropertyCard";
 import BottomNav from "@/components/BottomNav";
 import LocationSelector from "@/components/LocationSelector";
 import { propertyTypes } from "@/data/properties";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -93,10 +93,10 @@ const Listings = () => {
             </div>
           </div>
 
-          {/* Location Selector */}
+          {/* Location Selector Button - Hidden */}
           <Button 
             variant="outline" 
-            className="w-full justify-start gap-2"
+            className="hidden w-full justify-start gap-2"
             onClick={() => setLocationDialogOpen(true)}
           >
             {location.method === 'live' && location.coordinates ? (
@@ -141,10 +141,21 @@ const Listings = () => {
             ))}
           </div>
 
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {loading ? 'Loading...' : `${sortedProperties.length} properties found`}
-            </p>
+          <div className="flex items-center justify-between gap-3">
+            <Button 
+              variant="ghost" 
+              className="flex items-center gap-2 px-3 h-auto py-2 hover:bg-accent"
+              onClick={() => setLocationDialogOpen(true)}
+            >
+              <MapPin className="h-5 w-5 text-primary" />
+              <span className="font-semibold text-base">
+                {location.method === 'live' && location.coordinates 
+                  ? 'Live Location' 
+                  : location.value 
+                  ? location.value 
+                  : 'All cities'}
+              </span>
+            </Button>
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-[160px] h-9">
                 <SelectValue placeholder="Sort by" />
@@ -156,6 +167,10 @@ const Listings = () => {
               </SelectContent>
             </Select>
           </div>
+          
+          <p className="text-sm text-muted-foreground px-1">
+            {loading ? 'Loading...' : `${sortedProperties.length} properties found`}
+          </p>
         </div>
       </div>
 
