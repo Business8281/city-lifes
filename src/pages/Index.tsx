@@ -122,7 +122,7 @@ const Index = () => {
             </Button>
           </div>
           
-          <div className="relative">
+          <div className="relative px-1">
             <Carousel 
               className="w-full"
               opts={{
@@ -137,10 +137,10 @@ const Index = () => {
                 }
               }}
             >
-              <CarouselContent>
+              <CarouselContent className="-ml-2">
                 {categorySlides.map((slide, slideIndex) => (
-                  <CarouselItem key={slideIndex}>
-                    <div className="grid grid-cols-3 grid-rows-2 gap-3 md:gap-4">
+                  <CarouselItem key={slideIndex} className="pl-2">
+                    <div className="grid grid-cols-3 gap-3 py-2">
                       {slide.map((category) => (
                         <CategoryCard
                           key={category.type}
@@ -153,12 +153,10 @@ const Index = () => {
                   </CarouselItem>
                 ))}
               </CarouselContent>
-              <CarouselPrevious className="hidden md:flex -left-12" />
-              <CarouselNext className="hidden md:flex -right-12" />
             </Carousel>
 
             {/* Dot Indicators */}
-            <div className="flex justify-center gap-2 mt-4">
+            <div className="flex justify-center gap-1.5 mt-4">
               {categorySlides.map((_, index) => (
                 <button
                   key={index}
@@ -168,10 +166,10 @@ const Index = () => {
                       // This will be handled by the carousel API
                     }
                   }}
-                  className={`h-2 rounded-full transition-all ${
+                  className={`h-1.5 rounded-full transition-all ${
                     index === currentSlide 
-                      ? 'w-6 bg-primary' 
-                      : 'w-2 bg-muted-foreground/30'
+                      ? 'w-4 bg-primary' 
+                      : 'w-1.5 bg-muted-foreground/30'
                   }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />
