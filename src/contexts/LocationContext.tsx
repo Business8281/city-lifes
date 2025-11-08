@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { Geolocation } from '@capacitor/geolocation';
 
 export type LocationMethod = 'live' | 'city' | 'area' | 'pincode';
 
@@ -38,30 +39,51 @@ export function LocationProvider({ children }: { children: ReactNode }) {
   };
 
   const getCurrentLocation = async () => {
-    return new Promise<void>((resolve, reject) => {
-      if (!navigator.geolocation) {
-        reject(new Error('Geolocation is not supported'));
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const coords = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          setLocation({
-            method: 'live',
-            value: 'Current Location',
-            coordinates: coords,
-          });
-          resolve();
-        },
-        (error) => {
-          reject(error);
+    try {
+      // Try Capacitor Geolocation first (for native apps)
+      const position = await Geolocation.getCurrentPosition({
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      });
+      
+      const coords = {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      };
+      
+      setLocation({
+        method: 'live',
+        value: 'Current Location',
+        coordinates: coords,
+      });
+    } catch (capacitorError) {
+      // Fallback to browser geolocation for web
+      return new Promise<void>((resolve, reject) => {
+        if (!navigator.geolocation) {
+          reject(new Error('Geolocation is not supported'));
+          return;
         }
-      );
-    });
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const coords = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+            setLocation({
+              method: 'live',
+              value: 'Current Location',
+              coordinates: coords,
+            });
+            resolve();
+          },
+          (error) => {
+            reject(error);
+          }
+        );
+      });
+    }
   };
 
   const clearLocation = () => {

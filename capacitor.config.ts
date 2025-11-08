@@ -7,6 +7,12 @@ const config: CapacitorConfig = {
   server: {
     url: 'https://2e849b3d-19e5-4563-af82-15ad125ce954.lovableproject.com?forceHideBadge=true',
     cleartext: true
+  },
+  plugins: {
+    Geolocation: {
+      // iOS requires location permissions
+      permissions: ['location']
+    }
   }
 };
 
