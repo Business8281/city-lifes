@@ -1,8 +1,11 @@
+import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { MapPin } from "lucide-react";
 
 const MapView = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
       <div className="flex items-center justify-center h-[calc(100vh-5rem)] px-4">
@@ -12,7 +15,7 @@ const MapView = () => {
           <p className="text-muted-foreground mb-6">
             We're working on bringing you an interactive map view to explore properties near you.
           </p>
-          <Button onClick={() => window.history.back()}>
+          <Button onClick={() => navigate(-1)}>
             Go Back
           </Button>
         </div>
