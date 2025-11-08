@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Users, Home, TrendingUp, DollarSign, Eye, CheckCircle, XCircle, Clock } from "lucide-react";
+import { ArrowLeft, Users, Home, TrendingUp, DollarSign, Eye, CheckCircle, XCircle, Clock, Shield } from "lucide-react";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,10 +19,45 @@ import BottomNav from "@/components/BottomNav";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { isAdmin, loading } = useAdminCheck();
   const [pendingListings] = useState([
     { id: "1", title: "Luxury 3BHK Apartment", user: "John Doe", date: "2024-01-08", status: "pending" },
     { id: "2", title: "Commercial Office Space", user: "Jane Smith", date: "2024-01-07", status: "pending" },
   ]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-muted-foreground">Checking permissions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show access denied if not admin
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full p-6 space-y-4">
+          <div className="flex items-center gap-3 text-destructive">
+            <Shield className="h-8 w-8" />
+            <h1 className="text-2xl font-bold">Access Denied</h1>
+          </div>
+          <Alert variant="destructive">
+            <AlertDescription>
+              You do not have admin privileges to access this dashboard. Please contact an administrator if you believe this is an error.
+            </AlertDescription>
+          </Alert>
+          <Button onClick={() => navigate("/")} className="w-full">
+            Return to Home
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
