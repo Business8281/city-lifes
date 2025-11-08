@@ -102,15 +102,7 @@ export function useProperty(id: string | undefined) {
         setLoading(true);
         const { data, error } = await supabase
           .from('properties')
-          .select(`
-            *,
-            profiles:user_id (
-              id,
-              full_name,
-              phone,
-              email
-            )
-          `)
+          .select('*')
           .eq('id', id)
           .single();
 

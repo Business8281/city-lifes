@@ -199,20 +199,20 @@ const PropertyDetails = () => {
         )}
 
         {/* Owner Details */}
-        {property.profiles && (
+        {(property.contact_name || property.contact_phone || property.contact_email) && (
           <Card className="p-4">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
-                {property.profiles.full_name?.charAt(0) || 'U'}
+                {property.contact_name?.charAt(0) || 'U'}
               </div>
               <div className="flex-1">
-                <h4 className="font-semibold">{property.profiles.full_name || 'User'}</h4>
-                <p className="text-sm text-muted-foreground">{property.profiles.phone || property.profiles.email}</p>
+                <h4 className="font-semibold">{property.contact_name || 'Property Owner'}</h4>
+                <p className="text-sm text-muted-foreground">{property.contact_phone || property.contact_email}</p>
               </div>
             </div>
             
             <div className="grid grid-cols-2 gap-3">
-              <Button className="gap-2" onClick={() => property.profiles?.phone && (window.location.href = `tel:${property.profiles.phone}`)}>
+              <Button className="gap-2" onClick={() => property.contact_phone && (window.location.href = `tel:${property.contact_phone}`)}>
                 <Phone className="h-4 w-4" />
                 Call
               </Button>

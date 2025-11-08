@@ -2,6 +2,16 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Message } from '@/types/database';
 import { toast } from 'sonner';
+import { z } from 'zod';
+
+const messageSchema = z.object({
+  content: z.string()
+    .trim()
+    .min(1, { message: "Message cannot be empty" })
+    .max(2000, { message: "Message must be less than 2000 characters" }),
+  receiver_id: z.string().uuid({ message: "Invalid receiver ID" }),
+  property_id: z.string().uuid({ message: "Invalid property ID" }).optional(),
+});
 
 export function useMessages(userId: string | undefined) {
   const [conversations, setConversations] = useState<any[]>([]);
@@ -66,13 +76,20 @@ export function useMessages(userId: string | undefined) {
     }
 
     try {
+      // Validate input before sending
+      const validatedData = messageSchema.parse({
+        content,
+        receiver_id: receiverId,
+        property_id: propertyId,
+      });
+
       const { error } = await supabase
         .from('messages')
         .insert({
           sender_id: userId,
-          receiver_id: receiverId,
-          content,
-          property_id: propertyId || null,
+          receiver_id: validatedData.receiver_id,
+          content: validatedData.content,
+          property_id: validatedData.property_id || null,
         });
 
       if (error) throw error;
@@ -80,8 +97,12 @@ export function useMessages(userId: string | undefined) {
       toast.success('Message sent');
       fetchConversations();
     } catch (error: any) {
-      console.error('Error sending message:', error);
-      toast.error('Failed to send message');
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      } else {
+        console.error('Error sending message:', error);
+        toast.error('Failed to send message');
+      }
     }
   };
 

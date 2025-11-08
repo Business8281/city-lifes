@@ -648,7 +648,7 @@ export type Database = {
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       get_public_profile: {
-        Args: { profile_id: string }
+        Args: { _user_id: string }
         Returns: {
           avatar_url: string
           full_name: string
