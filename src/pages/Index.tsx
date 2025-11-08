@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "@/components/SearchBar";
 import CategoryCard from "@/components/CategoryCard";
@@ -10,31 +10,16 @@ import { Button } from "@/components/ui/button";
 import { useProperties } from "@/hooks/useProperties";
 import { useLocation } from "@/contexts/LocationContext";
 import LocationSelector from "@/components/LocationSelector";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselApi } from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationSelectorOpen, setLocationSelectorOpen] = useState(false);
-  const [api, setApi] = useState<CarouselApi>();
-  const [current, setCurrent] = useState(0);
-  const [count, setCount] = useState(0);
   const navigate = useNavigate();
   const { properties } = useProperties();
   const { location } = useLocation();
   const isMobile = useIsMobile();
-
-  useEffect(() => {
-    if (!api) return;
-
-    setCount(api.scrollSnapList().length);
-    setCurrent(api.selectedScrollSnap());
-
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap());
-    });
-  }, [api]);
 
   // Filter properties based on location
   const filteredProperties = properties.filter((property) => {
@@ -134,11 +119,7 @@ const Index = () => {
           </div>
           
           <div className="relative px-4 md:px-12">
-            <Carousel 
-              className="w-full" 
-              opts={{ align: "start", loop: true }}
-              setApi={setApi}
-            >
+            <Carousel className="w-full" opts={{ align: "start", loop: true }}>
               <CarouselContent className="-ml-2 md:-ml-4">
                 {categoriesChunks.map((chunk, slideIndex) => (
                   <CarouselItem key={slideIndex} className="pl-2 md:pl-4">
@@ -158,23 +139,6 @@ const Index = () => {
               <CarouselPrevious className="left-0 md:-left-4" />
               <CarouselNext className="right-0 md:-right-4" />
             </Carousel>
-            
-            {/* Dot indicators */}
-            <div className="flex justify-center gap-2 mt-4">
-              {Array.from({ length: count }).map((_, index) => (
-                <button
-                  key={index}
-                  className={cn(
-                    "h-2 w-2 rounded-full transition-all duration-300",
-                    current === index 
-                      ? "bg-primary w-4" 
-                      : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
-                  )}
-                  onClick={() => api?.scrollTo(index)}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
           </div>
         </section>
 
