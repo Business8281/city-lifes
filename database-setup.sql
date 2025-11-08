@@ -4,8 +4,11 @@
 -- Enable PostGIS extension for geolocation features
 create extension if not exists postgis;
 
+-- Drop existing properties table if it exists (to ensure clean setup)
+drop table if exists public.properties cascade;
+
 -- Create properties table with location-based fields
-create table if not exists public.properties (
+create table public.properties (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references auth.users(id) on delete cascade not null,
   
