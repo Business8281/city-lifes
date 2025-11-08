@@ -123,17 +123,6 @@ const Index = () => {
           
           <div className="relative">
             {isMobile ? (
-              <div className="grid grid-cols-3 gap-2">
-                {propertyTypes.map((category) => (
-                  <CategoryCard
-                    key={category.type}
-                    icon={category.icon}
-                    label={category.label}
-                    onClick={() => navigate(`/listings?type=${category.type}`)}
-                  />
-                ))}
-              </div>
-            ) : (
               <>
                 <Carousel 
                   className="w-full"
@@ -142,10 +131,10 @@ const Index = () => {
                     loop: false,
                   }}
                 >
-                  <CarouselContent className="-ml-2 md:-ml-4">
+                  <CarouselContent className="-ml-2">
                     {categorySlides.map((slide, slideIndex) => (
-                      <CarouselItem key={slideIndex} className="pl-2 md:pl-4 basis-full">
-                        <div className="grid grid-cols-3 gap-2 md:gap-4 py-2">
+                      <CarouselItem key={slideIndex} className="pl-2 basis-full">
+                        <div className="grid grid-cols-3 gap-2 py-2">
                           {slide.map((category) => (
                             <CategoryCard
                               key={category.type}
@@ -165,12 +154,23 @@ const Index = () => {
                     {categorySlides.map((_, index) => (
                       <div
                         key={index}
-                        className={`h-1 rounded-full w-1 bg-muted-foreground/30 transition-all`}
+                        className="h-1 rounded-full w-1 bg-muted-foreground/30 transition-all"
                       />
                     ))}
                   </div>
                 )}
               </>
+            ) : (
+              <div className="grid grid-cols-4 gap-4">
+                {propertyTypes.map((category) => (
+                  <CategoryCard
+                    key={category.type}
+                    icon={category.icon}
+                    label={category.label}
+                    onClick={() => navigate(`/listings?type=${category.type}`)}
+                  />
+                ))}
+              </div>
             )}
           </div>
         </section>
