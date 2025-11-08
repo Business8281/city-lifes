@@ -273,9 +273,10 @@ const AddProperty = () => {
     }
   };
 
-  const isStep1Valid = formData.title && formData.type && formData.price;
-  const isStep2Valid = formData.city && formData.area && formData.pinCode && formData.description;
-  const isStep3Valid = formData.ownerName && formData.ownerPhone;
+  const isStep1Valid = true; // Images are optional
+  const isStep2Valid = formData.title && formData.type && formData.price;
+  const isStep3Valid = formData.city && formData.area && formData.pinCode && formData.description;
+  const isStep4Valid = formData.ownerName && formData.ownerPhone;
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-8 overflow-x-hidden max-w-full">
@@ -313,8 +314,63 @@ const AddProperty = () => {
         </div>
 
         <Card className="p-6">
-          {/* Step 1: Basic Details */}
+          {/* Step 1: Upload Images */}
           {step === 1 && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold">Upload Photos/Videos</h2>
+
+              <div className="space-y-3">
+                <Label>Upload Images</Label>
+                <div className="border-2 border-dashed rounded-lg p-8 text-center">
+                  <input
+                    type="file"
+                    id="images"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  <label htmlFor="images" className="cursor-pointer">
+                    <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      Click to upload images
+                    </p>
+                  </label>
+                </div>
+
+                {images.length > 0 && (
+                  <div className="grid grid-cols-3 gap-3">
+                    {images.map((img, index) => (
+                      <div key={index} className="relative aspect-square">
+                        <img
+                          src={img}
+                          alt={`Upload ${index + 1}`}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                        <button
+                          onClick={() => removeImage(index)}
+                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <Button
+                onClick={() => setStep(2)}
+                className="w-full"
+                disabled={!isStep1Valid}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+
+          {/* Step 2: Basic Details */}
+          {step === 2 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold">Basic Details</h2>
 
@@ -575,18 +631,46 @@ const AddProperty = () => {
                 </>
               )}
 
-              <Button
-                onClick={() => setStep(2)}
-                className="w-full"
-                disabled={!isStep1Valid}
-              >
-                Next
-              </Button>
+              {formData.type && categoryConfigs[formData.type as keyof typeof categoryConfigs]?.amenities.length > 0 && (
+                <div className="space-y-3">
+                  <Label>Select Amenities</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {categoryConfigs[formData.type as keyof typeof categoryConfigs].amenities.map((amenity) => (
+                      <div key={amenity} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={amenity}
+                          checked={formData.amenities.includes(amenity)}
+                          onCheckedChange={() => toggleAmenity(amenity)}
+                        />
+                        <label
+                          htmlFor={amenity}
+                          className="text-sm cursor-pointer"
+                        >
+                          {amenity}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
+                  Back
+                </Button>
+                <Button
+                  onClick={() => setStep(3)}
+                  className="flex-1"
+                  disabled={!isStep2Valid}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           )}
 
-          {/* Step 2: Location & Description */}
-          {step === 2 && (
+          {/* Step 3: Location & Description */}
+          {step === 3 && (
             <div className="space-y-6">
               <h2 className="text-2xl font-bold">Location & Description</h2>
 
@@ -702,93 +786,14 @@ const AddProperty = () => {
               </div>
 
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep(1)} className="flex-1">
-                  Back
-                </Button>
-                <Button
-                  onClick={() => setStep(3)}
-                  className="flex-1"
-                  disabled={!isStep2Valid}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Amenities & Images */}
-          {step === 3 && (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold">Amenities & Images</h2>
-
-              {formData.type && categoryConfigs[formData.type as keyof typeof categoryConfigs]?.amenities.length > 0 && (
-                <div className="space-y-3">
-                  <Label>Select Amenities</Label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {categoryConfigs[formData.type as keyof typeof categoryConfigs].amenities.map((amenity) => (
-                      <div key={amenity} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={amenity}
-                          checked={formData.amenities.includes(amenity)}
-                          onCheckedChange={() => toggleAmenity(amenity)}
-                        />
-                        <label
-                          htmlFor={amenity}
-                          className="text-sm cursor-pointer"
-                        >
-                          {amenity}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="space-y-3">
-                <Label>Upload Images</Label>
-                <div className="border-2 border-dashed rounded-lg p-8 text-center">
-                  <input
-                    type="file"
-                    id="images"
-                    multiple
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                  <label htmlFor="images" className="cursor-pointer">
-                    <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      Click to upload images
-                    </p>
-                  </label>
-                </div>
-
-                {images.length > 0 && (
-                  <div className="grid grid-cols-3 gap-3">
-                    {images.map((img, index) => (
-                      <div key={index} className="relative aspect-square">
-                        <img
-                          src={img}
-                          alt={`Upload ${index + 1}`}
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                        <button
-                          onClick={() => removeImage(index)}
-                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setStep(2)} className="flex-1">
                   Back
                 </Button>
-                <Button onClick={() => setStep(4)} className="flex-1">
+                <Button
+                  onClick={() => setStep(4)}
+                  className="flex-1"
+                  disabled={!isStep3Valid}
+                >
                   Next
                 </Button>
               </div>
@@ -844,7 +849,7 @@ const AddProperty = () => {
                 <Button
                   onClick={handleSubmit}
                   className="flex-1"
-                  disabled={!isStep3Valid || submitting}
+                  disabled={!isStep4Valid || submitting}
                 >
                   {submitting ? "Submitting..." : "Submit Property"}
                 </Button>
