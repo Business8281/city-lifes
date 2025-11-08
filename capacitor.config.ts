@@ -12,6 +12,22 @@ const config: CapacitorConfig = {
     Geolocation: {
       // iOS requires location permissions
       permissions: ['location']
+    },
+    StatusBar: {
+      style: 'DARK',
+      backgroundColor: '#000000'
+    },
+    SplashScreen: {
+      launchShowDuration: 2000,
+      backgroundColor: '#000000',
+      androidSplashResourceName: 'splash',
+      androidScaleType: 'CENTER_CROP',
+      showSpinner: false,
+      androidSpinnerStyle: 'large',
+      iosSpinnerStyle: 'small',
+      spinnerColor: '#ffffff',
+      splashFullScreen: true,
+      splashImmersive: true
     }
   }
 };
