@@ -21,7 +21,6 @@ import {
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationSelectorOpen, setLocationSelectorOpen] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
   const { properties } = useProperties();
   const { location } = useLocation();
@@ -122,25 +121,18 @@ const Index = () => {
             </Button>
           </div>
           
-          <div className="relative px-1">
+          <div className="relative">
             <Carousel 
               className="w-full"
               opts={{
                 align: "start",
-                loop: true,
-              }}
-              setApi={(api) => {
-                if (api) {
-                  api.on('select', () => {
-                    setCurrentSlide(api.selectedScrollSnap());
-                  });
-                }
+                loop: false,
               }}
             >
-              <CarouselContent className="-ml-2">
+              <CarouselContent className="-ml-2 md:-ml-4">
                 {categorySlides.map((slide, slideIndex) => (
-                  <CarouselItem key={slideIndex} className="pl-2">
-                    <div className="grid grid-cols-3 gap-2 md:gap-3 py-2">
+                  <CarouselItem key={slideIndex} className="pl-2 md:pl-4 basis-full">
+                    <div className="grid grid-cols-3 gap-2 md:gap-4 py-2">
                       {slide.map((category) => (
                         <CategoryCard
                           key={category.type}
@@ -153,28 +145,23 @@ const Index = () => {
                   </CarouselItem>
                 ))}
               </CarouselContent>
+              
+              {/* Navigation arrows - hidden on mobile, shown on desktop */}
+              <CarouselPrevious className="hidden md:flex -left-4" />
+              <CarouselNext className="hidden md:flex -right-4" />
             </Carousel>
 
-            {/* Dot Indicators */}
-            <div className="flex justify-center gap-1 mt-3">
-              {categorySlides.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    const carousel = document.querySelector('[data-carousel]');
-                    if (carousel) {
-                      // This will be handled by the carousel API
-                    }
-                  }}
-                  className={`h-1 rounded-full transition-all ${
-                    index === currentSlide 
-                      ? 'w-3 bg-primary' 
-                      : 'w-1 bg-muted-foreground/30'
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
+            {/* Dot Indicators - only show if multiple slides */}
+            {categorySlides.length > 1 && (
+              <div className="flex justify-center gap-1 mt-3">
+                {categorySlides.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`h-1 rounded-full w-1 bg-muted-foreground/30 transition-all`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
