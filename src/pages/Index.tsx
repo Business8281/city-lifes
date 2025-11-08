@@ -8,13 +8,39 @@ import heroImage from "@/assets/hero-cityscape.jpg";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProperties } from "@/hooks/useProperties";
+import { useLocation } from "@/contexts/LocationContext";
+import LocationSelector from "@/components/LocationSelector";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [locationSelectorOpen, setLocationSelectorOpen] = useState(false);
   const navigate = useNavigate();
   const { properties } = useProperties();
+  const { location } = useLocation();
 
-  const featuredProperties = properties.slice(0, 4);
+  // Filter properties based on location
+  const filteredProperties = properties.filter((property) => {
+    if (!location.method || !location.value) return true;
+    
+    const searchValue = location.value.toLowerCase();
+    
+    switch (location.method) {
+      case 'city':
+        return property.city?.toLowerCase().includes(searchValue);
+      case 'area':
+        return property.location?.toLowerCase().includes(searchValue);
+      case 'pincode':
+        // Assuming pincode might be part of location string
+        return property.location?.includes(location.value);
+      case 'live':
+        // For live location, show all for now (can add proximity logic later)
+        return true;
+      default:
+        return true;
+    }
+  });
+
+  const featuredProperties = filteredProperties.slice(0, 4);
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
@@ -49,11 +75,25 @@ const Index = () => {
         {/* Location */}
         <div className="flex items-center gap-2 text-muted-foreground">
           <MapPin className="h-5 w-5 text-primary" />
-          <span className="text-sm">Showing properties in <strong className="text-foreground">All Cities</strong></span>
-          <Button variant="link" className="text-primary p-0 h-auto">
+          <span className="text-sm">
+            Showing properties in{" "}
+            <strong className="text-foreground">
+              {location.value || "All Cities"}
+            </strong>
+          </span>
+          <Button 
+            variant="link" 
+            className="text-primary p-0 h-auto"
+            onClick={() => setLocationSelectorOpen(true)}
+          >
             Change
           </Button>
         </div>
+
+        <LocationSelector 
+          open={locationSelectorOpen} 
+          onOpenChange={setLocationSelectorOpen} 
+        />
 
         {/* Browse by Category */}
         <section>

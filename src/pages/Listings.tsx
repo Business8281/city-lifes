@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useProperties } from "@/hooks/useProperties";
+import { useLocation } from "@/contexts/LocationContext";
 
 const Listings = () => {
   const [searchParams] = useSearchParams();
@@ -22,6 +23,7 @@ const Listings = () => {
   const [selectedType, setSelectedType] = useState(searchParams.get("type") || "all");
   const [sortBy, setSortBy] = useState("recent");
   const { properties, loading } = useProperties();
+  const { location } = useLocation();
 
   const filteredProperties = properties.filter((property) => {
     const matchesSearch =
@@ -32,7 +34,28 @@ const Listings = () => {
 
     const matchesType = selectedType === "all" || property.type === selectedType;
 
-    return matchesSearch && matchesType;
+    // Location filter
+    let matchesLocation = true;
+    if (location.method && location.value) {
+      const searchValue = location.value.toLowerCase();
+      
+      switch (location.method) {
+        case 'city':
+          matchesLocation = property.city?.toLowerCase().includes(searchValue);
+          break;
+        case 'area':
+          matchesLocation = property.location?.toLowerCase().includes(searchValue);
+          break;
+        case 'pincode':
+          matchesLocation = property.location?.includes(location.value);
+          break;
+        case 'live':
+          matchesLocation = true; // Show all for live location
+          break;
+      }
+    }
+
+    return matchesSearch && matchesType && matchesLocation;
   });
 
   const sortedProperties = [...filteredProperties].sort((a, b) => {
