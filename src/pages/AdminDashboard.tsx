@@ -1,11 +1,13 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Users, Home, TrendingUp, DollarSign, Eye, CheckCircle, XCircle, Clock, Shield } from "lucide-react";
+import { ArrowLeft, Users, Home, MessageSquare, Heart, Eye, CheckCircle, XCircle, Clock, Shield } from "lucide-react";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { useAdminStats } from "@/hooks/useAdminStats";
+import { useAdminProperties } from "@/hooks/useAdminProperties";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 import {
   Table,
   TableBody,
@@ -20,10 +22,8 @@ import BottomNav from "@/components/BottomNav";
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { isAdmin, loading } = useAdminCheck();
-  const [pendingListings] = useState([
-    { id: "1", title: "Luxury 3BHK Apartment", user: "John Doe", date: "2024-01-08", status: "pending" },
-    { id: "2", title: "Commercial Office Space", user: "Jane Smith", date: "2024-01-07", status: "pending" },
-  ]);
+  const { stats, loading: statsLoading } = useAdminStats();
+  const { properties, loading: propertiesLoading, approveProperty, rejectProperty } = useAdminProperties();
 
   // Show loading state
   if (loading) {
@@ -85,7 +85,9 @@ const AdminDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Users</p>
-                <p className="text-2xl font-bold">1,234</p>
+                <p className="text-2xl font-bold">
+                  {statsLoading ? "..." : stats.totalUsers}
+                </p>
               </div>
             </div>
           </Card>
@@ -96,29 +98,38 @@ const AdminDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Listings</p>
-                <p className="text-2xl font-bold">456</p>
+                <p className="text-2xl font-bold">
+                  {statsLoading ? "..." : stats.totalProperties}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {stats.pendingProperties} pending
+                </p>
               </div>
             </div>
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-primary" />
+                <MessageSquare className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Active Campaigns</p>
-                <p className="text-2xl font-bold">23</p>
+                <p className="text-sm text-muted-foreground">Total Messages</p>
+                <p className="text-2xl font-bold">
+                  {statsLoading ? "..." : stats.totalMessages}
+                </p>
               </div>
             </div>
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <DollarSign className="h-5 w-5 text-primary" />
+                <Heart className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Revenue</p>
-                <p className="text-2xl font-bold">₹2.4L</p>
+                <p className="text-sm text-muted-foreground">Total Favorites</p>
+                <p className="text-2xl font-bold">
+                  {statsLoading ? "..." : stats.totalFavorites}
+                </p>
               </div>
             </div>
           </Card>
@@ -135,49 +146,94 @@ const AdminDashboard = () => {
           <TabsContent value="pending" className="space-y-4">
             <Card>
               <div className="p-6">
-                <h2 className="text-lg font-semibold mb-4">Pending Listings</h2>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Title</TableHead>
-                      <TableHead>User</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {pendingListings.map((listing) => (
-                      <TableRow key={listing.id}>
-                        <TableCell className="font-medium">{listing.title}</TableCell>
-                        <TableCell>{listing.user}</TableCell>
-                        <TableCell>{listing.date}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">
-                            <Clock className="h-3 w-3 mr-1" />
-                            Pending
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline" className="gap-1">
-                              <CheckCircle className="h-4 w-4" />
-                              Approve
-                            </Button>
-                            <Button size="sm" variant="outline" className="gap-1">
-                              <XCircle className="h-4 w-4" />
-                              Reject
-                            </Button>
-                            <Button size="sm" variant="ghost" className="gap-1">
-                              <Eye className="h-4 w-4" />
-                              View
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                <h2 className="text-lg font-semibold mb-4">
+                  Pending Listings ({properties.length})
+                </h2>
+                {propertiesLoading ? (
+                  <div className="text-center py-8">
+                    <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+                    <p className="text-muted-foreground mt-2">Loading properties...</p>
+                  </div>
+                ) : properties.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    No pending properties to review
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Title</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>User</TableHead>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Price</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {properties.map((property) => (
+                          <TableRow key={property.id}>
+                            <TableCell className="font-medium max-w-[200px] truncate">
+                              {property.title}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{property.property_type}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              {property.profiles?.full_name || property.profiles?.email || 'Unknown'}
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap">
+                              {format(new Date(property.created_at), 'MMM dd, yyyy')}
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap">
+                              ₹{property.price.toLocaleString()}
+                              <span className="text-xs text-muted-foreground">/{property.price_type}</span>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="secondary">
+                                <Clock className="h-3 w-3 mr-1" />
+                                Pending
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2 flex-wrap">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-1"
+                                  onClick={() => approveProperty(property.id)}
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="gap-1"
+                                  onClick={() => rejectProperty(property.id)}
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                  Reject
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="gap-1"
+                                  onClick={() => navigate(`/property/${property.id}`)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                  View
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
               </div>
             </Card>
           </TabsContent>
