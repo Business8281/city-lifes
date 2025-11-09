@@ -178,5 +178,36 @@ export function useMyListings(userId: string | undefined) {
     }
   };
 
-  return { properties, loading, deleteProperty, refetch: fetchMyListings };
+  const updatePropertyStatus = async (propertyId: string, newStatus: 'available' | 'rented' | 'unavailable') => {
+    try {
+      let updateData: { status: string; available: boolean };
+      
+      switch (newStatus) {
+        case 'available':
+          updateData = { status: 'active', available: true };
+          break;
+        case 'rented':
+          updateData = { status: 'rented', available: false };
+          break;
+        case 'unavailable':
+          updateData = { status: 'inactive', available: false };
+          break;
+      }
+
+      const { error } = await supabase
+        .from('properties')
+        .update(updateData)
+        .eq('id', propertyId);
+
+      if (error) throw error;
+      
+      toast.success('Property status updated successfully');
+      fetchMyListings();
+    } catch (error: any) {
+      console.error('Error updating property status:', error);
+      toast.error('Failed to update property status');
+    }
+  };
+
+  return { properties, loading, deleteProperty, updatePropertyStatus, refetch: fetchMyListings };
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Edit, Trash2, Eye, MoreVertical } from "lucide-react";
+import { ArrowLeft, Plus, Edit, Trash2, Eye, MoreVertical, Circle, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,9 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -28,7 +31,7 @@ import { toast } from "sonner";
 const MyListings = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { properties, loading, deleteProperty } = useMyListings(user?.id);
+  const { properties, loading, deleteProperty, updatePropertyStatus } = useMyListings(user?.id);
   const [deleteDialog, setDeleteDialog] = useState<string | null>(null);
 
   const handleDelete = async () => {
@@ -38,19 +41,20 @@ const MyListings = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      active: "default",
-      inactive: "secondary",
-      rented: "secondary",
-      sold: "destructive",
-    } as const;
+  const getStatusBadge = (status: string, available: boolean) => {
+    if (status === 'rented') {
+      return <Badge variant="secondary" className="bg-orange-500/20 text-orange-700 dark:text-orange-400">Rented</Badge>;
+    }
+    if (status === 'active' && available) {
+      return <Badge variant="default" className="bg-green-500/20 text-green-700 dark:text-green-400">Available</Badge>;
+    }
+    return <Badge variant="secondary" className="bg-gray-500/20 text-gray-700 dark:text-gray-400">Unavailable</Badge>;
+  };
 
-    return (
-      <Badge variant={variants[status as keyof typeof variants] || "default"}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
+  const getCurrentStatus = (property: any): 'available' | 'rented' | 'unavailable' => {
+    if (property.status === 'rented') return 'rented';
+    if (property.status === 'active' && property.available) return 'available';
+    return 'unavailable';
   };
 
 
@@ -107,7 +111,7 @@ const MyListings = () => {
                           <h3 className="text-lg font-semibold">
                             {listing.title}
                           </h3>
-                          {getStatusBadge(listing.status)}
+                          {getStatusBadge(listing.status, listing.available)}
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">
                           {listing.area}, {listing.city} - {listing.pin_code}
@@ -126,14 +130,43 @@ const MyListings = () => {
                             <MoreVertical className="h-5 w-5" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuSub>
+                            <DropdownMenuSubTrigger className="bg-orange-500/10 text-orange-700 dark:text-orange-400">
+                              <Circle className="h-4 w-4 mr-2 fill-current" />
+                              Change Status
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent>
+                              <DropdownMenuItem
+                                onClick={() => updatePropertyStatus(listing.id, 'available')}
+                                className={getCurrentStatus(listing) === 'available' ? 'bg-green-500/10' : ''}
+                              >
+                                <Circle className="h-4 w-4 mr-2 fill-green-500 text-green-500" />
+                                Available {getCurrentStatus(listing) === 'available' && '✓'}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => updatePropertyStatus(listing.id, 'rented')}
+                                className={getCurrentStatus(listing) === 'rented' ? 'bg-orange-500/10' : ''}
+                              >
+                                <Circle className="h-4 w-4 mr-2 fill-orange-500 text-orange-500" />
+                                Rented {getCurrentStatus(listing) === 'rented' && '✓'}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => updatePropertyStatus(listing.id, 'unavailable')}
+                                className={getCurrentStatus(listing) === 'unavailable' ? 'bg-gray-500/10' : ''}
+                              >
+                                <Circle className="h-4 w-4 mr-2 fill-gray-500 text-gray-500" />
+                                Unavailable {getCurrentStatus(listing) === 'unavailable' && '✓'}
+                              </DropdownMenuItem>
+                            </DropdownMenuSubContent>
+                          </DropdownMenuSub>
                           <DropdownMenuItem
                             onClick={() => navigate(`/property/${listing.id}`)}
                           >
                             <Eye className="h-4 w-4 mr-2" />
                             View
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => toast.info("Edit feature coming soon!")}>
+                          <DropdownMenuItem onClick={() => navigate(`/add-property?edit=${listing.id}`)}>
                             <Edit className="h-4 w-4 mr-2" />
                             Edit
                           </DropdownMenuItem>
