@@ -1,16 +1,31 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, TrendingUp, Eye, MousePointerClick, DollarSign, PlayCircle, PauseCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, TrendingUp, Eye, MousePointerClick, DollarSign, PlayCircle, PauseCircle, Trash2, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
 import { useAdCampaigns } from "@/hooks/useAdCampaigns";
+import { useMyListings } from "@/hooks/useProperties";
+import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
+import { Property } from "@/types/database";
+import CreateCampaignDialog from "@/components/CreateCampaignDialog";
 
 const AdCampaign = () => {
   const navigate = useNavigate();
-  const { campaigns, loading, updateCampaignStatus, deleteCampaign } = useAdCampaigns(true); // Only business campaigns
+  const { user } = useAuth();
+  const { campaigns, loading, updateCampaignStatus, deleteCampaign, createCampaign } = useAdCampaigns(true);
+  const { properties: myProperties, loading: propertiesLoading } = useMyListings(user?.id);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+
+  // Filter only business listings that don't have active campaigns
+  const activeCampaignPropertyIds = campaigns.map(c => c.property_id);
+  const availableBusinesses = myProperties.filter(
+    p => p.property_type === 'business' && !activeCampaignPropertyIds.includes(p.id)
+  );
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -42,12 +57,21 @@ const AdCampaign = () => {
     }
   };
 
-  if (loading) {
+  const handleCreateCampaign = async (data: any) => {
+    await createCampaign(data);
+  };
+
+  const handleSelectBusiness = (property: Property) => {
+    setSelectedProperty(property);
+    setDialogOpen(true);
+  };
+
+  if (loading || propertiesLoading) {
     return (
       <div className="min-h-screen bg-background mobile-page flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-2">⏳</div>
-          <p className="text-muted-foreground">Loading campaigns...</p>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -127,9 +151,51 @@ const AdCampaign = () => {
           </Card>
         </div>
 
+        {/* Available Business Listings */}
+        {availableBusinesses.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Create New Campaign</h2>
+              <Badge variant="secondary">{availableBusinesses.length} available</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Select a business listing to create an ad campaign
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {availableBusinesses.map((property) => (
+                <Card key={property.id} className="p-4 hover:border-primary transition-colors cursor-pointer">
+                  <div className="flex items-start gap-3">
+                    {property.images && property.images[0] && (
+                      <img
+                        src={property.images[0]}
+                        alt={property.title}
+                        className="w-16 h-16 rounded-lg object-cover"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm mb-1 truncate">{property.title}</h3>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        📍 {property.area}, {property.city}
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={() => handleSelectBusiness(property)}
+                        className="gap-2"
+                      >
+                        <Megaphone className="h-3 w-3" />
+                        Run Ad
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Campaigns List */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Your Business Campaigns</h2>
+          <h2 className="text-lg font-semibold">Active Campaigns</h2>
           {campaigns.length > 0 ? (
             campaigns.map((campaign) => (
               <Card key={campaign.id} className="p-4 md:p-6">
@@ -209,6 +275,13 @@ const AdCampaign = () => {
           )}
         </div>
       </div>
+
+      <CreateCampaignDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        property={selectedProperty}
+        onCreateCampaign={handleCreateCampaign}
+      />
 
       <BottomNav />
     </div>
