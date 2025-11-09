@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Edit, Trash2, Eye, MoreVertical, Circle, ChevronRight } from "lucide-react";
+import { ArrowLeft, Plus, Edit, Trash2, Eye, MoreVertical, Circle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -33,6 +33,7 @@ const MyListings = () => {
   const { user } = useAuth();
   const { properties, loading, deleteProperty, updatePropertyStatus } = useMyListings(user?.id);
   const [deleteDialog, setDeleteDialog] = useState<string | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   const handleDelete = async () => {
     if (deleteDialog) {
@@ -55,6 +56,12 @@ const MyListings = () => {
     if (property.status === 'rented') return 'rented';
     if (property.status === 'active' && property.available) return 'available';
     return 'unavailable';
+  };
+
+  const handleStatusChange = async (propertyId: string, newStatus: 'available' | 'rented' | 'unavailable') => {
+    setUpdatingStatus(propertyId);
+    await updatePropertyStatus(propertyId, newStatus);
+    setUpdatingStatus(null);
   };
 
 
@@ -132,28 +139,35 @@ const MyListings = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuSub>
-                            <DropdownMenuSubTrigger className="bg-orange-500/10 text-orange-700 dark:text-orange-400">
-                              <Circle className="h-4 w-4 mr-2 fill-current" />
+                            <DropdownMenuSubTrigger className="bg-primary/10">
+                              {updatingStatus === listing.id ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Circle className="h-4 w-4 mr-2 fill-current" />
+                              )}
                               Change Status
                             </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent>
+                            <DropdownMenuSubContent className="bg-popover border">
                               <DropdownMenuItem
-                                onClick={() => updatePropertyStatus(listing.id, 'available')}
-                                className={getCurrentStatus(listing) === 'available' ? 'bg-green-500/10' : ''}
+                                onClick={() => handleStatusChange(listing.id, 'available')}
+                                disabled={updatingStatus === listing.id}
+                                className={getCurrentStatus(listing) === 'available' ? 'bg-green-500/20 text-green-700 dark:text-green-400' : ''}
                               >
                                 <Circle className="h-4 w-4 mr-2 fill-green-500 text-green-500" />
                                 Available {getCurrentStatus(listing) === 'available' && '✓'}
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => updatePropertyStatus(listing.id, 'rented')}
-                                className={getCurrentStatus(listing) === 'rented' ? 'bg-orange-500/10' : ''}
+                                onClick={() => handleStatusChange(listing.id, 'rented')}
+                                disabled={updatingStatus === listing.id}
+                                className={getCurrentStatus(listing) === 'rented' ? 'bg-orange-500/20 text-orange-700 dark:text-orange-400' : ''}
                               >
                                 <Circle className="h-4 w-4 mr-2 fill-orange-500 text-orange-500" />
                                 Rented {getCurrentStatus(listing) === 'rented' && '✓'}
                               </DropdownMenuItem>
                               <DropdownMenuItem
-                                onClick={() => updatePropertyStatus(listing.id, 'unavailable')}
-                                className={getCurrentStatus(listing) === 'unavailable' ? 'bg-gray-500/10' : ''}
+                                onClick={() => handleStatusChange(listing.id, 'unavailable')}
+                                disabled={updatingStatus === listing.id}
+                                className={getCurrentStatus(listing) === 'unavailable' ? 'bg-gray-500/20 text-gray-700 dark:text-gray-400' : ''}
                               >
                                 <Circle className="h-4 w-4 mr-2 fill-gray-500 text-gray-500" />
                                 Unavailable {getCurrentStatus(listing) === 'unavailable' && '✓'}
