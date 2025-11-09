@@ -148,16 +148,33 @@ All colors MUST be HSL.
   }
 
   .pb-safe {
-    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    padding-bottom: max(1rem, env(safe-area-inset-bottom) + 0.5rem);
   }
 
   .pt-safe {
-    padding-top: env(safe-area-inset-top);
+    padding-top: max(1rem, env(safe-area-inset-top));
   }
 
   .px-safe {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  /* Mobile container for consistent page padding */
+  .mobile-container {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+
+  /* Mobile page wrapper with safe bottom space for navigation */
+  .mobile-page {
+    padding-bottom: max(5rem, env(safe-area-inset-bottom) + 4rem);
+  }
+
+  @media (min-width: 768px) {
+    .mobile-page {
+      padding-bottom: 0;
+    }
   }
 
   /* Mobile frame optimization */

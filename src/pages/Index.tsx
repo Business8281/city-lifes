@@ -56,7 +56,7 @@ const Index = () => {
   const featuredProperties = filteredProperties.slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
+    <div className="min-h-screen bg-background mobile-page overflow-x-hidden max-w-full">
       {/* Hero Section */}
       <div className="relative h-[280px] md:h-[400px] overflow-hidden">
         <img
@@ -66,7 +66,7 @@ const Index = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/70" />
         
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center mobile-container text-center">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
             Find Your Perfect Space
           </h1>
@@ -84,7 +84,7 @@ const Index = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-8 overflow-x-hidden">
+      <div className="max-w-7xl mx-auto mobile-container md:px-4 py-6 space-y-8 overflow-x-hidden">
         {/* Location */}
         <div className="flex items-center gap-2 text-muted-foreground">
           <MapPin className="h-5 w-5 text-primary" />
