@@ -91,3 +91,20 @@ export interface Inquiry {
   receiver?: Profile;
   properties?: Property;
 }
+
+export interface AdCampaign {
+  id: string;
+  user_id: string;
+  property_id: string;
+  title: string;
+  status: 'active' | 'paused' | 'completed';
+  budget: number;
+  spent: number;
+  impressions: number;
+  clicks: number;
+  start_date: string;
+  end_date: string;
+  created_at: string;
+  updated_at: string;
+  properties?: Property;
+}

@@ -1,38 +1,16 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, TrendingUp, Eye, MousePointerClick, DollarSign } from "lucide-react";
+import { ArrowLeft, Plus, TrendingUp, Eye, MousePointerClick, DollarSign, PlayCircle, PauseCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import BottomNav from "@/components/BottomNav";
 import { toast } from "sonner";
+import { useAdCampaigns } from "@/hooks/useAdCampaigns";
+import { format } from "date-fns";
 
 const AdCampaign = () => {
   const navigate = useNavigate();
-  const [campaigns] = useState([
-    {
-      id: "1",
-      title: "Luxury Apartments Promotion",
-      status: "active",
-      budget: "₹10,000",
-      spent: "₹6,500",
-      impressions: "12,450",
-      clicks: "324",
-      startDate: "2024-01-01",
-      endDate: "2024-01-31",
-    },
-    {
-      id: "2",
-      title: "Commercial Space Launch",
-      status: "paused",
-      budget: "₹8,000",
-      spent: "₹3,200",
-      impressions: "8,320",
-      clicks: "156",
-      startDate: "2024-01-15",
-      endDate: "2024-02-15",
-    },
-  ]);
+  const { campaigns, loading, updateCampaignStatus, deleteCampaign } = useAdCampaigns(true); // Only business campaigns
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -48,34 +26,61 @@ const AdCampaign = () => {
     );
   };
 
+  const totalBudget = campaigns.reduce((sum, c) => sum + Number(c.budget), 0);
+  const totalSpent = campaigns.reduce((sum, c) => sum + Number(c.spent), 0);
+  const totalImpressions = campaigns.reduce((sum, c) => sum + c.impressions, 0);
+  const totalClicks = campaigns.reduce((sum, c) => sum + c.clicks, 0);
+
+  const handleStatusToggle = async (campaignId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'active' ? 'paused' : 'active';
+    await updateCampaignStatus(campaignId, newStatus as 'active' | 'paused');
+  };
+
+  const handleDelete = async (campaignId: string) => {
+    if (confirm('Are you sure you want to delete this campaign?')) {
+      await deleteCampaign(campaignId);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background mobile-page flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-2">⏳</div>
+          <p className="text-muted-foreground">Loading campaigns...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
+    <div className="min-h-screen bg-background mobile-page overflow-x-hidden max-w-full">
       <div className="sticky top-0 z-40 bg-background border-b">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+        <div className="max-w-6xl mx-auto mobile-container md:px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-xl font-bold">Ad Campaigns</h1>
-                <p className="text-sm text-muted-foreground">{campaigns.length} campaigns</p>
+                <h1 className="text-xl font-bold">Business Ad Campaigns</h1>
+                <p className="text-sm text-muted-foreground">{campaigns.length} business campaigns</p>
               </div>
             </div>
             <Button
-              onClick={() => toast.info("Create campaign coming soon!")}
+              onClick={() => navigate("/listings?type=business")}
               className="gap-2"
             >
               <Plus className="h-4 w-4" />
-              New Campaign
+              <span className="hidden sm:inline">View</span> Businesses
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-6 space-y-6 overflow-x-hidden">
+      <div className="max-w-6xl mx-auto mobile-container md:px-4 py-6 space-y-6 overflow-x-hidden">
         {/* Overview Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -83,7 +88,7 @@ const AdCampaign = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Budget</p>
-                <p className="text-xl font-bold">₹18,000</p>
+                <p className="text-xl font-bold">₹{totalBudget.toLocaleString()}</p>
               </div>
             </div>
           </Card>
@@ -94,7 +99,7 @@ const AdCampaign = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Spent</p>
-                <p className="text-xl font-bold">₹9,700</p>
+                <p className="text-xl font-bold">₹{totalSpent.toLocaleString()}</p>
               </div>
             </div>
           </Card>
@@ -105,7 +110,7 @@ const AdCampaign = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Impressions</p>
-                <p className="text-xl font-bold">20,770</p>
+                <p className="text-xl font-bold">{totalImpressions.toLocaleString()}</p>
               </div>
             </div>
           </Card>
@@ -116,7 +121,7 @@ const AdCampaign = () => {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Total Clicks</p>
-                <p className="text-xl font-bold">480</p>
+                <p className="text-xl font-bold">{totalClicks.toLocaleString()}</p>
               </div>
             </div>
           </Card>
@@ -124,61 +129,81 @@ const AdCampaign = () => {
 
         {/* Campaigns List */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Your Campaigns</h2>
+          <h2 className="text-lg font-semibold">Your Business Campaigns</h2>
           {campaigns.length > 0 ? (
             campaigns.map((campaign) => (
-              <Card key={campaign.id} className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
+              <Card key={campaign.id} className="p-4 md:p-6">
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <h3 className="text-lg font-semibold">{campaign.title}</h3>
                       {getStatusBadge(campaign.status)}
                     </div>
+                    {campaign.properties && (
+                      <p className="text-sm text-muted-foreground mb-1">
+                        📍 {campaign.properties.area}, {campaign.properties.city}
+                      </p>
+                    )}
                     <p className="text-sm text-muted-foreground">
-                      {campaign.startDate} to {campaign.endDate}
+                      {format(new Date(campaign.start_date), 'MMM dd, yyyy')} to {format(new Date(campaign.end_date), 'MMM dd, yyyy')}
                     </p>
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={() => toast.info("Campaign details coming soon!")}
-                  >
-                    View Details
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleStatusToggle(campaign.id, campaign.status)}
+                      disabled={campaign.status === 'completed'}
+                    >
+                      {campaign.status === 'active' ? (
+                        <><PauseCircle className="h-4 w-4 mr-1" /> Pause</>
+                      ) : (
+                        <><PlayCircle className="h-4 w-4 mr-1" /> Resume</>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(campaign.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Budget</p>
-                    <p className="text-lg font-semibold">{campaign.budget}</p>
+                    <p className="text-lg font-semibold">₹{Number(campaign.budget).toLocaleString()}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Spent</p>
-                    <p className="text-lg font-semibold">{campaign.spent}</p>
+                    <p className="text-lg font-semibold">₹{Number(campaign.spent).toLocaleString()}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Impressions</p>
-                    <p className="text-lg font-semibold">{campaign.impressions}</p>
+                    <p className="text-lg font-semibold">{campaign.impressions.toLocaleString()}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Clicks</p>
-                    <p className="text-lg font-semibold">{campaign.clicks}</p>
+                    <p className="text-lg font-semibold">{campaign.clicks.toLocaleString()}</p>
                   </div>
                 </div>
               </Card>
             ))
           ) : (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="text-6xl mb-4">📊</div>
-              <h3 className="text-xl font-semibold mb-2">No campaigns yet</h3>
-              <p className="text-muted-foreground mb-6">
-                Create your first ad campaign to promote your listings
+              <div className="text-6xl mb-4">💼</div>
+              <h3 className="text-xl font-semibold mb-2">No business campaigns yet</h3>
+              <p className="text-muted-foreground mb-6 max-w-md">
+                Create ad campaigns for your business listings to reach more customers
               </p>
               <Button
-                onClick={() => toast.info("Create campaign coming soon!")}
+                onClick={() => navigate("/listings?type=business")}
                 className="gap-2"
               >
                 <Plus className="h-4 w-4" />
-                Create Campaign
+                View Business Listings
               </Button>
             </div>
           )}
