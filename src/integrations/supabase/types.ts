@@ -703,6 +703,20 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_admin_dashboard_stats: { Args: never; Returns: Json }
+      get_admin_users_list: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          favorites_count: number
+          full_name: string
+          id: string
+          last_active: string
+          messages_sent: number
+          properties_count: number
+        }[]
+      }
       get_public_profile: {
         Args: { _user_id: string }
         Returns: {
