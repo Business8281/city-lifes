@@ -1,5 +1,6 @@
 import { Home, Map, MessageCircle, Heart, User, Plus, FileText, Bell } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -13,6 +14,8 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const menuItems = [
   { title: "Home", url: "/", icon: Home },
@@ -31,13 +34,45 @@ const actionItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const { user } = useAuth();
   const isCollapsed = state === "collapsed";
+  const [profile, setProfile] = useState<{ full_name: string | null; phone: string | null } | null>(null);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name, phone')
+          .eq('id', user.id)
+          .single();
+        
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error loading profile:', error);
+          return;
+        }
+        
+        setProfile(data);
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    };
+    
+    loadProfile();
+  }, [user]);
 
   const isActive = (path: string) => {
     if (path === "/") {
       return location.pathname === "/";
     }
     return location.pathname.startsWith(path);
+  };
+
+  const getUserInitial = () => {
+    const name = profile?.full_name || user?.user_metadata?.full_name || user?.email;
+    return name ? name.charAt(0).toUpperCase() : 'U';
   };
 
   return (
@@ -60,11 +95,11 @@ export function AppSidebar() {
             <div className="px-4 py-3">
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-accent text-accent-foreground">U</AvatarFallback>
+                  <AvatarFallback className="bg-accent text-accent-foreground">{getUserInitial()}</AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium">User</span>
-                  <span className="text-xs text-muted-foreground">user@citylifes.com</span>
+                  <span className="text-sm font-medium">{profile?.full_name || user?.user_metadata?.full_name || 'User'}</span>
+                  <span className="text-xs text-muted-foreground">{user?.email}</span>
                 </div>
               </div>
             </div>
