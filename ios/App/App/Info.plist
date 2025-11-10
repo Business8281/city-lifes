@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Citylifes</string>
+        <string>Citylifes Marketplace</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -45,31 +45,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	
-	<!-- Permissions -->
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>This app needs access to location to show nearby properties</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>This app needs access to location to show nearby properties</string>
-	<key>NSCameraUsageDescription</key>
-	<string>This app needs access to camera to take property photos</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app needs access to photos to select property images</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>This app needs access to save property photos</string>
-	
-	<!-- App Transport Security -->
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
-	
-	<!-- Background modes -->
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-		<string>remote-notification</string>
-	</array>
 </dict>
 </plist>

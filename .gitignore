@@ -44,3 +44,20 @@ amplifytools.xcconfig
 .secret-*
 **.sample
 #amplify-do-not-edit-end
+
+# Environment & secrets
+.env
+.env.*
+
+# iOS native noise (user data & derived artifacts)
+ios/App/App.xcodeproj/xcuserdata/
+ios/App/App.xcworkspace/xcuserdata/
+ios/App/DerivedData/
+
+# Capacitor iOS Pods (already ignored in ios/.gitignore, duplicate safety)
+ios/App/Pods/
+
+# Android local machine artifacts (already ignored in android/.gitignore, duplicate safety)
+android/local.properties
+android/.gradle/
+
