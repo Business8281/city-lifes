@@ -92,11 +92,11 @@ const AdCampaign = () => {
               </div>
             </div>
             <Button
-              onClick={() => navigate("/listings?type=business")}
+              onClick={() => setDialogOpen(true)}
               className="gap-2"
             >
               <Plus className="h-4 w-4" />
-              <span className="hidden sm:inline">View</span> Businesses
+              Create Campaign
             </Button>
           </div>
         </div>
@@ -278,7 +278,10 @@ const AdCampaign = () => {
 
       <CreateCampaignDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) setSelectedProperty(null);
+        }}
         property={selectedProperty}
         onCreateCampaign={handleCreateCampaign}
       />
