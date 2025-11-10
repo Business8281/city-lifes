@@ -7,6 +7,7 @@ import { User, Home, TrendingUp, Settings, Shield, ChevronRight, LogOut } from "
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyListings } from "@/hooks/useProperties";
 import { useMessages } from "@/hooks/useMessages";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,6 +16,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const { properties } = useMyListings(user?.id);
   const { conversations } = useMessages(user?.id);
+  const { isAdmin } = useAdminCheck();
   const [profile, setProfile] = useState<{ full_name: string | null; phone: string | null } | null>(null);
 
   useEffect(() => {
@@ -89,6 +91,11 @@ const Profile = () => {
         {/* Menu Items */}
         <div className="space-y-3">
           {menuItems.map((item) => {
+            // Hide Admin Dashboard for non-admin users
+            if (item.path === '/admin-dashboard' && !isAdmin) {
+              return null;
+            }
+            
             const Icon = item.icon;
             return (
               <Card
