@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Property } from '@/types/database';
 import { toast } from 'sonner';
@@ -7,14 +7,14 @@ export function useAdminProperties() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchPendingProperties = async () => {
+  const fetchPendingProperties = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('properties')
         .select(`
           *,
-          profiles (
+          profiles:user_id (
             id,
             full_name,
             email
@@ -31,7 +31,7 @@ export function useAdminProperties() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchPendingProperties();
@@ -49,9 +49,9 @@ export function useAdminProperties() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [fetchPendingProperties]);
 
-  const approveProperty = async (propertyId: string) => {
+  const approveProperty = useCallback(async (propertyId: string) => {
     try {
       const { error } = await supabase.rpc('approve_property', {
         property_id: propertyId
@@ -64,9 +64,9 @@ export function useAdminProperties() {
       console.error('Error approving property:', error);
       toast.error(error.message || 'Failed to approve property');
     }
-  };
+  }, [fetchPendingProperties]);
 
-  const rejectProperty = async (propertyId: string) => {
+  const rejectProperty = useCallback(async (propertyId: string) => {
     try {
       const { error } = await supabase.rpc('reject_property', {
         property_id: propertyId
@@ -79,7 +79,7 @@ export function useAdminProperties() {
       console.error('Error rejecting property:', error);
       toast.error(error.message || 'Failed to reject property');
     }
-  };
+  }, [fetchPendingProperties]);
 
   return {
     properties,
