@@ -74,26 +74,22 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
     }
   };
 
-  const incrementImpressions = async (campaignId: string) => {
-    try {
-      const { error } = await supabase.rpc('increment_campaign_impressions', {
-        campaign_id: campaignId
-      });
+  const incrementImpressions = (campaignId: string) => {
+    // Fire and forget - don't await to prevent blocking UI
+    supabase.rpc('increment_campaign_impressions', {
+      campaign_id: campaignId
+    }).then(({ error }) => {
       if (error) console.error('Error incrementing impressions:', error);
-    } catch (error) {
-      console.error('Error incrementing impressions:', error);
-    }
+    });
   };
 
-  const incrementClicks = async (campaignId: string) => {
-    try {
-      const { error } = await supabase.rpc('increment_campaign_clicks', {
-        campaign_id: campaignId
-      });
+  const incrementClicks = (campaignId: string) => {
+    // Fire and forget - don't await to prevent blocking navigation
+    supabase.rpc('increment_campaign_clicks', {
+      campaign_id: campaignId
+    }).then(({ error }) => {
       if (error) console.error('Error incrementing clicks:', error);
-    } catch (error) {
-      console.error('Error incrementing clicks:', error);
-    }
+    });
   };
 
   return {

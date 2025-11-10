@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import SearchBar from "@/components/SearchBar";
 import PropertyCard from "@/components/PropertyCard";
@@ -27,7 +27,43 @@ const Listings = () => {
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const { properties, loading } = useProperties();
   const { location } = useLocation();
-  const { sponsoredProperties, loading: sponsoredLoading, incrementClicks } = useSponsoredProperties(location);
+  const { sponsoredProperties, loading: sponsoredLoading, incrementClicks, incrementImpressions } = useSponsoredProperties(location);
+  const sponsoredRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const trackedImpressions = useRef<Set<string>>(new Set());
+
+  // Track impressions for sponsored properties using IntersectionObserver
+  useEffect(() => {
+    if (sponsoredProperties.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const campaignId = entry.target.getAttribute('data-campaign-id');
+            if (campaignId && !trackedImpressions.current.has(campaignId)) {
+              trackedImpressions.current.add(campaignId);
+              incrementImpressions(campaignId);
+            }
+          }
+        });
+      },
+      { threshold: 0.5, rootMargin: '0px' }
+    );
+
+    sponsoredRefs.current.forEach((element) => {
+      if (element) observer.observe(element);
+    });
+
+    return () => observer.disconnect();
+  }, [sponsoredProperties, incrementImpressions]);
+
+  const setSponsoredRef = useCallback((element: HTMLDivElement | null, campaignId: string) => {
+    if (element) {
+      sponsoredRefs.current.set(campaignId, element);
+    } else {
+      sponsoredRefs.current.delete(campaignId);
+    }
+  }, []);
 
   const filteredProperties = properties.filter((property) => {
     const matchesSearch =
@@ -178,19 +214,29 @@ const Listings = () => {
 
       {/* Properties Grid */}
       <div className="max-w-7xl mx-auto px-4 py-6 overflow-x-hidden space-y-6">
-        {/* Sponsored Ads Section */}
+        {/* Sponsored Ads Section - Only Business Listings */}
         {!sponsoredLoading && sponsoredProperties.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-lg font-semibold">Sponsored</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-semibold">Sponsored Businesses</h2>
+              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">
+                AD
+              </span>
+            </div>
             <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
               <div className="flex gap-4 pb-2">
                 {sponsoredProperties.map((property) => (
-                  <div key={property.id} className="w-[280px] shrink-0">
+                  <div 
+                    key={property.id} 
+                    ref={(el) => property.campaign_id && setSponsoredRef(el, property.campaign_id)}
+                    data-campaign-id={property.campaign_id}
+                    className="w-[280px] sm:w-[300px] shrink-0"
+                  >
                     <PropertyCard
                       id={property.id}
                       image={property.images[0] || '/placeholder.svg'}
                       title={property.title}
-                      type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
+                      type={propertyTypes.find(t => t.type === property.property_type)?.icon || '💼'}
                       price={`₹${property.price.toLocaleString()}`}
                       location={`${property.area}, ${property.city}`}
                       bedrooms={property.bedrooms || undefined}

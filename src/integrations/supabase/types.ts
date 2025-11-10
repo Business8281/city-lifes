@@ -70,6 +70,74 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string | null
+          table_name: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      contact_reveals: {
+        Row: {
+          id: string
+          property_id: string
+          revealed_at: string | null
+          revealed_to: string
+        }
+        Insert: {
+          id?: string
+          property_id: string
+          revealed_at?: string | null
+          revealed_to: string
+        }
+        Update: {
+          id?: string
+          property_id?: string
+          revealed_at?: string | null
+          revealed_to?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_reveals_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favorites: {
         Row: {
           created_at: string
@@ -350,6 +418,60 @@ export type Database = {
           user_id?: string
           verified?: boolean | null
           views?: number | null
+        }
+        Relationships: []
+      }
+      query_performance_logs: {
+        Row: {
+          created_at: string | null
+          execution_time_ms: number | null
+          id: string
+          query_name: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          query_name: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          query_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          created_at: string | null
+          endpoint: string
+          id: string
+          ip_address: string
+          request_count: number | null
+          user_id: string | null
+          window_start: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          ip_address: string
+          request_count?: number | null
+          user_id?: string | null
+          window_start?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          ip_address?: string
+          request_count?: number | null
+          user_id?: string | null
+          window_start?: string | null
         }
         Relationships: []
       }
@@ -717,6 +839,46 @@ export type Database = {
           properties_count: number
         }[]
       }
+      get_properties_paginated: {
+        Args: {
+          filter_city?: string
+          filter_type?: string
+          filter_verified?: boolean
+          page_number?: number
+          page_size?: number
+        }
+        Returns: {
+          address: string
+          amenities: string[]
+          area: string
+          area_sqft: number
+          available: boolean
+          bathrooms: number
+          bedrooms: number
+          city: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          created_at: string
+          description: string
+          id: string
+          images: string[]
+          is_agent: boolean
+          latitude: number
+          longitude: number
+          pin_code: string
+          price: number
+          price_type: string
+          property_type: string
+          status: string
+          title: string
+          total_count: number
+          updated_at: string
+          user_id: string
+          verified: boolean
+          views: number
+        }[]
+      }
       get_public_profile: {
         Args: { _user_id: string }
         Returns: {
@@ -767,6 +929,40 @@ export type Database = {
           views: number
         }[]
       }
+      get_user_properties_paginated: {
+        Args: { p_user_id: string; page_number?: number; page_size?: number }
+        Returns: {
+          address: string
+          amenities: string[]
+          area: string
+          area_sqft: number
+          available: boolean
+          bathrooms: number
+          bedrooms: number
+          city: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          created_at: string
+          description: string
+          id: string
+          images: string[]
+          is_agent: boolean
+          latitude: number
+          longitude: number
+          pin_code: string
+          price: number
+          price_type: string
+          property_type: string
+          status: string
+          title: string
+          total_count: number
+          updated_at: string
+          user_id: string
+          verified: boolean
+          views: number
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -789,6 +985,10 @@ export type Database = {
       }
       increment_campaign_impressions: {
         Args: { campaign_id: string }
+        Returns: undefined
+      }
+      increment_property_views: {
+        Args: { property_id: string }
         Returns: undefined
       }
       longtransactionsenabled: { Args: never; Returns: boolean }
@@ -833,6 +1033,10 @@ export type Database = {
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
       reject_property: { Args: { property_id: string }; Returns: undefined }
+      reveal_property_contact: {
+        Args: { p_property_id: string }
+        Returns: Json
+      }
       search_properties_by_location: {
         Args: {
           property_type_filter?: string
