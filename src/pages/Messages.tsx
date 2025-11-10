@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, Send, Search, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,11 +16,17 @@ const Messages = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const { conversations, loading, sendMessage } = useMessages(user?.id);
+  const { conversations, loading, sendMessage, markAsRead } = useMessages(user?.id);
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingNewChat, setLoadingNewChat] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const handleSendMessage = async () => {
     if (messageText.trim() && selectedConversation) {
@@ -30,8 +36,23 @@ const Messages = () => {
         selectedConversation.messages[0]?.property_id
       );
       setMessageText("");
+      setTimeout(scrollToBottom, 100);
     }
   };
+
+  // Auto-scroll when messages change or conversation selected
+  useEffect(() => {
+    if (selectedConversation) {
+      setTimeout(scrollToBottom, 100);
+    }
+  }, [selectedConversation?.messages?.length, selectedConversation?.user?.id]);
+
+  // Mark messages as read when viewing conversation
+  useEffect(() => {
+    if (selectedConversation?.user?.id && selectedConversation.unreadCount > 0) {
+      markAsRead(selectedConversation.user.id);
+    }
+  }, [selectedConversation?.user?.id]);
 
   const filteredConversations = conversations.filter(
     (conv) =>
@@ -207,38 +228,48 @@ const Messages = () => {
           </div>
 
           {/* Messages */}
-          <ScrollArea className="flex-1 p-4">
-            <div className="space-y-4">
-              {selectedConversation.messages.map((message: any) => {
-                const isOwn = message.sender_id === user?.id;
-                return (
-                  <div
-                    key={message.id}
-                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
-                  >
+          <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+            {selectedConversation.messages.length > 0 ? (
+              <div className="space-y-4">
+                {selectedConversation.messages.map((message: any) => {
+                  const isOwn = message.sender_id === user?.id;
+                  return (
                     <div
-                      className={`max-w-[70%] rounded-lg p-3 ${
-                        isOwn
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
-                      }`}
+                      key={message.id}
+                      className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
                     >
-                      <p className="text-sm">{message.content}</p>
-                      <p
-                        className={`text-xs mt-1 ${
-                          isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                      <div
+                        className={`max-w-[70%] rounded-lg p-3 ${
+                          isOwn
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted'
                         }`}
                       >
-                        {new Date(message.created_at).toLocaleTimeString([], { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </p>
+                        <p className="text-sm break-words">{message.content}</p>
+                        <p
+                          className={`text-xs mt-1 ${
+                            isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                          }`}
+                        >
+                          {new Date(message.created_at).toLocaleTimeString([], { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+                <div ref={messagesEndRef} />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center text-muted-foreground">
+                  <p>No messages yet</p>
+                  <p className="text-sm mt-2">Send a message to start the conversation</p>
+                </div>
+              </div>
+            )}
           </ScrollArea>
 
           {/* Message Input */}
@@ -248,9 +279,14 @@ const Messages = () => {
                 placeholder="Type a message..."
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
+                disabled={!selectedConversation?.user?.id}
               />
-              <Button onClick={handleSendMessage} size="icon">
+              <Button 
+                onClick={handleSendMessage} 
+                size="icon"
+                disabled={!messageText.trim() || !selectedConversation?.user?.id}
+              >
                 <Send className="h-4 w-4" />
               </Button>
             </div>

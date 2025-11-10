@@ -93,6 +93,13 @@ export function useMessages(userId: string | undefined) {
         return acc;
       }, {});
 
+      // Sort messages within each conversation (oldest first for chat display)
+      Object.values(grouped).forEach((conv: any) => {
+        conv.messages.sort((a: any, b: any) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+      });
+
       setConversations(Object.values(grouped));
     } catch (error: any) {
       console.error('Error fetching messages:', error);
@@ -174,5 +181,22 @@ export function useMessages(userId: string | undefined) {
     }
   };
 
-  return { conversations, loading, sendMessage, refetch: fetchConversations };
+  const markAsRead = async (conversationUserId: string) => {
+    if (!userId) return;
+
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ read: true })
+        .eq('receiver_id', userId)
+        .eq('sender_id', conversationUserId)
+        .eq('read', false);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
+  };
+
+  return { conversations, loading, sendMessage, markAsRead, refetch: fetchConversations };
 }
