@@ -5,18 +5,22 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMessages } from "@/hooks/useMessages";
 import { formatDistanceToNow } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Messages = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { conversations, loading, sendMessage } = useMessages(user?.id);
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [loadingNewChat, setLoadingNewChat] = useState(false);
 
   const handleSendMessage = async () => {
     if (messageText.trim() && selectedConversation) {
@@ -34,6 +38,63 @@ const Messages = () => {
       conv.user?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       conv.lastMessage?.content?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Handle incoming chat request from URL params
+  useEffect(() => {
+    const initChat = async () => {
+      const targetUserId = searchParams.get('user');
+      const propertyId = searchParams.get('property');
+      
+      if (!targetUserId || !user || loadingNewChat) return;
+      
+      // Check if conversation already exists
+      const existingConv = conversations.find(c => c.user?.id === targetUserId);
+      
+      if (existingConv) {
+        setSelectedConversation(existingConv);
+      } else {
+        // Create new conversation by fetching user profile
+        setLoadingNewChat(true);
+        try {
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('id, full_name, email')
+            .eq('id', targetUserId)
+            .single();
+          
+          if (error) throw error;
+          
+          if (profile) {
+            // Create a new conversation object
+            const newConv = {
+              user: profile,
+              messages: [],
+              lastMessage: null,
+              unreadCount: 0
+            };
+            setSelectedConversation(newConv);
+            
+            // Send initial greeting
+            if (propertyId) {
+              await sendMessage(targetUserId, "Hi! I'm interested in your property.", propertyId);
+            }
+          }
+        } catch (error) {
+          console.error('Error starting conversation:', error);
+          toast.error('Failed to start conversation');
+        } finally {
+          setLoadingNewChat(false);
+        }
+      }
+      
+      // Clear URL params
+      navigate('/messages', { replace: true });
+    };
+    
+    if (!loading && conversations.length >= 0) {
+      initChat();
+    }
+  }, [searchParams, user, conversations, loading]);
 
   const getInitials = (name: string) => {
     return name

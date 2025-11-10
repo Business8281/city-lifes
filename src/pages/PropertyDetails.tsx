@@ -216,7 +216,18 @@ const PropertyDetails = () => {
                 <Phone className="h-4 w-4" />
                 Call
               </Button>
-              <Button variant="outline" className="gap-2" onClick={() => toast.info("Messaging coming soon!")}>
+              <Button 
+                variant="outline" 
+                className="gap-2" 
+                onClick={() => {
+                  if (!user) {
+                    toast.error("Please login to start a conversation");
+                    navigate("/auth");
+                    return;
+                  }
+                  navigate(`/messages?user=${property.user_id}&property=${id}`);
+                }}
+              >
                 <MessageCircle className="h-4 w-4" />
                 Chat
               </Button>
