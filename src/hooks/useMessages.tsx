@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Message } from '@/types/database';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { encryptMessage, decryptMessage } from '@/utils/encryption';
 
 const messageSchema = z.object({
   content: z.string()
@@ -49,12 +50,30 @@ export function useMessages(userId: string | undefined) {
         (profilesData || []).map(p => [p.id, p])
       );
 
-      // Enrich messages with profile data
-      const enrichedData = (data || []).map((msg: any) => ({
-        ...msg,
-        sender: profilesMap.get(msg.sender_id),
-        receiver: profilesMap.get(msg.receiver_id)
-      }));
+      // Enrich and decrypt messages with profile data
+      const enrichedData = await Promise.all(
+        (data || []).map(async (msg: any) => {
+          let decryptedContent = msg.content;
+          
+          // Decrypt message content
+          try {
+            decryptedContent = await decryptMessage(
+              msg.content,
+              msg.sender_id,
+              msg.receiver_id
+            );
+          } catch (error) {
+            console.error('Failed to decrypt message:', error);
+          }
+          
+          return {
+            ...msg,
+            content: decryptedContent,
+            sender: profilesMap.get(msg.sender_id),
+            receiver: profilesMap.get(msg.receiver_id)
+          };
+        })
+      );
 
       // Group messages by conversation
       const grouped = (enrichedData || []).reduce((acc: any, msg: any) => {
@@ -125,12 +144,19 @@ export function useMessages(userId: string | undefined) {
         property_id: propertyId,
       });
 
+      // Encrypt message content before sending
+      const encryptedContent = await encryptMessage(
+        validatedData.content,
+        userId,
+        validatedData.receiver_id
+      );
+
       const { error } = await supabase
         .from('messages')
         .insert({
           sender_id: userId,
           receiver_id: validatedData.receiver_id,
-          content: validatedData.content,
+          content: encryptedContent,
           property_id: validatedData.property_id || null,
         });
 
