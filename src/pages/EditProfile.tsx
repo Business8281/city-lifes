@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, User, Mail, Phone, MapPin, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,23 +8,95 @@ import { Card } from "@/components/ui/card";
 import BottomNav from "@/components/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const EditProfile = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: user?.user_metadata?.full_name || "",
+    fullName: "",
     email: user?.email || "",
     phone: "",
-    location: "",
-    bio: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Load existing profile data
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+          throw error;
+        }
+        
+        if (data) {
+          setFormData({
+            fullName: data.full_name || "",
+            email: data.email || user.email || "",
+            phone: data.phone || "",
+          });
+        }
+      } catch (error: any) {
+        console.error('Error loading profile:', error);
+        toast.error("Failed to load profile data");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadProfile();
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Profile updated successfully!");
-    navigate("/profile");
+    
+    if (!user) {
+      toast.error("You must be logged in to update your profile");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+
+      const { error } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          email: user.email,
+          full_name: formData.fullName,
+          phone: formData.phone,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'id'
+        });
+
+      if (error) throw error;
+
+      toast.success("Profile updated successfully!");
+      navigate("/profile");
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      toast.error(error.message || "Failed to update profile");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading profile...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
@@ -104,37 +176,9 @@ const EditProfile = () => {
               />
             </div>
 
-            {/* Location */}
-            <div className="space-y-2">
-              <Label htmlFor="location">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  Location
-                </div>
-              </Label>
-              <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="Enter your location"
-              />
-            </div>
-
-            {/* Bio */}
-            <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              <textarea
-                id="bio"
-                value={formData.bio}
-                onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                placeholder="Tell us about yourself"
-                className="w-full min-h-[100px] px-3 py-2 rounded-md border border-input bg-background"
-              />
-            </div>
-
-            <Button type="submit" className="w-full gap-2">
+            <Button type="submit" className="w-full gap-2" disabled={submitting}>
               <Save className="h-4 w-4" />
-              Save Changes
+              {submitting ? "Saving..." : "Save Changes"}
             </Button>
           </form>
         </Card>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Upload, X, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -97,8 +97,11 @@ const AddProperty = () => {
   const { toast } = useToast();
   const { location } = useLocation();
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const editPropertyId = searchParams.get('edit');
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(!!editPropertyId);
   const [formData, setFormData] = useState({
     title: "",
     type: "",
@@ -131,9 +134,71 @@ const AddProperty = () => {
     employees: "",
   });
   const [images, setImages] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+
+  // Load property data if editing
+  useEffect(() => {
+    const loadProperty = async () => {
+      if (!editPropertyId || !user) return;
+      
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('properties')
+          .select('*')
+          .eq('id', editPropertyId)
+          .eq('user_id', user.id)
+          .single();
+        
+        if (error) throw error;
+        
+        if (data) {
+          setFormData({
+            title: data.title || "",
+            type: data.property_type || "",
+            price: data.price?.toString() || "",
+            city: data.city || "",
+            area: data.area || "",
+            pinCode: data.pin_code || "",
+            address: data.address || "",
+            latitude: data.latitude?.toString() || "",
+            longitude: data.longitude?.toString() || "",
+            bedrooms: data.bedrooms?.toString() || "",
+            bathrooms: data.bathrooms?.toString() || "",
+            areaSqft: data.area_sqft?.toString() || "",
+            description: data.description || "",
+            amenities: data.amenities || [],
+            ownerName: data.contact_name || "",
+            ownerPhone: data.contact_phone || "",
+            brand: "",
+            model: "",
+            year: "",
+            fuelType: "",
+            transmission: "",
+            rooms: "",
+            seatingCapacity: "",
+            businessType: "",
+            revenue: "",
+            employees: "",
+          });
+          setImages(data.images || []);
+        }
+      } catch (error: any) {
+        console.error('Error loading property:', error);
+        sonnerToast.error("Failed to load property");
+        navigate('/my-listings');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadProperty();
+  }, [editPropertyId, user, navigate]);
 
   // Pre-fill location data from context
   useEffect(() => {
+    if (editPropertyId) return; // Don't override when editing
+    
     if (location.method === 'city' && location.value) {
       setFormData(prev => ({ ...prev, city: location.value }));
     } else if (location.method === 'area' && location.value) {
@@ -147,20 +212,21 @@ const AddProperty = () => {
         longitude: location.coordinates!.lng.toString()
       }));
     }
-  }, [location]);
+  }, [location, editPropertyId]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      const newImages = Array.from(files).map((file) =>
-        URL.createObjectURL(file)
-      );
+      const filesArray = Array.from(files);
+      const newImages = filesArray.map((file) => URL.createObjectURL(file));
       setImages([...images, ...newImages]);
+      setImageFiles([...imageFiles, ...filesArray]);
     }
   };
 
   const removeImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index));
+    setImageFiles(imageFiles.filter((_, i) => i !== index));
   };
 
   const toggleAmenity = (amenity: string) => {
@@ -196,6 +262,44 @@ const AddProperty = () => {
     try {
       setSubmitting(true);
 
+      // Upload new images to Supabase Storage
+      let uploadedImageUrls: string[] = [];
+      
+      if (imageFiles.length > 0) {
+        sonnerToast.info("Uploading images...");
+        
+        for (let i = 0; i < imageFiles.length; i++) {
+          const file = imageFiles[i];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${user.id}/${Date.now()}_${i}.${fileExt}`;
+          
+          const { data, error: uploadError } = await supabase.storage
+            .from('property-images')
+            .upload(fileName, file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+          
+          if (uploadError) {
+            console.error('Upload error:', uploadError);
+            throw new Error(`Failed to upload image ${i + 1}`);
+          }
+          
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('property-images')
+            .getPublicUrl(data.path);
+          
+          uploadedImageUrls.push(publicUrl);
+        }
+      }
+      
+      // Keep existing images (when editing) and add new ones
+      const allImageUrls = [
+        ...images.filter(img => img.startsWith('http')), // Keep existing uploaded images
+        ...uploadedImageUrls // Add newly uploaded images
+      ];
+
       // Validate form data using zod
       const validationData = {
         title: formData.title,
@@ -215,7 +319,7 @@ const AddProperty = () => {
         ownerEmail: undefined,
         isAgent: false,
         amenities: formData.amenities,
-        images: images,
+        images: allImageUrls,
       };
 
       try {
@@ -247,7 +351,7 @@ const AddProperty = () => {
         bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : null,
         area_sqft: formData.areaSqft ? parseInt(formData.areaSqft) : null,
         amenities: formData.amenities,
-        images: images,
+        images: allImageUrls,
         contact_name: formData.ownerName,
         contact_phone: formData.ownerPhone,
         contact_email: null,
@@ -257,13 +361,26 @@ const AddProperty = () => {
         verified: true,
       };
 
-      const { error } = await supabase
-        .from('properties')
-        .insert([propertyData]);
+      if (editPropertyId) {
+        // Update existing property
+        const { error } = await supabase
+          .from('properties')
+          .update(propertyData)
+          .eq('id', editPropertyId)
+          .eq('user_id', user.id);
 
-      if (error) throw error;
+        if (error) throw error;
+        sonnerToast.success("Property updated successfully!");
+      } else {
+        // Insert new property
+        const { error } = await supabase
+          .from('properties')
+          .insert([propertyData]);
 
-      sonnerToast.success("Property submitted successfully!");
+        if (error) throw error;
+        sonnerToast.success("Property submitted successfully!");
+      }
+
       navigate("/my-listings");
     } catch (error: any) {
       console.error('Error submitting property:', error);
@@ -278,6 +395,14 @@ const AddProperty = () => {
   const isStep3Valid = formData.city && formData.area && formData.pinCode && formData.description;
   const isStep4Valid = formData.ownerName && formData.ownerPhone;
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground">Loading property...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-8 overflow-x-hidden max-w-full">
       <div className="sticky top-0 z-40 bg-background border-b max-w-full overflow-x-hidden">
@@ -291,7 +416,9 @@ const AddProperty = () => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold">Add Property</h1>
+              <h1 className="text-xl font-bold">
+                {editPropertyId ? 'Edit Property' : 'Add Property'}
+              </h1>
               <p className="text-sm text-muted-foreground">
                 Step {step} of 4
               </p>
@@ -851,7 +978,7 @@ const AddProperty = () => {
                   className="flex-1"
                   disabled={!isStep4Valid || submitting}
                 >
-                  {submitting ? "Submitting..." : "Submit Property"}
+                  {submitting ? (editPropertyId ? "Updating..." : "Submitting...") : (editPropertyId ? "Update Property" : "Submit Property")}
                 </Button>
               </div>
             </div>

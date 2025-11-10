@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import BottomNav from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -7,12 +8,39 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useMyListings } from "@/hooks/useProperties";
 import { useMessages } from "@/hooks/useMessages";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Profile = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { properties } = useMyListings(user?.id);
   const { conversations } = useMessages(user?.id);
+  const [profile, setProfile] = useState<{ full_name: string | null; phone: string | null } | null>(null);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name, phone')
+          .eq('id', user.id)
+          .single();
+        
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error loading profile:', error);
+          return;
+        }
+        
+        setProfile(data);
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    };
+    
+    loadProfile();
+  }, [user]);
 
   const menuItems = [
     { icon: User, label: "Edit Profile", path: "/profile/edit" },
@@ -39,8 +67,9 @@ const Profile = () => {
               <User className="h-8 w-8 text-primary" />
             </div>
             <div className="flex-1">
-              <h2 className="text-2xl font-bold">{user?.user_metadata?.full_name || 'User'}</h2>
-              <p className="text-muted-foreground">{user?.email || 'admin@urbanrent.com'}</p>
+              <h2 className="text-2xl font-bold">{profile?.full_name || user?.user_metadata?.full_name || 'User'}</h2>
+              <p className="text-muted-foreground">{user?.email}</p>
+              {profile?.phone && <p className="text-sm text-muted-foreground">{profile.phone}</p>}
             </div>
           </div>
 
