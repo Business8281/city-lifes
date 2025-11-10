@@ -9,6 +9,7 @@ import BottomNav from "@/components/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { profileSchema } from "@/schemas/validationSchemas";
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -63,7 +64,13 @@ const EditProfile = () => {
       return;
     }
 
+    // Validate form data
     try {
+      profileSchema.parse({
+        full_name: formData.fullName,
+        phone: formData.phone
+      });
+
       setSubmitting(true);
 
       const { error } = await supabase
@@ -83,8 +90,12 @@ const EditProfile = () => {
       toast.success("Profile updated successfully!");
       navigate("/profile");
     } catch (error: any) {
-      console.error('Error updating profile:', error);
-      toast.error(error.message || "Failed to update profile");
+      if (error.errors) {
+        toast.error(error.errors[0]?.message || "Invalid form data");
+      } else {
+        console.error('Error updating profile:', error);
+        toast.error(error.message || "Failed to update profile");
+      }
     } finally {
       setSubmitting(false);
     }

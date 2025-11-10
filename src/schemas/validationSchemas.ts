@@ -19,6 +19,59 @@ export const authSchema = z.object({
     .optional(),
 });
 
+// Profile update validation schema
+export const profileSchema = z.object({
+  full_name: z
+    .string()
+    .trim()
+    .min(1, { message: 'Full name is required' })
+    .max(100, { message: 'Full name must be less than 100 characters' }),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^[0-9]{10}$/, { message: 'Phone number must be 10 digits' })
+    .optional()
+    .or(z.literal('')),
+});
+
+// Message validation schema
+export const messageSchema = z.object({
+  content: z
+    .string()
+    .trim()
+    .min(1, { message: 'Message cannot be empty' })
+    .max(2000, { message: 'Message must be less than 2000 characters' }),
+  receiver_id: z.string().uuid({ message: 'Invalid receiver' }),
+  property_id: z.string().uuid({ message: 'Invalid property' }).optional(),
+});
+
+// Inquiry validation schema
+export const inquirySchema = z.object({
+  message: z
+    .string()
+    .trim()
+    .min(10, { message: 'Inquiry must be at least 10 characters' })
+    .max(1000, { message: 'Inquiry must be less than 1000 characters' }),
+  property_id: z.string().uuid({ message: 'Invalid property' }),
+  receiver_id: z.string().uuid({ message: 'Invalid receiver' }),
+});
+
+// Ad Campaign validation schema
+export const adCampaignSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(5, { message: 'Title must be at least 5 characters' })
+    .max(100, { message: 'Title must be less than 100 characters' }),
+  budget: z
+    .number()
+    .positive({ message: 'Budget must be positive' })
+    .max(10000000, { message: 'Budget too high' }),
+  start_date: z.date(),
+  end_date: z.date(),
+  property_id: z.string().uuid({ message: 'Invalid property' }),
+});
+
 // Property validation schema
 export const propertySchema = z.object({
   title: z
@@ -96,4 +149,8 @@ export const propertySchema = z.object({
 });
 
 export type AuthFormData = z.infer<typeof authSchema>;
+export type ProfileFormData = z.infer<typeof profileSchema>;
+export type MessageFormData = z.infer<typeof messageSchema>;
+export type InquiryFormData = z.infer<typeof inquirySchema>;
+export type AdCampaignFormData = z.infer<typeof adCampaignSchema>;
 export type PropertyFormData = z.infer<typeof propertySchema>;

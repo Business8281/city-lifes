@@ -11,6 +11,7 @@ import { useMessages } from "@/hooks/useMessages";
 import { formatDistanceToNow } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { messageSchema } from "@/schemas/validationSchemas";
 
 const Messages = () => {
   const navigate = useNavigate();
@@ -34,7 +35,16 @@ const Messages = () => {
   };
 
   const handleSendMessage = async () => {
-    if (messageText.trim() && selectedConversation) {
+    if (!messageText.trim() || !selectedConversation) return;
+    
+    // Validate message input
+    try {
+      messageSchema.parse({
+        content: messageText,
+        receiver_id: selectedConversation.user.id,
+        property_id: selectedConversation.messages[0]?.property_id
+      });
+      
       await sendMessage(
         selectedConversation.user.id,
         messageText,
@@ -42,6 +52,10 @@ const Messages = () => {
       );
       setMessageText("");
       setTimeout(() => scrollToBottom("auto"), 50);
+    } catch (error: any) {
+      if (error.errors) {
+        toast.error(error.errors[0]?.message || "Invalid message");
+      }
     }
   };
 

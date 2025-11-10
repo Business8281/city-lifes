@@ -758,6 +758,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       gettransactionid: { Args: never; Returns: unknown }
+      has_inquired_on_property: {
+        Args: { _property_id: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
