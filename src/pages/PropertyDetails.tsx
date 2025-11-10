@@ -95,7 +95,7 @@ const PropertyDetails = () => {
       </div>
 
       {/* Image Gallery */}
-      <div className="relative aspect-[4/3] md:aspect-[16/9] bg-muted">
+      <div className="relative aspect-[16/9] md:aspect-[21/9] max-h-[300px] md:max-h-[400px] bg-muted">
         <img
           src={property.images[currentImage] || '/placeholder.svg'}
           alt={property.title}
@@ -120,24 +120,24 @@ const PropertyDetails = () => {
         )}
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6 overflow-x-hidden">
+      <div className="max-w-7xl mx-auto px-3 md:px-4 py-3 md:py-4 space-y-3 md:space-y-4 overflow-x-hidden">
         {/* Title and Price */}
         <div>
-          <div className="flex items-start justify-between gap-4 mb-2">
-            <h1 className="text-2xl font-bold text-foreground">{property.title}</h1>
+          <div className="flex items-start justify-between gap-3 mb-1.5">
+            <h1 className="text-xl md:text-2xl font-bold text-foreground">{property.title}</h1>
             {property.status === 'active' && (
-              <Badge className="bg-secondary shrink-0">Active</Badge>
+              <Badge className="bg-secondary shrink-0 text-xs">Active</Badge>
             )}
           </div>
           
-          <div className="flex items-center gap-2 text-muted-foreground mb-4">
-            <MapPin className="h-4 w-4" />
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-2">
+            <MapPin className="h-3.5 w-3.5" />
             <span>{property.area}, {property.city} - {property.pin_code}</span>
           </div>
           
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-primary">₹{property.price.toLocaleString()}</span>
-            <span className="text-muted-foreground">/month</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-2xl md:text-3xl font-bold text-primary">₹{property.price.toLocaleString()}</span>
+            <span className="text-sm text-muted-foreground">/month</span>
           </div>
         </div>
 
@@ -146,25 +146,25 @@ const PropertyDetails = () => {
         {/* Property Details */}
         {(property.bedrooms || property.bathrooms || property.area) && (
           <>
-            <Card className="p-4">
-              <h3 className="font-semibold mb-3">Property Details</h3>
-              <div className="grid grid-cols-3 gap-4">
+            <Card className="p-3 md:p-4">
+              <h3 className="font-semibold text-sm md:text-base mb-2">Property Details</h3>
+              <div className="grid grid-cols-3 gap-3">
                 {property.bedrooms && (
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{property.bedrooms}</div>
-                    <div className="text-sm text-muted-foreground">Bedrooms</div>
+                    <div className="text-xl md:text-2xl font-bold text-primary">{property.bedrooms}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Bedrooms</div>
                   </div>
                 )}
                 {property.bathrooms && (
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{property.bathrooms}</div>
-                    <div className="text-sm text-muted-foreground">Bathrooms</div>
+                    <div className="text-xl md:text-2xl font-bold text-primary">{property.bathrooms}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Bathrooms</div>
                   </div>
                 )}
                 {property.area && (
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-primary">{property.area}</div>
-                    <div className="text-sm text-muted-foreground">sq.ft</div>
+                    <div className="text-xl md:text-2xl font-bold text-primary">{property.area}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">sq.ft</div>
                   </div>
                 )}
               </div>
@@ -175,8 +175,8 @@ const PropertyDetails = () => {
 
         {/* Description */}
         <div>
-          <h3 className="font-semibold mb-3">About this property</h3>
-          <p className="text-muted-foreground leading-relaxed">{property.description}</p>
+          <h3 className="font-semibold text-sm md:text-base mb-2">About this property</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">{property.description}</p>
         </div>
 
         <Separator />
@@ -185,10 +185,10 @@ const PropertyDetails = () => {
         {property.amenities.length > 0 && (
           <>
             <div>
-              <h3 className="font-semibold mb-3">Amenities</h3>
-              <div className="flex flex-wrap gap-2">
+              <h3 className="font-semibold text-sm md:text-base mb-2">Amenities</h3>
+              <div className="flex flex-wrap gap-1.5">
                 {property.amenities.map((amenity) => (
-                  <Badge key={amenity} variant="secondary">
+                  <Badge key={amenity} variant="secondary" className="text-xs">
                     {amenity}
                   </Badge>
                 ))}
@@ -200,25 +200,26 @@ const PropertyDetails = () => {
 
         {/* Owner Details */}
         {(property.contact_name || property.contact_phone || property.contact_email) && (
-          <Card className="p-4">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+          <Card className="p-3 md:p-4">
+            <div className="flex items-center gap-2.5 mb-3">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-base md:text-lg">
                 {property.contact_name?.charAt(0) || 'U'}
               </div>
-              <div className="flex-1">
-                <h4 className="font-semibold">{property.contact_name || 'Property Owner'}</h4>
-                <p className="text-sm text-muted-foreground">{property.contact_phone || property.contact_email}</p>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-sm md:text-base truncate">{property.contact_name || 'Property Owner'}</h4>
+                <p className="text-xs md:text-sm text-muted-foreground truncate">{property.contact_phone || property.contact_email}</p>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-3">
-              <Button className="gap-2" onClick={() => property.contact_phone && (window.location.href = `tel:${property.contact_phone}`)}>
-                <Phone className="h-4 w-4" />
+            <div className="grid grid-cols-2 gap-2">
+              <Button size="sm" className="gap-1.5 text-xs md:text-sm" onClick={() => property.contact_phone && (window.location.href = `tel:${property.contact_phone}`)}>
+                <Phone className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 Call
               </Button>
               <Button 
+                size="sm"
                 variant="outline" 
-                className="gap-2" 
+                className="gap-1.5 text-xs md:text-sm" 
                 onClick={() => {
                   if (!user) {
                     toast.error("Please login to start a conversation");
@@ -228,7 +229,7 @@ const PropertyDetails = () => {
                   navigate(`/messages?user=${property.user_id}&property=${id}`);
                 }}
               >
-                <MessageCircle className="h-4 w-4" />
+                <MessageCircle className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 Chat
               </Button>
             </div>
@@ -236,8 +237,8 @@ const PropertyDetails = () => {
         )}
 
         {/* Posted Date */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Calendar className="h-4 w-4" />
+        <div className="flex items-center gap-1.5 text-xs md:text-sm text-muted-foreground">
+          <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4" />
           <span>Posted {format(new Date(property.created_at), 'PPP')}</span>
         </div>
       </div>
