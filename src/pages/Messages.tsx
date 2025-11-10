@@ -24,8 +24,13 @@ const Messages = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = (behavior: ScrollBehavior = "smooth") => {
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
   };
 
   const handleSendMessage = async () => {
@@ -36,14 +41,16 @@ const Messages = () => {
         selectedConversation.messages[0]?.property_id
       );
       setMessageText("");
-      setTimeout(scrollToBottom, 100);
+      setTimeout(() => scrollToBottom("auto"), 50);
     }
   };
 
   // Auto-scroll when messages change or conversation selected
   useEffect(() => {
     if (selectedConversation) {
-      setTimeout(scrollToBottom, 100);
+      // Immediate scroll for new conversation, slight delay for new messages
+      const delay = selectedConversation.messages.length === 0 ? 50 : 100;
+      setTimeout(() => scrollToBottom("auto"), delay);
     }
   }, [selectedConversation?.messages?.length, selectedConversation?.user?.id]);
 
