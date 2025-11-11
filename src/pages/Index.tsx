@@ -15,17 +15,12 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselPrevious,
-  CarouselNext,
-  type CarouselApi,
 } from "@/components/ui/carousel";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationSelectorOpen, setLocationSelectorOpen] = useState(false);
-  const [categoryCarouselApi, setCategoryCarouselApi] = useState<CarouselApi>();
-  const [currentSlide, setCurrentSlide] = useState(0);
   const navigate = useNavigate();
   const { properties } = useProperties();
   const { location } = useLocation();
@@ -67,22 +62,6 @@ const Index = () => {
       sponsoredRefs.current.delete(campaignId);
     }
   }, []);
-
-  // Track category carousel slide changes
-  useEffect(() => {
-    if (!categoryCarouselApi) return;
-
-    const onSelect = () => {
-      setCurrentSlide(categoryCarouselApi.selectedScrollSnap());
-    };
-
-    categoryCarouselApi.on("select", onSelect);
-    onSelect();
-
-    return () => {
-      categoryCarouselApi.off("select", onSelect);
-    };
-  }, [categoryCarouselApi]);
 
   // Chunk property types into groups of 6 (2x3 grid)
   const ITEMS_PER_SLIDE = 6;
@@ -185,7 +164,6 @@ const Index = () => {
               <>
                 <Carousel 
                   className="w-full"
-                  setApi={setCategoryCarouselApi}
                   opts={{
                     align: "start",
                     loop: false,
@@ -207,26 +185,14 @@ const Index = () => {
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  {categorySlides.length > 1 && (
-                    <>
-                      <CarouselPrevious className="left-0 -translate-x-0" />
-                      <CarouselNext className="right-0 translate-x-0" />
-                    </>
-                  )}
                 </Carousel>
 
                 {categorySlides.length > 1 && (
-                  <div className="flex justify-center gap-1.5 mt-4">
+                  <div className="flex justify-center gap-1 mt-3">
                     {categorySlides.map((_, index) => (
-                      <button
+                      <div
                         key={index}
-                        onClick={() => categoryCarouselApi?.scrollTo(index)}
-                        className={`h-2 rounded-full transition-all ${
-                          index === currentSlide 
-                            ? 'w-6 bg-primary' 
-                            : 'w-2 bg-muted-foreground/30'
-                        }`}
-                        aria-label={`Go to slide ${index + 1}`}
+                        className="h-1 rounded-full w-1 bg-muted-foreground/30 transition-all"
                       />
                     ))}
                   </div>
