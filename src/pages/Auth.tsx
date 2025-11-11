@@ -185,7 +185,7 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-6">
         {/* Logo and Branding */}
         <div className="flex flex-col items-center space-y-3 text-white">
-          <div className="w-32 h-32 bg-[#5A9DB8]/40 rounded-3xl flex items-center justify-center p-6 shadow-lg backdrop-blur-sm">
+          <div className="w-32 h-32 bg-[#4A8CAD] rounded-3xl flex items-center justify-center p-6 shadow-xl">
             <img src={citylifesLogo} alt="citylifes" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-4xl font-bold">citylifes</h1>
