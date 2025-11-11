@@ -174,18 +174,18 @@ const Auth = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-[#4A90AD] flex items-center justify-center">
+      <div className="min-h-screen bg-[#5A9DB8] flex items-center justify-center">
         <div className="text-white text-lg">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#4A90AD] flex items-center justify-center p-4 overflow-x-hidden max-w-full">
+    <div className="min-h-screen bg-[#5A9DB8] flex items-center justify-center p-4 overflow-x-hidden max-w-full">
       <div className="w-full max-w-md space-y-6">
         {/* Logo and Branding */}
         <div className="flex flex-col items-center space-y-3 text-white">
-          <div className="w-40 h-40 flex items-center justify-center p-8 animate-fade-in">
+          <div className="w-44 h-44 sm:w-48 sm:h-48 flex items-center justify-center p-8 animate-fade-in">
             <img src={citylifesLogo} alt="citylifes" className="w-full h-full object-contain drop-shadow-2xl" />
           </div>
           <h1 className="text-4xl font-bold animate-fade-in">citylifes</h1>
@@ -245,7 +245,7 @@ const Auth = () => {
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full h-12 text-base bg-[#4A90AD] hover:bg-[#3A7F9D]" 
+                    className="w-full h-12 text-base bg-[#5A9DB8] hover:bg-[#4A8CAD]" 
                     disabled={loading}
                   >
                     {loading ? "Logging in..." : "Login"}
@@ -368,7 +368,7 @@ const Auth = () => {
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full h-12 text-base bg-[#4A90AD] hover:bg-[#3A7F9D]" 
+                    className="w-full h-12 text-base bg-[#5A9DB8] hover:bg-[#4A8CAD]" 
                     disabled={loading}
                   >
                     {loading ? "Creating account..." : "Login"}
