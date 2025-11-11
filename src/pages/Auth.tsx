@@ -185,8 +185,8 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-6">
         {/* Logo and Branding */}
         <div className="flex flex-col items-center space-y-3 text-white">
-          <div className="w-40 h-40 bg-white/95 rounded-3xl flex items-center justify-center p-8 shadow-2xl animate-fade-in">
-            <img src={citylifesLogo} alt="citylifes" className="w-full h-full object-contain" />
+          <div className="w-40 h-40 flex items-center justify-center p-8 animate-fade-in">
+            <img src={citylifesLogo} alt="citylifes" className="w-full h-full object-contain drop-shadow-2xl" />
           </div>
           <h1 className="text-4xl font-bold animate-fade-in">citylifes</h1>
           <p className="text-lg text-white/90 animate-fade-in">Find your perfect space</p>
