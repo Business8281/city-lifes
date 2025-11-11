@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, AlertCircle } from "lucide-react";
-import Logo from "@/components/Logo";
+import citylifesLogo from "@/assets/citylifes-logo.png";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { authSchema } from "@/schemas/validationSchemas";
 import { z } from "zod";
@@ -185,8 +185,8 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-8">
         {/* Logo and Branding */}
         <div className="flex flex-col items-center space-y-4 text-white">
-          <div className="w-24 h-24 bg-white/20 rounded-3xl flex items-center justify-center backdrop-blur-sm">
-            <Logo className="w-16 h-16" color="white" />
+          <div className="w-24 h-24 flex items-center justify-center">
+            <img src={citylifesLogo} alt="Citylifes" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-4xl font-bold">citylifes</h1>
           <p className="text-lg text-white/90">Find your perfect space</p>
