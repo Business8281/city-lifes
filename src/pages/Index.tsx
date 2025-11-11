@@ -1,22 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "@/components/SearchBar";
-import CategoryCard from "@/components/CategoryCard";
 import PropertyCard from "@/components/PropertyCard";
 import { propertyTypes } from "@/data/properties";
 import heroImage from "@/assets/hero-cityscape.jpg";
-import { MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useProperties } from "@/hooks/useProperties";
 import { useLocation } from "@/contexts/LocationContext";
 import LocationSelector from "@/components/LocationSelector";
 import { useSponsoredProperties } from "@/hooks/useSponsoredProperties";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-} from "@/components/ui/carousel";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -25,7 +18,6 @@ const Index = () => {
   const { properties } = useProperties();
   const { location } = useLocation();
   const { sponsoredProperties, incrementClicks, incrementImpressions } = useSponsoredProperties(location);
-  const isMobile = useIsMobile();
   const sponsoredRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const trackedImpressions = useRef<Set<string>>(new Set());
 
@@ -62,13 +54,6 @@ const Index = () => {
       sponsoredRefs.current.delete(campaignId);
     }
   }, []);
-
-  // Chunk property types into groups of 6 (2x3 grid)
-  const ITEMS_PER_SLIDE = 6;
-  const categorySlides = [];
-  for (let i = 0; i < propertyTypes.length; i += ITEMS_PER_SLIDE) {
-    categorySlides.push(propertyTypes.slice(i, i + ITEMS_PER_SLIDE));
-  }
 
   // Filter properties based on location
   const filteredProperties = properties.filter((property) => {
@@ -159,57 +144,19 @@ const Index = () => {
             </Button>
           </div>
           
-          <div className="relative">
-            {isMobile ? (
-              <>
-                <Carousel 
-                  className="w-full"
-                  opts={{
-                    align: "start",
-                    loop: false,
-                  }}
-                >
-                  <CarouselContent className="-ml-2">
-                    {categorySlides.map((slide, slideIndex) => (
-                      <CarouselItem key={slideIndex} className="pl-2 basis-full">
-                        <div className="grid grid-cols-3 gap-2 py-2">
-                          {slide.map((category) => (
-                            <CategoryCard
-                              key={category.type}
-                              icon={category.icon}
-                              label={category.label}
-                              onClick={() => navigate(`/listings?type=${category.type}`)}
-                            />
-                          ))}
-                        </div>
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                </Carousel>
-
-                {categorySlides.length > 1 && (
-                  <div className="flex justify-center gap-1 mt-3">
-                    {categorySlides.map((_, index) => (
-                      <div
-                        key={index}
-                        className="h-1 rounded-full w-1 bg-muted-foreground/30 transition-all"
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="grid grid-cols-4 gap-4">
-                {propertyTypes.map((category) => (
-                  <CategoryCard
-                    key={category.type}
-                    icon={category.icon}
-                    label={category.label}
-                    onClick={() => navigate(`/listings?type=${category.type}`)}
-                  />
-                ))}
-              </div>
-            )}
+          <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+            {propertyTypes.map((type) => (
+              <Button
+                key={type.type}
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/listings?type=${type.type}`)}
+                className="shrink-0"
+              >
+                <span className="mr-1">{type.icon}</span>
+                {type.label}
+              </Button>
+            ))}
           </div>
         </section>
 

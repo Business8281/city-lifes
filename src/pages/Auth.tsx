@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, AlertCircle } from "lucide-react";
-import citylifesLogo from "@/assets/citylifes-logo.png";
+import Logo from "@/components/Logo";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { authSchema } from "@/schemas/validationSchemas";
 import { z } from "zod";
@@ -35,8 +35,8 @@ const Auth = () => {
     }
   }, [user, authLoading, navigate]);
 
-  const getErrorMessage = (error: any): string => {
-    const message = error?.message || "";
+  const getErrorMessage = (error: unknown): string => {
+    const message = (error as { message?: string })?.message || "";
     
     if (message.includes("Invalid login credentials")) {
       return "Invalid email or password. Please check your credentials and try again.";
@@ -174,19 +174,19 @@ const Auth = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[hsl(var(--auth-gradient-start))] to-[hsl(var(--auth-gradient-end))] flex items-center justify-center">
+      <div className="min-h-screen bg-[#5A9DB8] flex items-center justify-center">
         <div className="text-white text-lg">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[hsl(var(--auth-gradient-start))] to-[hsl(var(--auth-gradient-end))] flex items-center justify-center p-4 overflow-x-hidden max-w-full">
-      <div className="w-full max-w-md space-y-8">
+    <div className="min-h-screen bg-[#5A9DB8] flex items-center justify-center p-4 overflow-x-hidden max-w-full">
+      <div className="w-full max-w-md space-y-6">
         {/* Logo and Branding */}
-        <div className="flex flex-col items-center space-y-4 text-white">
-          <div className="w-24 h-24 flex items-center justify-center">
-            <img src={citylifesLogo} alt="Citylifes" className="w-full h-full object-contain" />
+        <div className="flex flex-col items-center space-y-3 text-white">
+          <div className="w-24 h-24 bg-white rounded-3xl flex items-center justify-center p-5 shadow-lg">
+            <Logo className="w-full h-full" color="#5A9DB8" />
           </div>
           <h1 className="text-4xl font-bold">citylifes</h1>
           <p className="text-lg text-white/90">Find your perfect space</p>
@@ -211,14 +211,14 @@ const Auth = () => {
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="login-email" className="text-base font-medium">
-                      Email
+                      Email or Phone Number
                     </Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                       <Input
                         id="login-email"
                         type="email"
-                        placeholder="you@example.com"
+                        placeholder="you@example.com or +1234567890"
                         className="pl-10 h-12 text-base"
                         value={loginData.email}
                         onChange={(e) =>
@@ -228,7 +228,7 @@ const Auth = () => {
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 hidden">
                     <Label htmlFor="login-password" className="text-base font-medium">
                       Password
                     </Label>
@@ -241,12 +241,11 @@ const Auth = () => {
                       onChange={(e) =>
                         setLoginData({ ...loginData, password: e.target.value })
                       }
-                      required
                     />
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full h-12 text-base bg-[hsl(var(--auth-gradient-start))] hover:bg-[hsl(var(--auth-gradient-end))]" 
+                    className="w-full h-12 text-base bg-[#5A9DB8] hover:bg-[#4A8CAD]" 
                     disabled={loading}
                   >
                     {loading ? "Logging in..." : "Login"}
@@ -317,14 +316,14 @@ const Auth = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="signup-email" className="text-base font-medium">
-                      Email
+                      Email or Phone Number
                     </Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                       <Input
                         id="signup-email"
                         type="email"
-                        placeholder="you@example.com"
+                        placeholder="you@example.com or +1234567890"
                         className="pl-10 h-12 text-base"
                         value={signupData.email}
                         onChange={(e) =>
@@ -334,7 +333,7 @@ const Auth = () => {
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 hidden">
                     <Label htmlFor="signup-password" className="text-base font-medium">
                       Password
                     </Label>
@@ -347,10 +346,9 @@ const Auth = () => {
                       onChange={(e) =>
                         setSignupData({ ...signupData, password: e.target.value })
                       }
-                      required
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 hidden">
                     <Label htmlFor="signup-confirm" className="text-base font-medium">
                       Confirm Password
                     </Label>
@@ -366,15 +364,14 @@ const Auth = () => {
                           confirmPassword: e.target.value,
                         })
                       }
-                      required
                     />
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full h-12 text-base bg-[hsl(var(--auth-gradient-start))] hover:bg-[hsl(var(--auth-gradient-end))]" 
+                    className="w-full h-12 text-base bg-[#5A9DB8] hover:bg-[#4A8CAD]" 
                     disabled={loading}
                   >
-                    {loading ? "Creating account..." : "Create Account"}
+                    {loading ? "Creating account..." : "Login"}
                   </Button>
                 </form>
 
