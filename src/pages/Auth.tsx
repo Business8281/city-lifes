@@ -185,11 +185,11 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-6">
         {/* Logo and Branding */}
         <div className="flex flex-col items-center space-y-3 text-white">
-          <div className="w-32 h-32 bg-[#4A90AD] rounded-3xl flex items-center justify-center p-6 shadow-xl">
+          <div className="w-40 h-40 bg-white/95 rounded-3xl flex items-center justify-center p-8 shadow-2xl animate-fade-in">
             <img src={citylifesLogo} alt="citylifes" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-4xl font-bold">citylifes</h1>
-          <p className="text-lg text-white/90">Find your perfect space</p>
+          <h1 className="text-4xl font-bold animate-fade-in">citylifes</h1>
+          <p className="text-lg text-white/90 animate-fade-in">Find your perfect space</p>
         </div>
 
         {/* Auth Card */}
