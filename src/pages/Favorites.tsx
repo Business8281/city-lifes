@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useAuth } from "@/contexts/AuthContext";
 import { propertyTypes } from "@/data/properties";
+import { Property } from "@/types/database";
 
 const Favorites = () => {
   const navigate = useNavigate();
@@ -27,18 +28,19 @@ const Favorites = () => {
           </div>
         ) : favoriteProperties.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-full">
-            {favoriteProperties.map((property: any) => (
+            {favoriteProperties.map((property: Property) => (
               <PropertyCard
                 key={property.id}
                 id={property.id}
                 image={property.images[0] || '/placeholder.svg'}
                 title={property.title}
-                type={propertyTypes.find(t => t.type === property.type)?.icon || '🏠'}
+                type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
                 price={`₹${property.price.toLocaleString()}`}
-                location={property.location}
+                priceType={property.price_type}
+                location={`${property.area}, ${property.city}`}
                 bedrooms={property.bedrooms || undefined}
                 bathrooms={property.bathrooms || undefined}
-                area={property.area ? `${property.area} sq.ft` : undefined}
+                area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
                 verified={property.status === 'active'}
                 onClick={() => navigate(`/property/${property.id}`)}
               />

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Message } from '@/types/database';
 import { toast } from 'sonner';
@@ -18,7 +18,7 @@ export function useMessages(userId: string | undefined) {
   const [conversations, setConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchConversations = async () => {
+  const fetchConversations = useCallback(async () => {
     if (!userId) {
       setLoading(false);
       return;
@@ -107,7 +107,7 @@ export function useMessages(userId: string | undefined) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     fetchConversations();
@@ -135,7 +135,7 @@ export function useMessages(userId: string | undefined) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [userId, fetchConversations]);
 
   const sendMessage = async (receiverId: string, content: string, propertyId?: string) => {
     if (!userId) {
@@ -198,5 +198,169 @@ export function useMessages(userId: string | undefined) {
     }
   };
 
-  return { conversations, loading, sendMessage, markAsRead, refetch: fetchConversations };
+  const deleteMessage = async (messageId: string) => {
+    if (!userId) {
+      toast.error('Please login to delete messages');
+      return;
+    }
+
+    try {
+      console.log('🗑️ Deleting message:', messageId);
+      
+      // Hard delete - permanently remove from database
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId)
+        .eq('sender_id', userId); // Only sender can delete their own messages
+
+      if (error) {
+        console.error('❌ Delete message error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Message deleted successfully');
+      toast.success('Message deleted');
+      
+      // Immediately update local state for instant UI update
+      setConversations(prevConvs => 
+        prevConvs.map(conv => ({
+          ...conv,
+          messages: conv.messages.filter((msg: any) => msg.id !== messageId),
+          lastMessage: conv.messages.filter((msg: any) => msg.id !== messageId)[0]
+        })).filter(conv => conv.messages.length > 0)
+      );
+    } catch (error: any) {
+      console.error('Error deleting message:', error);
+      toast.error(error.message || 'Failed to delete message');
+    }
+  };
+
+  const editMessage = async (messageId: string, newContent: string) => {
+    if (!userId) {
+      toast.error('Please login to edit messages');
+      return;
+    }
+
+    try {
+      // Validate new content
+      const validatedData = messageSchema.parse({
+        content: newContent,
+        receiver_id: userId, // Dummy value for validation
+      });
+
+      console.log('✏️ Editing message:', messageId);
+
+      // Encrypt new content
+      const { data: messageData } = await supabase
+        .from('messages')
+        .select('receiver_id')
+        .eq('id', messageId)
+        .single();
+
+      if (!messageData) {
+        throw new Error('Message not found');
+      }
+
+      const encryptedContent = await encryptMessage(
+        validatedData.content,
+        userId,
+        messageData.receiver_id
+      );
+
+      const { error } = await supabase
+        .from('messages')
+        .update({ 
+          content: encryptedContent,
+          edited: true,
+          edited_at: new Date().toISOString()
+        } as any)
+        .eq('id', messageId)
+        .eq('sender_id', userId); // Only sender can edit their own messages
+
+      if (error) {
+        console.error('❌ Edit message error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Message edited successfully');
+      toast.success('Message updated');
+      
+      // Immediately update local state for instant UI update
+      setConversations(prevConvs => 
+        prevConvs.map(conv => ({
+          ...conv,
+          messages: conv.messages.map((msg: any) => 
+            msg.id === messageId 
+              ? { ...msg, content: validatedData.content, edited: true, edited_at: new Date().toISOString() }
+              : msg
+          )
+        }))
+      );
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      } else {
+        console.error('Error editing message:', error);
+        toast.error(error.message || 'Failed to edit message');
+      }
+    }
+  };
+
+  const deleteConversation = async (conversationUserId: string) => {
+    if (!userId) {
+      toast.error('Please login to delete conversations');
+      return;
+    }
+
+    try {
+      console.log('🗑️ Deleting entire conversation with:', conversationUserId);
+      
+      // Delete all messages where user is sender and other is receiver
+      const { error: error1 } = await supabase
+        .from('messages')
+        .delete()
+        .eq('sender_id', userId)
+        .eq('receiver_id', conversationUserId);
+
+      if (error1) {
+        console.error('❌ Delete conversation error (sent messages):', error1);
+        throw error1;
+      }
+
+      // Delete all messages where other is sender and user is receiver
+      const { error: error2 } = await supabase
+        .from('messages')
+        .delete()
+        .eq('sender_id', conversationUserId)
+        .eq('receiver_id', userId);
+
+      if (error2) {
+        console.error('❌ Delete conversation error (received messages):', error2);
+        throw error2;
+      }
+      
+      console.log('✅ Conversation deleted successfully');
+      toast.success('Conversation deleted');
+      
+      // Immediately update local state to remove the conversation
+      setConversations(prevConvs => 
+        prevConvs.filter(conv => conv.user?.id !== conversationUserId)
+      );
+    } catch (error: any) {
+      console.error('Error deleting conversation:', error);
+      toast.error(error.message || 'Failed to delete conversation');
+    }
+  };
+
+  return { 
+    conversations, 
+    loading, 
+    sendMessage, 
+    markAsRead, 
+    deleteMessage, 
+    editMessage, 
+    deleteConversation,
+    refetch: fetchConversations 
+  };
 }

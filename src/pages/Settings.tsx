@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Moon, Sun, Bell, Lock, Globe, HelpCircle, LogOut } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Lock, Globe, HelpCircle, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -46,26 +46,7 @@ const Settings = () => {
           </Card>
         </div>
 
-        {/* Notifications */}
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Notifications</h2>
-          <Card className="divide-y">
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <Bell className="h-5 w-5 text-muted-foreground" />
-                <Label htmlFor="push-notif">Push Notifications</Label>
-              </div>
-              <Switch id="push-notif" defaultChecked />
-            </div>
-            <div className="flex items-center justify-between p-4">
-              <div className="flex items-center gap-3">
-                <Bell className="h-5 w-5 text-muted-foreground" />
-                <Label htmlFor="email-notif">Email Notifications</Label>
-              </div>
-              <Switch id="email-notif" defaultChecked />
-            </div>
-          </Card>
-        </div>
+        {/* Notifications section removed */}
 
         {/* Privacy & Security */}
         <div>

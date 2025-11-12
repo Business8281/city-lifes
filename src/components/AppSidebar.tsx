@@ -1,4 +1,4 @@
-import { Home, Map, MessageCircle, Heart, User, Plus, FileText, Bell } from "lucide-react";
+import { Home, Map, MessageCircle, Heart, User, Plus, FileText } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -28,7 +28,6 @@ const menuItems = [
 const actionItems = [
   { title: "Add Property", url: "/add-property", icon: Plus },
   { title: "My Listings", url: "/my-listings", icon: FileText },
-  { title: "Notifications", url: "/notifications", icon: Bell },
 ];
 
 export function AppSidebar() {

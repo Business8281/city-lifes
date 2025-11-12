@@ -16,7 +16,10 @@ SVG_FILE="public/icon.svg"
 
 # Create temporary PNG at high resolution
 echo "📦 Creating base PNG from SVG..."
+# Transparent base for web/android assets
 convert -background none -density 1024 "$SVG_FILE" -resize 1024x1024 temp_icon.png
+# Opaque (no alpha) base for iOS app icons (Apple rejects transparency)
+convert -background white -alpha remove -alpha off -density 1024 "$SVG_FILE" -resize 1024x1024 temp_icon_ios.png
 
 # Web Icons
 echo "🌐 Generating web favicons..."
@@ -27,25 +30,25 @@ convert temp_icon.png -resize 512x512 public/icon-512.png
 convert temp_icon.png -resize 180x180 public/apple-touch-icon.png
 convert temp_icon.png -resize 32x32 public/favicon.ico
 
-# iOS App Icons
+# iOS App Icons (force opaque, strip alpha)
 echo "📱 Generating iOS app icons..."
 IOS_PATH="ios/App/App/Assets.xcassets/AppIcon.appiconset"
 
-convert temp_icon.png -resize 20x20 "$IOS_PATH/AppIcon-20x20@1x.png"
-convert temp_icon.png -resize 40x40 "$IOS_PATH/AppIcon-20x20@2x.png"
-convert temp_icon.png -resize 60x60 "$IOS_PATH/AppIcon-20x20@3x.png"
-convert temp_icon.png -resize 29x29 "$IOS_PATH/AppIcon-29x29@1x.png"
-convert temp_icon.png -resize 58x58 "$IOS_PATH/AppIcon-29x29@2x.png"
-convert temp_icon.png -resize 87x87 "$IOS_PATH/AppIcon-29x29@3x.png"
-convert temp_icon.png -resize 40x40 "$IOS_PATH/AppIcon-40x40@1x.png"
-convert temp_icon.png -resize 80x80 "$IOS_PATH/AppIcon-40x40@2x.png"
-convert temp_icon.png -resize 120x120 "$IOS_PATH/AppIcon-40x40@3x.png"
-convert temp_icon.png -resize 120x120 "$IOS_PATH/AppIcon-60x60@2x.png"
-convert temp_icon.png -resize 180x180 "$IOS_PATH/AppIcon-60x60@3x.png"
-convert temp_icon.png -resize 76x76 "$IOS_PATH/AppIcon-76x76@1x.png"
-convert temp_icon.png -resize 152x152 "$IOS_PATH/AppIcon-76x76@2x.png"
-convert temp_icon.png -resize 167x167 "$IOS_PATH/AppIcon-83.5x83.5@2x.png"
-convert temp_icon.png -resize 1024x1024 "$IOS_PATH/AppIcon-512@2x.png"
+convert temp_icon_ios.png -strip -resize 20x20 "$IOS_PATH/AppIcon-20x20@1x.png"
+convert temp_icon_ios.png -strip -resize 40x40 "$IOS_PATH/AppIcon-20x20@2x.png"
+convert temp_icon_ios.png -strip -resize 60x60 "$IOS_PATH/AppIcon-20x20@3x.png"
+convert temp_icon_ios.png -strip -resize 29x29 "$IOS_PATH/AppIcon-29x29@1x.png"
+convert temp_icon_ios.png -strip -resize 58x58 "$IOS_PATH/AppIcon-29x29@2x.png"
+convert temp_icon_ios.png -strip -resize 87x87 "$IOS_PATH/AppIcon-29x29@3x.png"
+convert temp_icon_ios.png -strip -resize 40x40 "$IOS_PATH/AppIcon-40x40@1x.png"
+convert temp_icon_ios.png -strip -resize 80x80 "$IOS_PATH/AppIcon-40x40@2x.png"
+convert temp_icon_ios.png -strip -resize 120x120 "$IOS_PATH/AppIcon-40x40@3x.png"
+convert temp_icon_ios.png -strip -resize 120x120 "$IOS_PATH/AppIcon-60x60@2x.png"
+convert temp_icon_ios.png -strip -resize 180x180 "$IOS_PATH/AppIcon-60x60@3x.png"
+convert temp_icon_ios.png -strip -resize 76x76 "$IOS_PATH/AppIcon-76x76@1x.png"
+convert temp_icon_ios.png -strip -resize 152x152 "$IOS_PATH/AppIcon-76x76@2x.png"
+convert temp_icon_ios.png -strip -resize 167x167 "$IOS_PATH/AppIcon-83.5x83.5@2x.png"
+convert temp_icon_ios.png -strip -resize 1024x1024 "$IOS_PATH/AppIcon-512@2x.png"
 
 # Android App Icons
 echo "🤖 Generating Android app icons..."
@@ -88,7 +91,7 @@ convert temp_icon.png -resize 864x864 -background "#3E88A5" -gravity center -ext
 convert temp_icon.png -resize 1152x1152 -background "#3E88A5" -gravity center -extent 7680x4320 "$ANDROID_RES/drawable-land-xxxhdpi/splash.png"
 
 # Clean up
-rm temp_icon.png
+rm -f temp_icon.png temp_icon_ios.png
 
 echo "✅ All icons generated successfully!"
 echo "📦 Run 'npx cap sync' to update native platforms"

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Functionality Debug Console</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            color: #667eea;
+            margin-top: 30px;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        code {
+            background: #e9ecef;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+        .console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+        .success {
+            color: #4ade80;
+        }
+        .error {
+            color: #f87171;
+        }
+        .warning {
+            color: #fbbf24;
+        }
+        .info {
+            color: #60a5fa;
+        }
+        ul {
+            line-height: 1.8;
+        }
+        .button {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin: 10px 10px 10px 0;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #5568d3;
+        }
+        .checklist {
+            list-style: none;
+            padding-left: 0;
+        }
+        .checklist li {
+            padding: 10px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 6px;
+            position: relative;
+            padding-left: 40px;
+        }
+        .checklist li:before {
+            content: "□";
+            position: absolute;
+            left: 15px;
+            font-size: 20px;
+            color: #667eea;
+        }
+        .alert {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            border-left: 4px solid;
+        }
+        .alert-info {
+            background: #e0f2fe;
+            border-color: #0284c7;
+            color: #0c4a6e;
+        }
+        .alert-success {
+            background: #dcfce7;
+            border-color: #16a34a;
+            color: #14532d;
+        }
+        .alert-warning {
+            background: #fef3c7;
+            border-color: #ca8a04;
+            color: #713f12;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗑️ Delete Functionality Debug Console</h1>
+        
+        <div class="alert alert-success">
+            <strong>✅ Enhanced Debugging Active!</strong><br>
+            Your delete functionality now has comprehensive logging. Follow the steps below to test it.
+        </div>
+
+        <h2>📋 Testing Steps</h2>
+
+        <div class="step">
+            <h3>Step 1: Start Your Development Server</h3>
+            <p>Make sure your app is running:</p>
+            <div class="console-output">
+                <span class="info">$</span> npm run dev
+            </div>
+            <a href="http://localhost:5173" target="_blank" class="button">Open App →</a>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Open Browser DevTools</h3>
+            <ul class="checklist">
+                <li><strong>Windows/Linux:</strong> Press F12 or Ctrl+Shift+I</li>
+                <li><strong>Mac:</strong> Press Cmd+Option+I</li>
+                <li>Click on the "Console" tab</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Navigate to "My Listings"</h3>
+            <ul>
+                <li>Make sure you're logged in</li>
+                <li>Click on your profile icon</li>
+                <li>Go to "My Listings" page</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Try to Delete a Property</h3>
+            <ul>
+                <li>Find any property you own</li>
+                <li>Click the <strong>three-dot menu (⋮)</strong></li>
+                <li>Click <strong>"Delete"</strong></li>
+                <li>Watch the console for log messages</li>
+            </ul>
+        </div>
+
+        <h2>🔍 What to Look For in Console</h2>
+
+        <div class="step">
+            <h3>Successful Delete Flow:</h3>
+            <div class="console-output">
+<span class="info">🗑️ Delete button clicked for property: abc-123 Test Property</span>
+<span class="info">🗑️ handleDelete called, deleteDialog: abc-123</span>
+<span class="success">✅ deleteDialog is truthy, calling deleteProperty...</span>
+<span class="info">🗑️ deleteProperty called with ID: abc-123</span>
+<span class="info">Current user: user-456 test@example.com</span>
+<span class="info">Property to delete: {id: "abc-123", title: "Test Property", user_id: "user-456"}</span>
+<span class="info">Ownership check: {propertyUserId: "user-456", currentUserId: "user-456", matches: true}</span>
+<span class="info">Attempting to delete property: abc-123</span>
+<span class="success">✅ Delete successful: [{...}]</span>
+<span class="success">✅ deleteProperty completed successfully</span>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>Common Error Patterns:</h3>
+            
+            <h4>❌ Not Authenticated</h4>
+            <div class="console-output">
+<span class="error">Current user: undefined undefined</span>
+<span class="error">❌ Error: User not authenticated</span>
+            </div>
+            <div class="alert alert-warning">
+                <strong>Solution:</strong> Log out and log back in to refresh your session.
+            </div>
+
+            <h4>❌ Ownership Mismatch</h4>
+            <div class="console-output">
+<span class="error">Ownership check: {propertyUserId: "user-123", currentUserId: "user-456", matches: false}</span>
+<span class="error">❌ Delete error: {code: "PGRST301", message: "permission denied"}</span>
+            </div>
+            <div class="alert alert-warning">
+                <strong>Solution:</strong> You can only delete properties you created. This property belongs to another user.
+            </div>
+
+            <h4>❌ RLS Policy Violation</h4>
+            <div class="console-output">
+<span class="error">❌ Delete error: {code: "42501", message: "new row violates row-level security policy"}</span>
+            </div>
+            <div class="alert alert-warning">
+                <strong>Solution:</strong> Check your RLS policies in Supabase dashboard.
+            </div>
+        </div>
+
+        <h2>🎯 Quick Verification</h2>
+
+        <div class="step">
+            <h3>Check Database Status</h3>
+            <p>Verify that CASCADE DELETE is active:</p>
+            <a href="https://supabase.com/dashboard/project/thxrxacsrwtadvvdwken/editor" target="_blank" class="button">Open Supabase Editor →</a>
+            
+            <p style="margin-top: 20px;">Run this query to verify CASCADE DELETE:</p>
+            <div class="console-output">
+<span class="info">SELECT</span> 
+  tc.table_name,
+  kcu.column_name,
+  ccu.table_name AS foreign_table_name,
+  rc.delete_rule
+<span class="info">FROM</span> information_schema.table_constraints AS tc
+<span class="info">JOIN</span> information_schema.referential_constraints AS rc
+  <span class="info">ON</span> rc.constraint_name = tc.constraint_name
+<span class="info">JOIN</span> information_schema.key_column_usage AS kcu
+  <span class="info">ON</span> kcu.constraint_name = tc.constraint_name
+<span class="info">JOIN</span> information_schema.constraint_column_usage AS ccu
+  <span class="info">ON</span> ccu.constraint_name = tc.constraint_name
+<span class="info">WHERE</span> ccu.table_name = <span class="success">'properties'</span>
+  <span class="info">AND</span> rc.delete_rule = <span class="success">'CASCADE'</span>;
+            </div>
+            
+            <div class="alert alert-success">
+                <strong>Expected Result:</strong> You should see 5+ rows showing CASCADE DELETE is active on favorites, messages, inquiries, contact_reveals, and ad_campaigns.
+            </div>
+        </div>
+
+        <h2>📝 Debug Checklist</h2>
+
+        <ul class="checklist">
+            <li>Dev server is running (npm run dev)</li>
+            <li>Browser console is open (F12)</li>
+            <li>User is logged in</li>
+            <li>On "My Listings" page</li>
+            <li>Can see property cards</li>
+            <li>Three-dot menu (⋮) opens</li>
+            <li>Delete option is visible</li>
+            <li>Clicking Delete shows console logs</li>
+            <li>Confirmation dialog appears</li>
+            <li>Clicking confirm shows more console logs</li>
+        </ul>
+
+        <h2>🆘 Still Not Working?</h2>
+
+        <div class="alert alert-info">
+            <strong>Share These Details:</strong>
+            <ol>
+                <li>Copy all console messages (especially error messages in red)</li>
+                <li>Screenshot of the console output</li>
+                <li>Which step fails (button click, dialog, confirmation, or delete)</li>
+                <li>Any toast notifications that appear</li>
+            </ol>
+            <p>With these details, I can identify the exact issue!</p>
+        </div>
+
+        <h2>✅ What Was Fixed</h2>
+
+        <div class="step">
+            <ul>
+                <li>✅ <strong>Enhanced Logging:</strong> Added console logs at every step of the delete process</li>
+                <li>✅ <strong>Ownership Check:</strong> Verifies user owns the property before deleting</li>
+                <li>✅ <strong>Auth Verification:</strong> Confirms user is authenticated</li>
+                <li>✅ <strong>Detailed Errors:</strong> Shows specific error codes, messages, and hints</li>
+                <li>✅ <strong>CASCADE DELETE:</strong> All related data (favorites, messages, etc.) automatically deletes</li>
+                <li>✅ <strong>Admin Policy:</strong> Admins can delete any property</li>
+            </ul>
+        </div>
+
+        <div class="alert alert-success">
+            <strong>🎉 Ready to Test!</strong><br>
+            Click the button below to open your app and follow the steps above.
+        </div>
+
+        <a href="http://localhost:5173" target="_blank" class="button">Open App & Start Testing →</a>
+        <a href="https://supabase.com/dashboard/project/thxrxacsrwtadvvdwken" target="_blank" class="button">Open Supabase Dashboard →</a>
+    </div>
+</body>
+</html>

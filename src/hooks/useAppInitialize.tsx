@@ -3,6 +3,7 @@ import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Capacitor } from '@capacitor/core';
+import { configureSystemBars } from "@/utils/systemBars";
 
 export const useAppInitialize = () => {
   useEffect(() => {
@@ -10,6 +11,8 @@ export const useAppInitialize = () => {
       // Only run on native platforms
       if (!Capacitor.isNativePlatform()) return;
 
+      // Runtime system bar configuration for native platforms.
+      configureSystemBars("light");
       try {
         // Configure status bar
         await StatusBar.setStyle({ style: Style.Dark });

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reset Your Password - citylifes</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; background-color: #ffffff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+          <!-- Header -->
+          <tr>
+            <td style="padding: 40px 40px 0 40px; text-align: center;">
+              <h1 style="margin: 0; color: #1a1a1a; font-size: 28px; font-weight: 600;">Password Reset Request</h1>
+            </td>
+          </tr>
+          
+          <!-- Body -->
+          <tr>
+            <td style="padding: 30px 40px;">
+              <p style="margin: 0 0 20px 0; color: #4a4a4a; font-size: 16px; line-height: 1.6;">
+                Hello {{ .Email }},
+              </p>
+              <p style="margin: 0 0 20px 0; color: #4a4a4a; font-size: 16px; line-height: 1.6;">
+                We received a request to reset your password for your citylifes account. Use the verification code below to set a new password:
+              </p>
+              
+              <!-- OTP Code Box -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="padding: 20px 0;">
+                    <div style="background: linear-gradient(135deg, #5B9EB9 0%, #4A8CAD 100%); border-radius: 8px; padding: 24px; display: inline-block;">
+                      <p style="margin: 0 0 8px 0; color: #ffffff; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: 500;">Password Reset Code</p>
+                      <p style="margin: 0; color: #ffffff; font-size: 36px; font-weight: 700; letter-spacing: 8px; font-family: 'Courier New', monospace;">{{ .Token }}</p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="margin: 20px 0 0 0; color: #666666; font-size: 14px; line-height: 1.6;">
+                This code will expire in <strong>1 hour</strong>. If you didn't request a password reset, please ignore this email or contact support if you have concerns.
+              </p>
+              
+              <div style="margin-top: 30px; padding: 16px; background-color: #fff4e5; border-left: 4px solid #ff9800; border-radius: 4px;">
+                <p style="margin: 0; color: #663c00; font-size: 14px; line-height: 1.6;">
+                  <strong>⚠️ Security Reminder:</strong> Never share this code with anyone. citylifes staff will never ask for your verification code.
+                </p>
+              </div>
+            </td>
+          </tr>
+          
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 0 40px 40px 40px; border-top: 1px solid #e5e5e5;">
+              <p style="margin: 20px 0 0 0; color: #999999; font-size: 13px; line-height: 1.6;">
+                This is an automated message from citylifes. Please do not reply to this email.
+              </p>
+              <p style="margin: 10px 0 0 0; color: #999999; font-size: 13px;">
+                © 2025 citylifes. All rights reserved.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

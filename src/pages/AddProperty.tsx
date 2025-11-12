@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Upload, X, MapPin } from "lucide-react";
+import { ArrowLeft, Upload, X, MapPin, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +13,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
@@ -24,6 +37,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Geolocation } from "@capacitor/geolocation";
 import { propertySchema } from "@/schemas/validationSchemas";
 import { z } from "zod";
+import { cn } from "@/lib/utils";
 
 const categoryConfigs = {
   apartment: { 
@@ -92,6 +106,82 @@ const categoryConfigs = {
   },
 };
 
+const businessTypes = [
+  { value: "Retail Store", label: "🛍️ Retail Store" },
+  { value: "E-commerce", label: "🛒 E-commerce / Online Store" },
+  { value: "Supermarket", label: "🏪 Supermarket / Grocery" },
+  { value: "Restaurant", label: "🍽️ Restaurant / Fine Dining" },
+  { value: "Fast Food", label: "🍔 Fast Food / Quick Service" },
+  { value: "Cafe", label: "☕ Cafe / Coffee Shop" },
+  { value: "Bakery", label: "🥖 Bakery / Confectionery" },
+  { value: "Cloud Kitchen", label: "🍱 Cloud Kitchen / Ghost Kitchen" },
+  { value: "Hotel", label: "🏨 Hotel / Hospitality" },
+  { value: "Resort", label: "🏖️ Resort / Vacation Property" },
+  { value: "Salon", label: "💇 Salon / Beauty Parlor" },
+  { value: "Spa", label: "💆 Spa / Wellness Center" },
+  { value: "Gym", label: "💪 Gym / Fitness Center" },
+  { value: "Yoga Studio", label: "🧘 Yoga Studio / Meditation Center" },
+  { value: "Hospital", label: "🏥 Hospital / Medical Center" },
+  { value: "Clinic", label: "⚕️ Clinic / Diagnostic Center" },
+  { value: "Pharmacy", label: "💊 Pharmacy / Medical Store" },
+  { value: "Dental Clinic", label: "🦷 Dental Clinic" },
+  { value: "Veterinary", label: "🐾 Veterinary Clinic / Pet Care" },
+  { value: "School", label: "🏫 School / Educational Institute" },
+  { value: "Coaching Center", label: "📚 Coaching / Training Center" },
+  { value: "Daycare", label: "👶 Daycare / Preschool" },
+  { value: "Manufacturing", label: "🏭 Manufacturing Unit" },
+  { value: "Factory", label: "⚙️ Factory / Production Unit" },
+  { value: "Warehouse", label: "📦 Warehouse / Storage Facility" },
+  { value: "Logistics", label: "🚚 Logistics / Transportation" },
+  { value: "IT Services", label: "💻 IT Services / Software Company" },
+  { value: "Digital Marketing", label: "📱 Digital Marketing Agency" },
+  { value: "Consulting", label: "📊 Consulting / Advisory Services" },
+  { value: "Real Estate", label: "🏘️ Real Estate Agency" },
+  { value: "Construction", label: "🏗️ Construction / Civil Works" },
+  { value: "Interior Design", label: "🎨 Interior Design / Architecture" },
+  { value: "Event Management", label: "🎉 Event Management / Planning" },
+  { value: "Photography", label: "📸 Photography Studio" },
+  { value: "Printing Press", label: "🖨️ Printing Press / Graphics" },
+  { value: "Laundry", label: "🧺 Laundry / Dry Cleaning" },
+  { value: "Car Wash", label: "🚗 Car Wash / Detailing" },
+  { value: "Auto Repair", label: "🔧 Auto Repair / Garage" },
+  { value: "Electronics Repair", label: "📱 Electronics Repair" },
+  { value: "Jewellery", label: "💎 Jewellery Store" },
+  { value: "Furniture", label: "🛋️ Furniture Store / Showroom" },
+  { value: "Electronics Store", label: "📺 Electronics / Appliances Store" },
+  { value: "Fashion Boutique", label: "👗 Fashion Boutique / Clothing" },
+  { value: "Footwear", label: "👟 Footwear / Shoe Store" },
+  { value: "Books", label: "📖 Book Store / Stationery" },
+  { value: "Toys", label: "🧸 Toys / Kids Store" },
+  { value: "Sports Shop", label: "⚽ Sports Equipment / Fitness Store" },
+  { value: "Hardware Store", label: "🔨 Hardware / Building Materials" },
+  { value: "Paint Shop", label: "🎨 Paint / Hardware Store" },
+  { value: "Gas Station", label: "⛽ Petrol Pump / Gas Station" },
+  { value: "Travel Agency", label: "✈️ Travel Agency / Tours" },
+  { value: "Insurance", label: "🛡️ Insurance Agency" },
+  { value: "Bank Branch", label: "🏦 Bank Branch / Financial Services" },
+  { value: "Co-working", label: "💼 Co-working Space" },
+  { value: "Call Center", label: "📞 Call Center / BPO" },
+  { value: "Security Services", label: "🔐 Security Services" },
+  { value: "Pest Control", label: "🐜 Pest Control Services" },
+  { value: "Cleaning Services", label: "🧹 Cleaning / Housekeeping Services" },
+  { value: "Courier", label: "📮 Courier / Delivery Services" },
+  { value: "Farm", label: "🌾 Farm / Agriculture Business" },
+  { value: "Dairy", label: "🥛 Dairy / Milk Products" },
+  { value: "Poultry", label: "🐔 Poultry Farm" },
+  { value: "Fish Farm", label: "🐟 Fish Farm / Aquaculture" },
+  { value: "Solar Energy", label: "☀️ Solar Energy / Renewable Energy" },
+  { value: "Water Plant", label: "💧 Water Plant / Purification" },
+  { value: "Recycling", label: "♻️ Recycling / Waste Management" },
+  { value: "Theater", label: "🎭 Theater / Entertainment" },
+  { value: "Gaming Arcade", label: "🎮 Gaming Arcade / Esports" },
+  { value: "Pub", label: "🍻 Pub / Bar / Lounge" },
+  { value: "Night Club", label: "🎵 Night Club / Disco" },
+  { value: "Franchise", label: "🏢 Franchise Business" },
+  { value: "Online Business", label: "🌐 Online Business / Startup" },
+  { value: "Other", label: "📋 Other Business" },
+];
+
 const AddProperty = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -101,10 +191,13 @@ const AddProperty = () => {
   const editPropertyId = searchParams.get('edit');
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [loading, setLoading] = useState(!!editPropertyId);
+  const [businessTypeOpen, setBusinessTypeOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     type: "",
+    listingType: "", // 'sale' or 'rent'
     price: "",
     city: "",
     area: "",
@@ -156,6 +249,7 @@ const AddProperty = () => {
           setFormData({
             title: data.title || "",
             type: data.property_type || "",
+            listingType: data.price_type || "",
             price: data.price?.toString() || "",
             city: data.city || "",
             area: data.area || "",
@@ -183,7 +277,7 @@ const AddProperty = () => {
           });
           setImages(data.images || []);
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error loading property:', error);
         sonnerToast.error("Failed to load property");
         navigate('/my-listings');
@@ -214,14 +308,127 @@ const AddProperty = () => {
     }
   }, [location, editPropertyId]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Auto-fill owner name and phone from user profile
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!user || editPropertyId) return; // Don't override when editing
+      
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name, phone')
+          .eq('id', user.id)
+          .single();
+        
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error loading profile:', error);
+          return;
+        }
+        
+        if (data) {
+          setFormData(prev => ({
+            ...prev,
+            ownerName: data.full_name || user.user_metadata?.full_name || "",
+            ownerPhone: data.phone || user.user_metadata?.phone || "",
+          }));
+        } else {
+          // Fallback to user_metadata if profile doesn't exist
+          setFormData(prev => ({
+            ...prev,
+            ownerName: user.user_metadata?.full_name || "",
+            ownerPhone: user.user_metadata?.phone || "",
+          }));
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      }
+    };
+    
+    loadUserProfile();
+  }, [user, editPropertyId]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
-    if (files) {
-      const filesArray = Array.from(files);
-      const newImages = filesArray.map((file) => URL.createObjectURL(file));
-      setImages([...images, ...newImages]);
-      setImageFiles([...imageFiles, ...filesArray]);
+    if (!files) return;
+    const filesArray = Array.from(files);
+    const processedImages: { preview: string; file: File }[] = [];
+
+    for (const file of filesArray) {
+      // Limit file size to 10MB
+      if (file.size > 10 * 1024 * 1024) {
+        sonnerToast.error(`Image ${file.name} is too large (max 10MB allowed)`);
+        continue;
+      }
+      // Create preview URL
+      const preview = URL.createObjectURL(file);
+      // Compress image if it's too large (>1MB)
+      let processedFile = file;
+      if (file.size > 1024 * 1024) {
+        try {
+          processedFile = await compressImage(file);
+          sonnerToast.success(`Compressed ${file.name}`);
+        } catch (error) {
+          console.error('Compression error:', error);
+          // Use original file if compression fails
+        }
+      }
+      processedImages.push({ preview, file: processedFile });
     }
+    setImages([...images, ...processedImages.map(img => img.preview)]);
+    setImageFiles([...imageFiles, ...processedImages.map(img => img.file)]);
+  };
+
+  // Helper function to compress images
+  const compressImage = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Calculate new dimensions (max 1920px width/height)
+          let width = img.width;
+          let height = img.height;
+          const maxDimension = 1920;
+          
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = (height / width) * maxDimension;
+              width = maxDimension;
+            } else {
+              width = (width / height) * maxDimension;
+              height = maxDimension;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          ctx?.drawImage(img, 0, 0, width, height);
+          
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              } else {
+                reject(new Error('Compression failed'));
+              }
+            },
+            'image/jpeg',
+            0.85 // 85% quality
+          );
+        };
+        img.onerror = () => reject(new Error('Image load failed'));
+      };
+      reader.onerror = () => reject(new Error('File read failed'));
+    });
   };
 
   const removeImage = (index: number) => {
@@ -262,21 +469,23 @@ const AddProperty = () => {
     try {
       setSubmitting(true);
 
-      // Upload new images to Supabase Storage
+      // Upload new images to Supabase Storage in parallel for faster processing
       let uploadedImageUrls: string[] = [];
       
       if (imageFiles.length > 0) {
-        sonnerToast.info("Uploading images...");
+        setUploadProgress(0);
+        sonnerToast.info(`Uploading ${imageFiles.length} image${imageFiles.length > 1 ? 's' : ''}...`);
         
-        for (let i = 0; i < imageFiles.length; i++) {
-          const file = imageFiles[i];
+        // Upload all images in parallel using Promise.all for maximum speed
+        let completedUploads = 0;
+        const uploadPromises = imageFiles.map(async (file, i) => {
           const fileExt = file.name.split('.').pop();
-          const fileName = `${user.id}/${Date.now()}_${i}.${fileExt}`;
+          const fileName = `${user.id}/${Date.now()}_${i}_${Math.random().toString(36).substring(7)}.${fileExt}`;
           
           const { data, error: uploadError } = await supabase.storage
             .from('property-images')
             .upload(fileName, file, {
-              cacheControl: '3600',
+              cacheControl: '31536000', // 1 year cache for better performance
               upsert: false
             });
           
@@ -290,8 +499,17 @@ const AddProperty = () => {
             .from('property-images')
             .getPublicUrl(data.path);
           
-          uploadedImageUrls.push(publicUrl);
-        }
+          // Update progress
+          completedUploads++;
+          setUploadProgress(Math.round((completedUploads / imageFiles.length) * 100));
+          
+          return publicUrl;
+        });
+        
+        // Wait for all uploads to complete simultaneously
+        uploadedImageUrls = await Promise.all(uploadPromises);
+        setUploadProgress(100);
+        sonnerToast.success("All images uploaded successfully!");
       }
       
       // Keep existing images (when editing) and add new ones
@@ -300,13 +518,26 @@ const AddProperty = () => {
         ...uploadedImageUrls // Add newly uploaded images
       ];
 
+      // Clean phone number - remove all non-digit characters
+      const cleanedPhone = formData.ownerPhone.replace(/\D/g, '').slice(-10);
+      
+      // Determine price_type for validation
+      let validationPriceType: 'monthly' | 'yearly' | 'fixed' = 'monthly';
+      if (formData.type === 'business') {
+        validationPriceType = 'fixed';
+      } else if (formData.listingType === 'sale') {
+        validationPriceType = 'fixed';
+      } else if (formData.listingType === 'rent') {
+        validationPriceType = 'monthly';
+      }
+      
       // Validate form data using zod
       const validationData = {
         title: formData.title,
         description: formData.description || undefined,
         propertyType: formData.type,
         price: parseFloat(formData.price),
-        priceType: "monthly" as const,
+        priceType: validationPriceType,
         city: formData.city,
         area: formData.area,
         pinCode: formData.pinCode,
@@ -315,7 +546,7 @@ const AddProperty = () => {
         bathrooms: formData.bathrooms ? parseInt(formData.bathrooms) : undefined,
         areaSqft: formData.areaSqft ? parseInt(formData.areaSqft) : undefined,
         ownerName: formData.ownerName,
-        ownerPhone: formData.ownerPhone,
+        ownerPhone: cleanedPhone,
         ownerEmail: undefined,
         isAgent: false,
         amenities: formData.amenities,
@@ -327,20 +558,63 @@ const AddProperty = () => {
       } catch (validationError) {
         if (validationError instanceof z.ZodError) {
           const firstError = validationError.errors[0];
-          sonnerToast.error(`Validation error: ${firstError.message}`);
+          const fieldName = firstError.path.join('.');
+          sonnerToast.error(`Validation Error`, {
+            description: `${fieldName}: ${firstError.message}`
+          });
+          console.error('Validation errors:', validationError.errors);
           setSubmitting(false);
           return;
         }
       }
 
       // Prepare property data for database
+      // For business category, append business details to description
+      let finalDescription = formData.description;
+      if (formData.type === 'business' && formData.businessType) {
+        const businessDetails = [
+          `Business Type: ${formData.businessType}`,
+          formData.revenue ? `Revenue: ₹${formData.revenue}` : '',
+          formData.employees ? `Employees: ${formData.employees}` : ''
+        ].filter(Boolean).join(' | ');
+        
+        finalDescription = finalDescription 
+          ? `${businessDetails}\n\n${formData.description}`
+          : businessDetails;
+      }
+      
+      // For cars/bikes, append vehicle details to description
+      if ((formData.type === 'cars' || formData.type === 'bikes') && formData.brand) {
+        const vehicleDetails = [
+          `Brand: ${formData.brand}`,
+          `Model: ${formData.model}`,
+          `Year: ${formData.year}`,
+          `Fuel Type: ${formData.fuelType}`,
+          formData.type === 'cars' && formData.transmission ? `Transmission: ${formData.transmission}` : ''
+        ].filter(Boolean).join(' | ');
+        
+        finalDescription = finalDescription 
+          ? `${vehicleDetails}\n\n${formData.description}`
+          : vehicleDetails;
+      }
+      
+      // Determine price_type based on category and listing type
+      let priceType = 'monthly'; // default
+      if (formData.type === 'business') {
+        priceType = 'fixed'; // Business value is a fixed amount
+      } else if (formData.listingType === 'sale') {
+        priceType = 'fixed'; // Sale price is one-time
+      } else if (formData.listingType === 'rent') {
+        priceType = 'monthly'; // Rent is monthly
+      }
+      
       const propertyData = {
         user_id: user.id,
         title: formData.title,
-        description: formData.description,
+        description: finalDescription,
         property_type: formData.type,
         price: parseFloat(formData.price),
-        price_type: 'monthly',
+        price_type: priceType,
         city: formData.city,
         area: formData.area,
         pin_code: formData.pinCode,
@@ -353,7 +627,7 @@ const AddProperty = () => {
         amenities: formData.amenities,
         images: allImageUrls,
         contact_name: formData.ownerName,
-        contact_phone: formData.ownerPhone,
+        contact_phone: cleanedPhone,
         contact_email: null,
         is_agent: false,
         status: 'active',
@@ -370,7 +644,10 @@ const AddProperty = () => {
           .eq('user_id', user.id);
 
         if (error) throw error;
+        
+        // Show success and navigate immediately (optimistic UI)
         sonnerToast.success("Property updated successfully!");
+        navigate("/my-listings");
       } else {
         // Insert new property
         const { error } = await supabase
@@ -378,20 +655,47 @@ const AddProperty = () => {
           .insert([propertyData]);
 
         if (error) throw error;
-        sonnerToast.success("Property submitted successfully!");
+        
+        // Show success and navigate immediately (optimistic UI)
+        sonnerToast.success("Property published successfully! 🎉", {
+          description: "Your listing is now live and visible to users"
+        });
+        navigate("/my-listings");
       }
-
-      navigate("/my-listings");
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error submitting property:', error);
-      sonnerToast.error(error.message || "Failed to submit property");
+      const errorMessage = error instanceof Error ? error.message : "Failed to submit property";
+      sonnerToast.error("Submission Failed", {
+        description: errorMessage
+      });
     } finally {
       setSubmitting(false);
     }
   };
 
   const isStep1Valid = true; // Images are optional
-  const isStep2Valid = formData.title && formData.type && formData.price;
+  
+  // Step 2 validation: Basic fields + category-specific required fields
+  const isStep2Valid = (() => {
+    if (!formData.title || !formData.type || !formData.price) return false;
+    
+    // Listing type is required for all non-business properties
+    if (formData.type !== 'business' && !formData.listingType) return false;
+    
+    // Additional validation for cars/bikes
+    if (formData.type === 'cars' || formData.type === 'bikes') {
+      if (!formData.brand || !formData.model || !formData.year || !formData.fuelType) return false;
+      if (formData.type === 'cars' && !formData.transmission) return false;
+    }
+    
+    // Additional validation for business
+    if (formData.type === 'business') {
+      if (!formData.businessType) return false;
+    }
+    
+    return true;
+  })();
+  
   const isStep3Valid = formData.city && formData.area && formData.pinCode && formData.description;
   const isStep4Valid = formData.ownerName && formData.ownerPhone;
 
@@ -518,7 +822,7 @@ const AddProperty = () => {
                 <Select
                   value={formData.type}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, type: value })
+                    setFormData({ ...formData, type: value, listingType: "" })
                   }
                 >
                   <SelectTrigger>
@@ -534,19 +838,50 @@ const AddProperty = () => {
                 </Select>
               </div>
 
+              {/* Listing Type - Only show for properties that can be rented/sold, not for business */}
+              {formData.type && formData.type !== "business" && (
+                <div className="space-y-2">
+                  <Label htmlFor="listingType">Listing Type *</Label>
+                  <Select
+                    value={formData.listingType}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, listingType: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select listing type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="rent">For Rent</SelectItem>
+                      <SelectItem value="sale">For Sale</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="price">
-                  {formData.type === "cars" || formData.type === "bikes" ? "Price" : 
-                   formData.type === "business" ? "Business Value" : "Monthly Rent"} *
+                  {formData.type === "business" ? "Business Value" : 
+                   formData.listingType === "sale" ? "Sale Price" : 
+                   formData.listingType === "rent" ? "Monthly Rent" : "Price"} *
                 </Label>
                 <Input
                   id="price"
-                  placeholder={formData.type === "cars" || formData.type === "bikes" ? "₹5,00,000" : "₹25,000"}
+                  placeholder={
+                    formData.type === "business" ? "₹50,00,000" :
+                    formData.listingType === "sale" ? "₹75,00,000" : "₹25,000"
+                  }
                   value={formData.price}
                   onChange={(e) =>
                     setFormData({ ...formData, price: e.target.value })
                   }
                 />
+                {formData.type !== "business" && formData.listingType === "rent" && (
+                  <p className="text-xs text-muted-foreground">Enter monthly rent amount</p>
+                )}
+                {formData.type === "business" && (
+                  <p className="text-xs text-muted-foreground">List your business in the app and run ad campaigns to reach more customers</p>
+                )}
               </div>
 
               {/* Dynamic fields based on property type */}
@@ -719,14 +1054,55 @@ const AddProperty = () => {
                     <>
                       <div className="space-y-2">
                         <Label htmlFor="businessType">Business Type *</Label>
-                        <Input
-                          id="businessType"
-                          placeholder="e.g., Retail, Manufacturing"
-                          value={formData.businessType}
-                          onChange={(e) =>
-                            setFormData({ ...formData, businessType: e.target.value })
-                          }
-                        />
+                        <Popover open={businessTypeOpen} onOpenChange={setBusinessTypeOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={businessTypeOpen}
+                              className="w-full justify-between"
+                            >
+                              {formData.businessType
+                                ? businessTypes.find((type) => type.value === formData.businessType)?.label
+                                : "Select business type..."}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search business type..." />
+                              <CommandList>
+                                <CommandEmpty>No business type found.</CommandEmpty>
+                                <CommandGroup>
+                                  {businessTypes.map((type) => (
+                                    <CommandItem
+                                      key={type.value}
+                                      value={type.value}
+                                      onSelect={(currentValue) => {
+                                        setFormData({ 
+                                          ...formData, 
+                                          businessType: currentValue === formData.businessType ? "" : currentValue 
+                                        });
+                                        setBusinessTypeOpen(false);
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          formData.businessType === type.value ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {type.label}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        <p className="text-xs text-muted-foreground">
+                          Type to search and select your business category
+                        </p>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -970,15 +1346,27 @@ const AddProperty = () => {
               </div>
 
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setStep(3)} className="flex-1">
+                <Button variant="outline" onClick={() => setStep(3)} className="flex-1" disabled={submitting}>
                   Back
                 </Button>
                 <Button
                   onClick={handleSubmit}
-                  className="flex-1"
+                  className="flex-1 relative"
                   disabled={!isStep4Valid || submitting}
                 >
-                  {submitting ? (editPropertyId ? "Updating..." : "Submitting...") : (editPropertyId ? "Update Property" : "Submit Property")}
+                  {submitting ? (
+                    <>
+                      {uploadProgress > 0 && uploadProgress < 100 ? (
+                        <>
+                          <span className="mr-2">Uploading {uploadProgress}%</span>
+                        </>
+                      ) : (
+                        <>{editPropertyId ? "Publishing..." : "Publishing..."}</>
+                      )}
+                    </>
+                  ) : (
+                    <>{editPropertyId ? "Update Property" : "Publish Now"}</>
+                  )}
                 </Button>
               </div>
             </div>

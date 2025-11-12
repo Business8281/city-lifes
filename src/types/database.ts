@@ -42,10 +42,15 @@ export interface Property {
   views: number;
   created_at: string;
   updated_at: string;
+  // User tracking
+  created_by_name: string | null;
+  created_by_email: string | null;
   // Relations
   profiles?: Profile;
   // Distance (from search function)
   distance_km?: number;
+  // Ad campaign
+  campaign_id?: string;
 }
 
 export interface Favorite {
@@ -64,21 +69,17 @@ export interface Message {
   content: string;
   read: boolean;
   created_at: string;
+  sender_name: string | null;
+  sender_email: string | null;
+  deleted?: boolean;
+  edited?: boolean;
+  edited_at?: string;
   sender?: Profile;
   receiver?: Profile;
   properties?: Property;
 }
 
-export interface Notification {
-  id: string;
-  user_id: string;
-  type: string;
-  title: string;
-  message: string;
-  read: boolean;
-  link: string | null;
-  created_at: string;
-}
+// Notification interface removed as in-app notifications feature was deprecated.
 
 export interface Inquiry {
   id: string;
@@ -106,5 +107,7 @@ export interface AdCampaign {
   end_date: string;
   created_at: string;
   updated_at: string;
+  created_by_name: string | null;
+  created_by_email: string | null;
   properties?: Property;
 }

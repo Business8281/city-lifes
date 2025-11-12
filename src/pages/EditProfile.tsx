@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Mail, Phone, MapPin, Save } from "lucide-react";
+import { ArrowLeft, User, Mail, Phone, Save, Shield, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 import BottomNav from "@/components/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -13,16 +15,26 @@ import { profileSchema } from "@/schemas/validationSchemas";
 
 const EditProfile = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, changeEmail, updatePhone } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  
   const [formData, setFormData] = useState({
     fullName: "",
     email: user?.email || "",
     phone: "",
   });
 
-  // Load existing profile data
+  const [showEmailChange, setShowEmailChange] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [emailChanging, setEmailChanging] = useState(false);
+
+  const [showPhoneChange, setShowPhoneChange] = useState(false);
+  const [newPhone, setNewPhone] = useState("");
+  const [phoneChanging, setPhoneChanging] = useState(false);
+
+  const [error, setError] = useState("");
+
   useEffect(() => {
     const loadProfile = async () => {
       if (!user) return;
@@ -34,7 +46,7 @@ const EditProfile = () => {
           .eq('id', user.id)
           .single();
         
-        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows found
+        if (error && error.code !== 'PGRST116') {
           throw error;
         }
         
@@ -45,7 +57,7 @@ const EditProfile = () => {
             phone: data.phone || "",
           });
         }
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error loading profile:', error);
         toast.error("Failed to load profile data");
       } finally {
@@ -64,7 +76,6 @@ const EditProfile = () => {
       return;
     }
 
-    // Validate form data
     try {
       profileSchema.parse({
         full_name: formData.fullName,
@@ -89,16 +100,68 @@ const EditProfile = () => {
 
       toast.success("Profile updated successfully!");
       navigate("/profile");
-    } catch (error: any) {
-      if (error.errors) {
-        toast.error(error.errors[0]?.message || "Invalid form data");
-      } else {
-        console.error('Error updating profile:', error);
-        toast.error(error.message || "Failed to update profile");
-      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error("Failed to update profile");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleEmailChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    
+    if (!newEmail || newEmail === user?.email) {
+      setError("Please enter a different email address");
+      return;
+    }
+
+    setEmailChanging(true);
+    const { error } = await changeEmail(newEmail);
+    setEmailChanging(false);
+
+    if (error) {
+      setError(error.message || "Failed to change email");
+      toast.error("Failed to change email");
+      return;
+    }
+
+    toast.success("Verification email sent! Check both email addresses.");
+    setShowEmailChange(false);
+    setNewEmail("");
+  };
+
+  const handlePhoneChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(newPhone)) {
+      setError("Please enter a valid 10-digit Indian phone number");
+      return;
+    }
+
+    const phoneWithPrefix = `+91${newPhone}`;
+    if (phoneWithPrefix === formData.phone) {
+      setError("Please enter a different phone number");
+      return;
+    }
+
+    setPhoneChanging(true);
+    const { error } = await updatePhone(phoneWithPrefix);
+    setPhoneChanging(false);
+
+    if (error) {
+      setError(error.message || "Failed to update phone number");
+      toast.error("Failed to update phone number");
+      return;
+    }
+
+    toast.success("Phone number updated successfully!");
+    setFormData({ ...formData, phone: phoneWithPrefix });
+    setShowPhoneChange(false);
+    setNewPhone("");
   };
 
   if (loading) {
@@ -122,10 +185,9 @@ const EditProfile = () => {
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-6 overflow-x-hidden">
+      <div className="max-w-3xl mx-auto px-4 py-6 space-y-6 overflow-x-hidden">
         <Card className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Profile Picture */}
             <div className="flex flex-col items-center gap-4">
               <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
                 <User className="h-12 w-12 text-primary" />
@@ -135,7 +197,6 @@ const EditProfile = () => {
               </Button>
             </div>
 
-            {/* Full Name */}
             <div className="space-y-2">
               <Label htmlFor="fullName">
                 <div className="flex items-center gap-2">
@@ -151,39 +212,35 @@ const EditProfile = () => {
               />
             </div>
 
-            {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
-                  Email
+                  Current Email
                 </div>
               </Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="Enter your email"
                 disabled
+                className="bg-muted"
               />
-              <p className="text-xs text-muted-foreground">Email cannot be changed</p>
             </div>
 
-            {/* Phone */}
             <div className="space-y-2">
               <Label htmlFor="phone">
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
-                  Phone Number
+                  Current Phone Number
                 </div>
               </Label>
               <Input
                 id="phone"
                 type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="Enter your phone number"
+                value={formData.phone || "Not set"}
+                disabled
+                className="bg-muted"
               />
             </div>
 
@@ -192,6 +249,158 @@ const EditProfile = () => {
               {submitting ? "Saving..." : "Save Changes"}
             </Button>
           </form>
+        </Card>
+
+        <Card className="p-6">
+          <div className="space-y-6">
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold">Security Settings</h2>
+            </div>
+
+            <Separator />
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">Change Email</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Update your email address
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowEmailChange(!showEmailChange);
+                    setError("");
+                  }}
+                >
+                  {showEmailChange ? "Cancel" : "Change"}
+                </Button>
+              </div>
+
+              {showEmailChange && (
+                <form onSubmit={handleEmailChange} className="space-y-4">
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="newEmail">New Email Address</Label>
+                    <Input
+                      id="newEmail"
+                      type="email"
+                      placeholder="newemail@example.com"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      You'll receive verification emails to both addresses
+                    </p>
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={emailChanging}
+                  >
+                    {emailChanging ? "Sending Verification..." : "Send Verification Email"}
+                  </Button>
+                </form>
+              )}
+            </div>
+
+            <Separator />
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">Change Phone Number</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Update your phone number
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setShowPhoneChange(!showPhoneChange);
+                    setError("");
+                  }}
+                >
+                  {showPhoneChange ? "Cancel" : "Change"}
+                </Button>
+              </div>
+
+              {showPhoneChange && (
+                <form onSubmit={handlePhoneChange} className="space-y-4">
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="newPhone">New Phone Number</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground font-medium">
+                        +91
+                      </span>
+                      <Input
+                        id="newPhone"
+                        type="tel"
+                        placeholder="9876543210"
+                        className="pl-12"
+                        value={newPhone}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                          setNewPhone(value);
+                        }}
+                        maxLength={10}
+                        required
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Enter 10-digit mobile number (India)
+                    </p>
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={phoneChanging}
+                  >
+                    {phoneChanging ? "Updating..." : "Update Phone Number"}
+                  </Button>
+                </form>
+              )}
+            </div>
+
+            <Separator />
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium">Change Password</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Update your password
+                  </p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/forgot-password")}
+                >
+                  Change
+                </Button>
+              </div>
+            </div>
+          </div>
         </Card>
       </div>
 

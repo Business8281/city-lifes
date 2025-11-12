@@ -57,7 +57,13 @@ const AdCampaign = () => {
     }
   };
 
-  const handleCreateCampaign = async (data: any) => {
+  const handleCreateCampaign = async (data: {
+    property_id: string;
+    title: string;
+    budget: number;
+    end_date: string;
+    start_date?: string;
+  }) => {
     await createCampaign(data);
   };
 
@@ -265,11 +271,11 @@ const AdCampaign = () => {
                 Create ad campaigns for your business listings to reach more customers
               </p>
               <Button
-                onClick={() => navigate("/listings?type=business")}
+                onClick={() => setDialogOpen(true)}
                 className="gap-2"
               >
                 <Plus className="h-4 w-4" />
-                View Business Listings
+                Create Campaign
               </Button>
             </div>
           )}

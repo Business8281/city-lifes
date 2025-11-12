@@ -7,9 +7,17 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, fullName: string, phone: string) => Promise<{ error: any }>;
+  verifyOTP: (email: string, token: string) => Promise<{ error: any; data: any }>;
+  resendOTP: (email: string) => Promise<{ error: any }>;
   signInWithGoogle: () => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ error: any }>;
+  updatePassword: (newPassword: string) => Promise<{ error: any }>;
+  verifyPasswordResetOTP: (email: string, token: string, newPassword: string) => Promise<{ error: any; data: any }>;
+  changeEmail: (newEmail: string) => Promise<{ error: any }>;
+  verifyEmailChangeOTP: (token: string) => Promise<{ error: any; data: any }>;
+  updatePhone: (phone: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -47,18 +55,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
+  const signUp = async (email: string, password: string, fullName: string, phone: string) => {
+    // Create user account with email confirmation disabled
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
+        emailRedirectTo: undefined,
         data: {
           full_name: fullName,
+          phone: phone,
         },
       },
+    });
+    
+    return { error };
+  };
+
+  const verifyOTP = async (email: string, token: string) => {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'signup',
+    });
+    return { data, error };
+  };
+
+  const resendOTP = async (email: string) => {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
     });
     return { error };
   };
@@ -77,8 +103,94 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth?reset=true`,
+    });
+    return { error };
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+    return { error };
+  };
+
+  const verifyPasswordResetOTP = async (email: string, token: string, newPassword: string) => {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'recovery',
+    });
+    
+    if (!error && data) {
+      // Update password after OTP verification
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      return { data, error: updateError };
+    }
+    
+    return { data, error };
+  };
+
+  const changeEmail = async (newEmail: string) => {
+    const { error } = await supabase.auth.updateUser({
+      email: newEmail,
+    });
+    return { error };
+  };
+
+  const verifyEmailChangeOTP = async (token: string) => {
+    const { data, error } = await supabase.auth.verifyOtp({
+      token_hash: token,
+      type: 'email_change',
+    });
+    return { data, error };
+  };
+
+  const updatePhone = async (phone: string) => {
+    const { error } = await supabase.auth.updateUser({
+      phone,
+      data: {
+        phone,
+      },
+    });
+    
+    // Also update in profiles table
+    if (!error && user) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          phone,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+      return { error: profileError };
+    }
+    
+    return { error };
+  };
+
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signUp, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      session, 
+      loading, 
+      signIn, 
+      signUp, 
+      verifyOTP, 
+      resendOTP, 
+      signInWithGoogle, 
+      signOut,
+      resetPassword,
+      updatePassword,
+      verifyPasswordResetOTP,
+      changeEmail,
+      verifyEmailChangeOTP,
+      updatePhone
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -29,7 +29,7 @@ export function useAdCampaigns(businessOnly: boolean = false) {
   const [campaigns, setCampaigns] = useState<AdCampaign[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = useCallback(async () => {
     try {
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
@@ -74,7 +74,7 @@ export function useAdCampaigns(businessOnly: boolean = false) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [businessOnly]);
 
   useEffect(() => {
     fetchCampaigns();
@@ -92,7 +92,7 @@ export function useAdCampaigns(businessOnly: boolean = false) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [businessOnly]);
+  }, [businessOnly, fetchCampaigns]);
 
   const createCampaign = async (campaignData: {
     property_id: string;
@@ -138,16 +138,55 @@ export function useAdCampaigns(businessOnly: boolean = false) {
 
   const deleteCampaign = async (campaignId: string) => {
     try {
-      const { error } = await supabase
+      console.log('🗑️ deleteCampaign called with ID:', campaignId);
+      
+      // Check current user
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Current user:', user?.id, user?.email);
+      
+      // Check campaign ownership
+      const { data: campaign, error: fetchError } = await supabase
+        .from('ad_campaigns')
+        .select('id, title, user_id')
+        .eq('id', campaignId)
+        .single();
+      
+      if (fetchError) {
+        console.error('❌ Error fetching campaign:', fetchError);
+        throw new Error(`Cannot find campaign: ${fetchError.message}`);
+      }
+      
+      console.log('Campaign to delete:', campaign);
+      console.log('Ownership check:', {
+        campaignUserId: campaign?.user_id,
+        currentUserId: user?.id,
+        matches: campaign?.user_id === user?.id
+      });
+      
+      // Attempt delete
+      console.log('Attempting to delete campaign:', campaignId);
+      const { error, data } = await supabase
         .from('ad_campaigns')
         .delete()
-        .eq('id', campaignId);
+        .eq('id', campaignId)
+        .select();
 
-      if (error) throw error;
-      toast.success('Campaign deleted');
+      if (error) {
+        console.error('❌ Delete error:', error);
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        throw error;
+      }
+      
+      console.log('✅ Campaign delete successful:', data);
+      toast.success('Campaign deleted successfully!');
       fetchCampaigns();
     } catch (error: any) {
-      console.error('Error deleting campaign:', error);
+      console.error('❌ Error deleting campaign:', error);
       toast.error(error.message || 'Failed to delete campaign');
     }
   };

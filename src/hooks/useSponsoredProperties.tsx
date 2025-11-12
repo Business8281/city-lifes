@@ -16,17 +16,22 @@ interface LocationFilter {
   };
 }
 
+// Updated: fetch sponsored properties unconditionally (active campaigns) used on Listings page only.
 export const useSponsoredProperties = (location?: LocationFilter) => {
   const [sponsoredProperties, setSponsoredProperties] = useState<SponsoredProperty[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Fetch once on mount or when basic location filter changes if future logic needs it
     fetchSponsoredProperties();
-  }, [location?.method, location?.value, location?.coordinates]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location?.method, location?.value]);
 
   const fetchSponsoredProperties = async () => {
     try {
       setLoading(true);
+
+      // We now allow sponsored ads without requiring a location filter.
 
       let filterCity = null;
       let filterArea = null;
@@ -34,25 +39,25 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
       let filterLat = null;
       let filterLng = null;
 
-      if (location?.method && location?.value) {
-        switch (location.method) {
-          case 'city':
-            filterCity = location.value;
-            break;
-          case 'area':
-            filterArea = location.value;
-            break;
-          case 'pincode':
-            filterPinCode = location.value;
-            break;
-          case 'live':
-            if (location.coordinates) {
-              filterLat = location.coordinates.lat;
-              filterLng = location.coordinates.lng;
-            }
-            break;
-        }
+      switch (location.method) {
+        case 'city':
+          filterCity = location.value;
+          break;
+        case 'area':
+          filterArea = location.value;
+          break;
+        case 'pincode':
+          filterPinCode = location.value;
+          break;
+        case 'live':
+          if (location.coordinates) {
+            filterLat = location.coordinates.lat;
+            filterLng = location.coordinates.lng;
+          }
+          break;
       }
+
+      // If no filters present, call RPC with null filters to get generic sponsored ads.
 
       const { data, error } = await supabase.rpc('get_sponsored_properties', {
         filter_city: filterCity,
@@ -65,10 +70,12 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
 
       if (error) throw error;
 
-      setSponsoredProperties(data || []);
-    } catch (error: any) {
+  setSponsoredProperties((data || []) as unknown as SponsoredProperty[]);
+    } catch (error) {
       console.error('Error fetching sponsored properties:', error);
-      toast.error('Failed to load sponsored ads');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load sponsored ads';
+      toast.error(errorMessage);
+      setSponsoredProperties([]);
     } finally {
       setLoading(false);
     }

@@ -16,11 +16,11 @@ import EditProfile from "./pages/EditProfile";
 import Messages from "./pages/Messages";
 import AddProperty from "./pages/AddProperty";
 import MyListings from "./pages/MyListings";
-import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 import AdCampaign from "./pages/AdCampaign";
 import AdminDashboard from "./pages/AdminDashboard";
 import Auth from "./pages/Auth";
+import ForgotPassword from "./pages/ForgotPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +37,7 @@ const App = () => {
           <BrowserRouter>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/" element={<Layout />}>
                 <Route index element={<Index />} />
                 <Route path="listings" element={<Listings />} />
@@ -48,7 +49,6 @@ const App = () => {
                 <Route path="messages" element={<Messages />} />
                 <Route path="add-property" element={<AddProperty />} />
                 <Route path="my-listings" element={<MyListings />} />
-                <Route path="notifications" element={<Notifications />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="ad-campaign" element={<AdCampaign />} />
                 <Route path="admin-dashboard" element={<AdminDashboard />} />

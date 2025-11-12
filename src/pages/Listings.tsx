@@ -30,6 +30,11 @@ const Listings = () => {
   const { sponsoredProperties, loading: sponsoredLoading, incrementClicks, incrementImpressions } = useSponsoredProperties(location);
   const sponsoredRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const trackedImpressions = useRef<Set<string>>(new Set());
+  const sponsoredCampaignByProperty = new Map(
+    sponsoredProperties
+      .filter((p) => !!p.campaign_id)
+      .map((p) => [p.id, p.campaign_id as string])
+  );
 
   // Track impressions for sponsored properties using IntersectionObserver
   useEffect(() => {
@@ -214,13 +219,21 @@ const Listings = () => {
 
       {/* Properties Grid */}
       <div className="max-w-7xl mx-auto px-4 py-6 overflow-x-hidden space-y-6">
-        {/* Sponsored Ads Section - Only Business Listings */}
+        {/* Sponsored Ads Section - Shows at TOP with location filters */}
         {!sponsoredLoading && sponsoredProperties.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold">Sponsored Businesses</h2>
-              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full font-medium">
-                AD
+          <div className="space-y-3 bg-amber-50/50 dark:bg-amber-950/10 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold">Sponsored Listings</h2>
+                <span className="text-xs bg-amber-500/20 text-amber-700 dark:text-amber-400 px-2 py-1 rounded-full font-medium">
+                  AD
+                </span>
+              </div>
+              <span className="text-sm text-muted-foreground">
+                {location.method === 'city' && `in ${location.value}`}
+                {location.method === 'area' && `in ${location.value}`}
+                {location.method === 'pincode' && `PIN ${location.value}`}
+                {location.method === 'live' && 'Near You'}
               </span>
             </div>
             <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
@@ -230,14 +243,15 @@ const Listings = () => {
                     key={property.id} 
                     ref={(el) => property.campaign_id && setSponsoredRef(el, property.campaign_id)}
                     data-campaign-id={property.campaign_id}
-                    className="w-[280px] sm:w-[300px] shrink-0"
+                    className="w-[280px] sm:w-[300px] shrink-0 bg-white dark:bg-gray-900 rounded-lg"
                   >
                     <PropertyCard
                       id={property.id}
                       image={property.images[0] || '/placeholder.svg'}
                       title={property.title}
-                      type={propertyTypes.find(t => t.type === property.property_type)?.icon || '💼'}
+                      type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
                       price={`₹${property.price.toLocaleString()}`}
+                      priceType={property.price_type}
                       location={`${property.area}, ${property.city}`}
                       bedrooms={property.bedrooms || undefined}
                       bathrooms={property.bathrooms || undefined}
@@ -275,12 +289,18 @@ const Listings = () => {
                   title={property.title}
                   type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
                   price={`₹${property.price.toLocaleString()}`}
+                  priceType={property.price_type}
                   location={`${property.area}, ${property.city}`}
                   bedrooms={property.bedrooms || undefined}
                   bathrooms={property.bathrooms || undefined}
                   area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
                   verified={property.verified}
-                  onClick={() => navigate(`/property/${property.id}`)}
+                  sponsored={sponsoredCampaignByProperty.has(property.id)}
+                  onClick={() => {
+                    const cid = sponsoredCampaignByProperty.get(property.id);
+                    if (cid) incrementClicks(cid);
+                    navigate(`/property/${property.id}`);
+                  }}
                 />
               ))}
             </div>

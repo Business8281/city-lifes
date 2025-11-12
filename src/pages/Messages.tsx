@@ -1,10 +1,27 @@
 import { useState, useEffect, useRef } from "react";
-import { ArrowLeft, Send, Search, MoreVertical } from "lucide-react";
+import { ArrowLeft, Send, Search, MoreVertical, Trash2, Edit2, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMessages } from "@/hooks/useMessages";
@@ -17,11 +34,14 @@ const Messages = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const { conversations, loading, sendMessage, markAsRead } = useMessages(user?.id);
+  const { conversations, loading, sendMessage, markAsRead, deleteMessage, editMessage, deleteConversation } = useMessages(user?.id);
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [loadingNewChat, setLoadingNewChat] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editedText, setEditedText] = useState("");
+  const [deleteConversationDialog, setDeleteConversationDialog] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -59,6 +79,38 @@ const Messages = () => {
     }
   };
 
+  const handleDeleteMessage = async (messageId: string) => {
+    await deleteMessage(messageId);
+  };
+
+  const handleStartEdit = (messageId: string, currentContent: string) => {
+    setEditingMessageId(messageId);
+    setEditedText(currentContent);
+  };
+
+  const handleSaveEdit = async (messageId: string) => {
+    if (!editedText.trim()) {
+      toast.error("Message cannot be empty");
+      return;
+    }
+    await editMessage(messageId, editedText);
+    setEditingMessageId(null);
+    setEditedText("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditedText("");
+  };
+
+  const handleDeleteConversation = async () => {
+    if (selectedConversation) {
+      await deleteConversation(selectedConversation.user.id);
+      setSelectedConversation(null);
+      setDeleteConversationDialog(false);
+    }
+  };
+
   // Auto-scroll when messages change or conversation selected
   useEffect(() => {
     if (selectedConversation) {
@@ -66,14 +118,14 @@ const Messages = () => {
       const delay = selectedConversation.messages.length === 0 ? 50 : 100;
       setTimeout(() => scrollToBottom("auto"), delay);
     }
-  }, [selectedConversation?.messages?.length, selectedConversation?.user?.id]);
+  }, [selectedConversation]);
 
   // Mark messages as read when viewing conversation
   useEffect(() => {
     if (selectedConversation?.user?.id && selectedConversation.unreadCount > 0) {
       markAsRead(selectedConversation.user.id);
     }
-  }, [selectedConversation?.user?.id]);
+  }, [selectedConversation?.user?.id, selectedConversation?.unreadCount, markAsRead]);
 
   const filteredConversations = conversations.filter(
     (conv) =>
@@ -136,7 +188,7 @@ const Messages = () => {
     if (!loading && conversations.length >= 0) {
       initChat();
     }
-  }, [searchParams, user, conversations, loading]);
+  }, [searchParams, user, conversations, loading, loadingNewChat, navigate, sendMessage]);
 
   const getInitials = (name: string) => {
     return name
@@ -243,9 +295,22 @@ const Messages = () => {
               <h2 className="font-semibold">{selectedConversation.user?.full_name}</h2>
               <p className="text-xs text-muted-foreground">{selectedConversation.user?.email}</p>
             </div>
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="h-5 w-5" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() => setDeleteConversationDialog(true)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Conversation
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Messages */}
@@ -254,29 +319,108 @@ const Messages = () => {
               <div className="space-y-4">
                 {selectedConversation.messages.map((message: any) => {
                   const isOwn = message.sender_id === user?.id;
+                  const isEditing = editingMessageId === message.id;
+                  
                   return (
                     <div
                       key={message.id}
-                      className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${isOwn ? 'justify-end' : 'justify-start'} group`}
                     >
                       <div
-                        className={`max-w-[70%] rounded-lg p-3 ${
+                        className={`max-w-[70%] rounded-lg p-3 relative ${
                           isOwn
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-muted'
                         }`}
                       >
-                        <p className="text-sm break-words">{message.content}</p>
-                        <p
-                          className={`text-xs mt-1 ${
-                            isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                          }`}
-                        >
-                          {new Date(message.created_at).toLocaleTimeString([], { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })}
-                        </p>
+                        {isEditing ? (
+                          <div className="space-y-2">
+                            <Input
+                              value={editedText}
+                              onChange={(e) => setEditedText(e.target.value)}
+                              className={`text-sm ${
+                                isOwn
+                                  ? 'bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20'
+                                  : 'bg-background'
+                              }`}
+                              autoFocus
+                            />
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant={isOwn ? "secondary" : "default"}
+                                onClick={() => handleSaveEdit(message.id)}
+                              >
+                                <Check className="h-3 w-3 mr-1" />
+                                Save
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={handleCancelEdit}
+                              >
+                                <X className="h-3 w-3 mr-1" />
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-start gap-2">
+                              <p className="text-sm break-words flex-1">{message.content}</p>
+                              {isOwn && (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className={`h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity ${
+                                        isOwn ? 'hover:bg-primary-foreground/20' : ''
+                                      }`}
+                                    >
+                                      <MoreVertical className="h-3 w-3" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleStartEdit(message.id, message.content)}>
+                                      <Edit2 className="h-3 w-3 mr-2" />
+                                      Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      onClick={() => handleDeleteMessage(message.id)}
+                                      className="text-destructive focus:text-destructive"
+                                    >
+                                      <Trash2 className="h-3 w-3 mr-2" />
+                                      Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <p
+                                className={`text-xs mt-1 ${
+                                  isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                                }`}
+                              >
+                                {new Date(message.created_at).toLocaleTimeString([], { 
+                                  hour: '2-digit', 
+                                  minute: '2-digit' 
+                                })}
+                              </p>
+                              {message.edited && (
+                                <span
+                                  className={`text-xs italic ${
+                                    isOwn ? 'text-primary-foreground/50' : 'text-muted-foreground/70'
+                                  }`}
+                                >
+                                  (edited)
+                                </span>
+                              )}
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   );
@@ -324,6 +468,32 @@ const Messages = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Conversation Dialog */}
+      <AlertDialog
+        open={deleteConversationDialog}
+        onOpenChange={setDeleteConversationDialog}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Conversation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this entire conversation with{" "}
+              <strong>{selectedConversation?.user?.full_name}</strong>? 
+              This will permanently delete all messages and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConversation}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Delete & Edit Features Guide</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+            margin-top: 0;
+        }
+        h2 {
+            color: #667eea;
+            margin-top: 30px;
+        }
+        .feature {
+            background: #f8f9fa;
+            padding: 25px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .feature h3 {
+            margin-top: 0;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .icon {
+            font-size: 24px;
+        }
+        .steps {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+        .steps ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .steps li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+        code {
+            background: #e9ecef;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+        .alert {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            border-left: 4px solid;
+        }
+        .alert-success {
+            background: #dcfce7;
+            border-color: #16a34a;
+            color: #14532d;
+        }
+        .alert-info {
+            background: #e0f2fe;
+            border-color: #0284c7;
+            color: #0c4a6e;
+        }
+        .alert-warning {
+            background: #fef3c7;
+            border-color: #ca8a04;
+            color: #713f12;
+        }
+        .button {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            margin: 10px 10px 10px 0;
+            transition: background 0.3s;
+        }
+        .button:hover {
+            background: #5568d3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #667eea;
+            color: white;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .screenshot-placeholder {
+            background: #e9ecef;
+            border: 2px dashed #adb5bd;
+            border-radius: 8px;
+            padding: 60px;
+            text-align: center;
+            color: #6c757d;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💬 Chat Delete & Edit Features - User Guide</h1>
+        
+        <div class="alert alert-success">
+            <strong>✅ New Features Available!</strong><br>
+            You can now delete and edit chat messages, plus delete entire conversations!
+        </div>
+
+        <h2>🎯 Features Overview</h2>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>What It Does</th>
+                    <th>Who Can Use It</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>✏️ <strong>Edit Message</strong></td>
+                    <td>Fix typos or correct message content</td>
+                    <td>Message sender only</td>
+                </tr>
+                <tr>
+                    <td>🗑️ <strong>Delete Message</strong></td>
+                    <td>Remove a single message from chat</td>
+                    <td>Message sender only</td>
+                </tr>
+                <tr>
+                    <td>🗑️ <strong>Delete Conversation</strong></td>
+                    <td>Permanently delete all messages</td>
+                    <td>Both chat participants</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>📖 How to Use</h2>
+
+        <div class="feature">
+            <h3><span class="icon">✏️</span> Edit a Message (Fix Typos)</h3>
+            <div class="steps">
+                <p><strong>When to use:</strong> You made a typo or want to clarify your message</p>
+                <ol>
+                    <li>Find the message you sent (your messages appear on the right)</li>
+                    <li><strong>Hover over the message</strong> - a three-dot menu (⋮) will appear</li>
+                    <li><strong>Click the menu</strong> → Select "Edit"</li>
+                    <li><strong>Type your correction</strong> in the input field</li>
+                    <li><strong>Click "Save"</strong> or press Enter</li>
+                    <li>Your message updates with an <code>(edited)</code> label</li>
+                </ol>
+                <div class="alert alert-info">
+                    <strong>💡 Note:</strong> Edited messages show "(edited)" next to the timestamp. This cannot be hidden.
+                </div>
+            </div>
+        </div>
+
+        <div class="feature">
+            <h3><span class="icon">🗑️</span> Delete a Single Message</h3>
+            <div class="steps">
+                <p><strong>When to use:</strong> You sent a message by mistake or want to remove it</p>
+                <ol>
+                    <li>Find the message you sent</li>
+                    <li><strong>Hover over the message</strong></li>
+                    <li><strong>Click the three-dot menu (⋮)</strong></li>
+                    <li><strong>Click "Delete"</strong></li>
+                    <li>Message disappears immediately</li>
+                </ol>
+                <div class="alert alert-warning">
+                    <strong>⚠️ Important:</strong> You can only delete YOUR OWN messages, not messages from others.
+                </div>
+            </div>
+        </div>
+
+        <div class="feature">
+            <h3><span class="icon">🗑️</span> Delete Entire Conversation</h3>
+            <div class="steps">
+                <p><strong>When to use:</strong> You want to remove all messages with someone</p>
+                <ol>
+                    <li>Open the conversation you want to delete</li>
+                    <li><strong>Click the three-dot menu (⋮)</strong> in the <strong>chat header</strong> (top right)</li>
+                    <li><strong>Click "Delete Conversation"</strong></li>
+                    <li><strong>Confirm</strong> in the dialog box</li>
+                    <li>All messages are permanently deleted</li>
+                    <li>You return to the conversation list</li>
+                </ol>
+                <div class="alert alert-warning">
+                    <strong>⚠️ Warning:</strong> This action is <strong>PERMANENT</strong> and cannot be undone! All messages will be deleted for both you and the other person.
+                </div>
+            </div>
+        </div>
+
+        <h2>🎨 Visual Guide</h2>
+
+        <h3>Message Actions Menu</h3>
+        <div class="screenshot-placeholder">
+            <p><strong>Hover over your message</strong></p>
+            <p>↓</p>
+            <p><strong>Three-dot menu (⋮) appears</strong></p>
+            <p>↓</p>
+            <p>Click menu to see:</p>
+            <p>✏️ Edit | 🗑️ Delete</p>
+        </div>
+
+        <h3>Edited Message Example</h3>
+        <div class="screenshot-placeholder">
+            <p><strong>Before:</strong> "Helo world"</p>
+            <p>↓ (Click Edit, fix typo)</p>
+            <p><strong>After:</strong> "Hello world <em>(edited)</em>"</p>
+            <p style="font-size: 12px; color: #6c757d;">12:34 PM (edited)</p>
+        </div>
+
+        <h2>✅ What You Can Do</h2>
+        <ul>
+            <li>✅ Edit your own messages to fix typos</li>
+            <li>✅ Delete your own messages</li>
+            <li>✅ Delete entire conversations with anyone</li>
+            <li>✅ See when messages were edited</li>
+            <li>✅ Messages stay encrypted (even after editing)</li>
+        </ul>
+
+        <h2>❌ What You Cannot Do</h2>
+        <ul>
+            <li>❌ Edit someone else's messages</li>
+            <li>❌ Delete someone else's messages</li>
+            <li>❌ Hide the "(edited)" label</li>
+            <li>❌ Recover deleted messages</li>
+            <li>❌ Undo conversation deletion</li>
+        </ul>
+
+        <h2>🔒 Privacy & Security</h2>
+
+        <div class="alert alert-info">
+            <strong>🔐 Your Messages Are Safe:</strong>
+            <ul style="margin: 10px 0;">
+                <li>All messages are encrypted</li>
+                <li>Edited messages are re-encrypted</li>
+                <li>Only you can edit/delete your messages</li>
+                <li>Other users cannot see your deleted messages</li>
+            </ul>
+        </div>
+
+        <h2>💡 Tips & Best Practices</h2>
+
+        <div class="feature">
+            <h3>When to Edit vs Delete:</h3>
+            <ul>
+                <li><strong>Edit:</strong> For typos, grammar fixes, clarifications</li>
+                <li><strong>Delete:</strong> For unwanted messages, mistakes, privacy concerns</li>
+            </ul>
+        </div>
+
+        <div class="feature">
+            <h3>Things to Remember:</h3>
+            <ul>
+                <li>Edited messages show "(edited)" - everyone can see this</li>
+                <li>Deleted messages cannot be recovered</li>
+                <li>Conversation deletion is permanent for both people</li>
+                <li>Be careful when deleting entire conversations!</li>
+            </ul>
+        </div>
+
+        <h2>🐛 Troubleshooting</h2>
+
+        <div class="feature">
+            <h3>Menu doesn't appear?</h3>
+            <p>Make sure you're hovering over <strong>your own message</strong> (messages on the right side). You cannot edit/delete other people's messages.</p>
+        </div>
+
+        <div class="feature">
+            <h3>Edit button not working?</h3>
+            <ol>
+                <li>Check your internet connection</li>
+                <li>Refresh the page</li>
+                <li>Try logging out and back in</li>
+            </ol>
+        </div>
+
+        <div class="feature">
+            <h3>Deleted message still appears?</h3>
+            <p>Refresh the page. If it still appears after refresh, check the browser console (F12) for errors and report them.</p>
+        </div>
+
+        <h2>🚀 Ready to Use!</h2>
+
+        <div class="alert alert-success">
+            <strong>All features are now live in your Messages page!</strong><br>
+            Go to your chat and try them out. Remember to be careful with deletions - they're permanent!
+        </div>
+
+        <a href="http://localhost:5173/messages" target="_blank" class="button">Open Messages →</a>
+
+        <h2>📝 Quick Reference</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Action</th>
+                    <th>Location</th>
+                    <th>Steps</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Edit Message</td>
+                    <td>Message bubble → ⋮</td>
+                    <td>Hover → Menu → Edit → Save</td>
+                </tr>
+                <tr>
+                    <td>Delete Message</td>
+                    <td>Message bubble → ⋮</td>
+                    <td>Hover → Menu → Delete</td>
+                </tr>
+                <tr>
+                    <td>Delete Conversation</td>
+                    <td>Chat header → ⋮</td>
+                    <td>Menu → Delete Conversation → Confirm</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+            <p style="margin: 0; color: #6c757d;">
+                <strong>Need help?</strong> Check the browser console (F12) for any error messages.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

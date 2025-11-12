@@ -1,5 +1,6 @@
 import apartmentImg from "@/assets/sample-apartment.jpg";
-import houseImg from "@/assets/sample-house.jpg";
+// sample-house.jpg removed; reusing apartment image as fallback
+import houseImg from "@/assets/sample-apartment.jpg";
 import officeImg from "@/assets/sample-office.jpg";
 
 export interface Property {

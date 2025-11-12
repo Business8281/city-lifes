@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "@/components/SearchBar";
 import PropertyCard from "@/components/PropertyCard";
@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { useProperties } from "@/hooks/useProperties";
 import { useLocation } from "@/contexts/LocationContext";
 import LocationSelector from "@/components/LocationSelector";
-import { useSponsoredProperties } from "@/hooks/useSponsoredProperties";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -17,43 +16,6 @@ const Index = () => {
   const navigate = useNavigate();
   const { properties } = useProperties();
   const { location } = useLocation();
-  const { sponsoredProperties, incrementClicks, incrementImpressions } = useSponsoredProperties(location);
-  const sponsoredRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const trackedImpressions = useRef<Set<string>>(new Set());
-
-  // Track impressions for sponsored properties
-  useEffect(() => {
-    if (sponsoredProperties.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const campaignId = entry.target.getAttribute('data-campaign-id');
-            if (campaignId && !trackedImpressions.current.has(campaignId)) {
-              trackedImpressions.current.add(campaignId);
-              incrementImpressions(campaignId);
-            }
-          }
-        });
-      },
-      { threshold: 0.5 }
-    );
-
-    sponsoredRefs.current.forEach((element) => {
-      if (element) observer.observe(element);
-    });
-
-    return () => observer.disconnect();
-  }, [sponsoredProperties, incrementImpressions]);
-
-  const setSponsoredRef = useCallback((element: HTMLDivElement | null, campaignId: string) => {
-    if (element) {
-      sponsoredRefs.current.set(campaignId, element);
-    } else {
-      sponsoredRefs.current.delete(campaignId);
-    }
-  }, []);
 
   // Filter properties based on location
   const filteredProperties = properties.filter((property) => {
@@ -162,52 +124,6 @@ const Index = () => {
 
         {/* Featured Properties */}
         <section>
-          {/* Sponsored Business Section */}
-          {sponsoredProperties.length > 0 && (
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-bold text-foreground">Sponsored Businesses</h2>
-                  <span className="text-xs bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full font-medium">
-                    AD
-                  </span>
-                </div>
-              </div>
-              <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-2 max-w-full">
-                  {sponsoredProperties.slice(0, 4).map((property) => (
-                    <div 
-                      key={property.id}
-                      ref={(el) => property.campaign_id && setSponsoredRef(el, property.campaign_id)}
-                      data-campaign-id={property.campaign_id}
-                      className="w-[280px] shrink-0 md:w-auto"
-                    >
-                      <PropertyCard
-                        id={property.id}
-                        image={property.images[0] || '/placeholder.svg'}
-                        title={property.title}
-                        type={propertyTypes.find(t => t.type === property.property_type)?.icon || '💼'}
-                        price={`₹${property.price.toLocaleString()}`}
-                        location={`${property.area}, ${property.city}`}
-                        bedrooms={property.bedrooms || undefined}
-                        bathrooms={property.bathrooms || undefined}
-                        area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
-                        verified={property.verified}
-                        sponsored={true}
-                        onClick={() => {
-                          if (property.campaign_id) {
-                            incrementClicks(property.campaign_id);
-                          }
-                          navigate(`/property/${property.id}`);
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-foreground">Featured Properties</h2>
             <Button
@@ -227,6 +143,7 @@ const Index = () => {
                 title={property.title}
                 type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
                 price={`₹${property.price.toLocaleString()}`}
+                priceType={property.price_type}
                 location={`${property.area}, ${property.city}`}
                 bedrooms={property.bedrooms || undefined}
                 bathrooms={property.bathrooms || undefined}

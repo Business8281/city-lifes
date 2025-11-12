@@ -8,9 +8,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -36,18 +33,30 @@ const MyListings = () => {
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   const handleDelete = async () => {
+    console.log('🗑️ handleDelete called, deleteDialog:', deleteDialog);
     if (deleteDialog) {
-      await deleteProperty(deleteDialog);
-      setDeleteDialog(null);
+      console.log('✅ deleteDialog is truthy, calling deleteProperty...');
+      try {
+        await deleteProperty(deleteDialog);
+        console.log('✅ deleteProperty completed successfully');
+        setDeleteDialog(null);
+      } catch (error) {
+        console.error('❌ Error in handleDelete:', error);
+      }
+    } else {
+      console.log('❌ deleteDialog is falsy, not calling deleteProperty');
     }
   };
 
   const getStatusBadge = (status: string, available: boolean) => {
     if (status === 'rented') {
-      return <Badge variant="secondary" className="bg-orange-500/20 text-orange-700 dark:text-orange-400">Rented</Badge>;
+      return <Badge variant="secondary" className="bg-orange-500/20 text-orange-700 dark:text-orange-400">Rented (Hidden)</Badge>;
     }
     if (status === 'active' && available) {
-      return <Badge variant="default" className="bg-green-500/20 text-green-700 dark:text-green-400">Available</Badge>;
+      return <Badge variant="default" className="bg-green-500/20 text-green-700 dark:text-green-400">Available (Live)</Badge>;
+    }
+    if (status === 'inactive' || status === 'draft') {
+      return <Badge variant="secondary" className="bg-gray-500/20 text-gray-700 dark:text-gray-400">Draft</Badge>;
     }
     return <Badge variant="secondary" className="bg-gray-500/20 text-gray-700 dark:text-gray-400">Unavailable</Badge>;
   };
@@ -55,6 +64,7 @@ const MyListings = () => {
   const getCurrentStatus = (property: any): 'available' | 'rented' | 'unavailable' => {
     if (property.status === 'rented') return 'rented';
     if (property.status === 'active' && property.available) return 'available';
+    if (property.status === 'inactive' || property.status === 'draft') return 'unavailable';
     return 'unavailable';
   };
 
@@ -137,43 +147,65 @@ const MyListings = () => {
                             <MoreVertical className="h-5 w-5" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuSub>
-                            <DropdownMenuSubTrigger className="bg-primary/10">
-                              {updatingStatus === listing.id ? (
-                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              ) : (
-                                <Circle className="h-4 w-4 mr-2 fill-current" />
-                              )}
-                              Change Status
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuSubContent className="bg-popover border">
-                              <DropdownMenuItem
-                                onClick={() => handleStatusChange(listing.id, 'available')}
-                                disabled={updatingStatus === listing.id}
-                                className={getCurrentStatus(listing) === 'available' ? 'bg-green-500/20 text-green-700 dark:text-green-400' : ''}
-                              >
-                                <Circle className="h-4 w-4 mr-2 fill-green-500 text-green-500" />
-                                Available {getCurrentStatus(listing) === 'available' && '✓'}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleStatusChange(listing.id, 'rented')}
-                                disabled={updatingStatus === listing.id}
-                                className={getCurrentStatus(listing) === 'rented' ? 'bg-orange-500/20 text-orange-700 dark:text-orange-400' : ''}
-                              >
-                                <Circle className="h-4 w-4 mr-2 fill-orange-500 text-orange-500" />
-                                Rented {getCurrentStatus(listing) === 'rented' && '✓'}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleStatusChange(listing.id, 'unavailable')}
-                                disabled={updatingStatus === listing.id}
-                                className={getCurrentStatus(listing) === 'unavailable' ? 'bg-gray-500/20 text-gray-700 dark:text-gray-400' : ''}
-                              >
-                                <Circle className="h-4 w-4 mr-2 fill-gray-500 text-gray-500" />
-                                Unavailable {getCurrentStatus(listing) === 'unavailable' && '✓'}
-                              </DropdownMenuItem>
-                            </DropdownMenuSubContent>
-                          </DropdownMenuSub>
+                        <DropdownMenuContent align="end" className="w-56">
+                          {/* Status Change Options */}
+                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                            Change Status
+                          </div>
+                          <DropdownMenuItem
+                            onClick={() => handleStatusChange(listing.id, 'available')}
+                            disabled={updatingStatus === listing.id}
+                            className={getCurrentStatus(listing) === 'available' ? 'bg-green-500/10' : ''}
+                          >
+                            {updatingStatus === listing.id && getCurrentStatus(listing) !== 'available' ? (
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                              <Circle className="h-4 w-4 mr-2 fill-green-500 text-green-500" />
+                            )}
+                            <div className="flex flex-col flex-1">
+                              <span className="font-medium text-green-700 dark:text-green-400">Available</span>
+                              <span className="text-xs text-muted-foreground">Live - Visible to users</span>
+                            </div>
+                            {getCurrentStatus(listing) === 'available' && <span className="ml-2">✓</span>}
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuItem
+                            onClick={() => handleStatusChange(listing.id, 'rented')}
+                            disabled={updatingStatus === listing.id}
+                            className={getCurrentStatus(listing) === 'rented' ? 'bg-orange-500/10' : ''}
+                          >
+                            {updatingStatus === listing.id && getCurrentStatus(listing) !== 'rented' ? (
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                              <Circle className="h-4 w-4 mr-2 fill-orange-500 text-orange-500" />
+                            )}
+                            <div className="flex flex-col flex-1">
+                              <span className="font-medium text-orange-700 dark:text-orange-400">Rented</span>
+                              <span className="text-xs text-muted-foreground">Hidden from users</span>
+                            </div>
+                            {getCurrentStatus(listing) === 'rented' && <span className="ml-2">✓</span>}
+                          </DropdownMenuItem>
+                          
+                          <DropdownMenuItem
+                            onClick={() => handleStatusChange(listing.id, 'unavailable')}
+                            disabled={updatingStatus === listing.id}
+                            className={getCurrentStatus(listing) === 'unavailable' ? 'bg-gray-500/10' : ''}
+                          >
+                            {updatingStatus === listing.id && getCurrentStatus(listing) !== 'unavailable' ? (
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : (
+                              <Circle className="h-4 w-4 mr-2 fill-gray-500 text-gray-500" />
+                            )}
+                            <div className="flex flex-col flex-1">
+                              <span className="font-medium text-gray-700 dark:text-gray-400">Unavailable</span>
+                              <span className="text-xs text-muted-foreground">Draft - Hidden</span>
+                            </div>
+                            {getCurrentStatus(listing) === 'unavailable' && <span className="ml-2">✓</span>}
+                          </DropdownMenuItem>
+                          
+                          <div className="my-1 h-px bg-border" />
+                          
+                          {/* Other Options */}
                           <DropdownMenuItem
                             onClick={() => navigate(`/property/${listing.id}`)}
                           >
@@ -185,7 +217,10 @@ const MyListings = () => {
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => setDeleteDialog(listing.id)}
+                            onClick={() => {
+                              console.log('🗑️ Delete button clicked for property:', listing.id, listing.title);
+                              setDeleteDialog(listing.id);
+                            }}
                             className="text-destructive"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />

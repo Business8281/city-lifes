@@ -9,6 +9,7 @@ interface PropertyCardProps {
   title: string;
   type: string;
   price: string;
+  priceType?: string; // 'monthly', 'fixed', 'yearly'
   location: string;
   bedrooms?: number;
   bathrooms?: number;
@@ -25,6 +26,7 @@ const PropertyCard = ({
   title,
   type,
   price,
+  priceType = 'monthly',
   location,
   bedrooms,
   bathrooms,
@@ -57,19 +59,34 @@ const PropertyCard = ({
     <div
       onClick={onClick}
       className={cn(
-        "bg-card rounded-lg overflow-hidden border border-border hover:border-primary cursor-pointer transition-all duration-300 hover:shadow-lg max-w-full",
+        "bg-card rounded-lg overflow-hidden border cursor-pointer transition-all duration-300 hover:shadow-lg max-w-full relative",
+        sponsored 
+          ? "border-amber-400 dark:border-amber-600 shadow-md hover:shadow-amber-200 dark:hover:shadow-amber-900/50 ring-2 ring-amber-300 dark:ring-amber-700 shadow-amber-100 dark:shadow-amber-900/30" 
+          : "border-border hover:border-primary",
         className
       )}
     >
+      {/* Sponsored Glow Effect */}
+      {sponsored && (
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-orange-500/5 pointer-events-none z-0" />
+      )}
       <div className="relative aspect-[4/3]">
         <img
           src={image}
           alt={title}
           className="w-full h-full object-cover"
         />
+        {/* Sponsored Ribbon - Top Corner */}
+        {sponsored && (
+          <div className="absolute top-0 right-0 z-20">
+            <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white px-4 py-1 text-xs font-bold shadow-lg transform rotate-0 rounded-bl-lg">
+              ⭐ SPONSORED
+            </div>
+          </div>
+        )}
         <button
           onClick={toggleFavorite}
-          className="absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
+          className="absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors z-10"
         >
           <Heart
             className={cn(
@@ -78,12 +95,7 @@ const PropertyCard = ({
             )}
           />
         </button>
-        <div className="absolute top-3 left-3 flex flex-col gap-2">
-          {sponsored && (
-            <Badge className="bg-amber-500 hover:bg-amber-600">
-              Sponsored
-            </Badge>
-          )}
+        <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
           {verified && (
             <Badge className="bg-secondary">
               Verified
@@ -128,7 +140,18 @@ const PropertyCard = ({
         
         <div className="pt-2 flex items-center justify-between">
           <span className="text-2xl font-bold text-primary">{price}</span>
-          <span className="text-sm text-muted-foreground">/month</span>
+          {priceType === 'monthly' && (
+            <span className="text-sm text-muted-foreground">/month</span>
+          )}
+          {priceType === 'yearly' && (
+            <span className="text-sm text-muted-foreground">/year</span>
+          )}
+          {priceType === 'fixed' && type !== 'business' && (
+            <Badge variant="secondary" className="ml-2">For Sale</Badge>
+          )}
+          {type === 'business' && (
+            <Badge variant="secondary" className="ml-2">Business</Badge>
+          )}
         </div>
       </div>
     </div>

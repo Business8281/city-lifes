@@ -60,6 +60,27 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## App icons and splash screens
+
+This repo includes a helper script to generate all required icons for Web, iOS, and Android from `public/icon.svg`.
+
+- iOS app icons must NOT contain transparency. The script generates opaque (no alpha) PNGs for iOS to satisfy Xcode.
+- Output files are written to `ios/App/App/Assets.xcassets/AppIcon.appiconset` and Android `res` directories.
+
+To regenerate icons locally:
+
+```sh
+bash ./generate-icons.sh
+# then sync native projects
+npx cap sync
+```
+
+If you see an Xcode error like:
+
+> Failed to generate flattened icon stack for icon named 'AppIcon'
+
+run the script above to ensure all sizes exist and the iOS icons are opaque (no alpha) and try building again.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/06589d33-2c62-4311-98dd-430f000dd51c) and click on Share -> Publish.
