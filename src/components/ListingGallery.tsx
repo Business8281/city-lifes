@@ -53,26 +53,19 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
         <div
           className={cn(
             'overflow-hidden w-full bg-black rounded-none md:rounded-lg',
-            'h-[46vh] md:h-[60vh]'
+            'aspect-square'
           )}
           ref={emblaRef}
         >
-          <div className="flex touch-pan-y select-none">
+          <div className="flex touch-pan-y select-none h-full">
             {images.map((src, i) => {
-              const ratioClass = ratios[i] || 'normal';
               return (
-                <div className="flex-[0_0_100%] relative flex items-center justify-center" key={i}>
+                <div className="flex-[0_0_100%] relative flex items-center justify-center h-full" key={i}>
                   <img
                     src={src}
                     alt={title}
                     onClick={() => setLightbox(true)}
-                    className={cn(
-                      'max-h-full max-w-full cursor-zoom-in transition-opacity duration-300',
-                      'select-none',
-                      ratioClass === 'normal' && 'object-cover w-full h-full',
-                      ratioClass === 'very-wide' && 'object-contain w-full h-full',
-                      ratioClass === 'very-tall' && 'object-contain w-full h-full'
-                    )}
+                    className="w-full h-full object-cover cursor-zoom-in transition-opacity duration-300 select-none"
                     draggable={false}
                   />
                 </div>
