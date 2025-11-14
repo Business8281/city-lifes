@@ -17,4 +17,20 @@ export default defineConfig(({ mode }) => ({
       "sonner": path.resolve(__dirname, "./src/lib/sonner-noop.ts"),
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1200, // relax a bit; main reduction comes from code-splitting
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-router')) return 'react-vendor';
+            if (id.includes('@tanstack/react-query')) return 'react-query';
+            if (id.includes('@supabase/supabase-js')) return 'supabase';
+            if (id.includes('@radix-ui')) return 'radix';
+            if (id.includes('lucide-react')) return 'icons';
+          }
+        }
+      }
+    }
+  }
 }));

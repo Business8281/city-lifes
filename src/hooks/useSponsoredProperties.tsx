@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Property } from '@/types/database';
 import { toast } from 'sonner';
+import { App as CapacitorApp } from '@capacitor/app';
+import type { PluginListenerHandle } from '@capacitor/core';
 
 interface SponsoredProperty extends Property {
   campaign_id?: string;
@@ -24,6 +26,38 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
   useEffect(() => {
     // Fetch once on mount or when basic location filter changes if future logic needs it
     fetchSponsoredProperties();
+
+    // Refresh when tab/app becomes active again or when network returns
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchSponsoredProperties();
+      }
+    };
+    const onOnline = () => fetchSponsoredProperties();
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('online', onOnline);
+
+    // Native builds foreground
+    const appHandle = CapacitorApp.addListener?.('appStateChange', ({ isActive }) => {
+      if (isActive) fetchSponsoredProperties();
+    }) as unknown as PluginListenerHandle | undefined;
+
+    // Live updates from campaigns table
+    const channel = supabase
+      .channel('ad-campaigns-live')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'ad_campaigns' },
+        () => fetchSponsoredProperties()
+      )
+      .subscribe();
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('online', onOnline);
+      appHandle?.remove?.();
+      supabase.removeChannel(channel);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location?.method, location?.value]);
 

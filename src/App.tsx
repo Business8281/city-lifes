@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,23 +6,30 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Layout } from "./components/Layout";
+import { RequireAuth } from "./components/RequireAuth";
 import { useAppInitialize } from "./hooks/useAppInitialize";
-import Index from "./pages/Index";
-import Listings from "./pages/Listings";
-import PropertyDetails from "./pages/PropertyDetails";
-import Favorites from "./pages/Favorites";
-import MapView from "./pages/MapView";
-import Profile from "./pages/Profile";
-import EditProfile from "./pages/EditProfile";
-import Messages from "./pages/Messages";
-import AddProperty from "./pages/AddProperty";
-import MyListings from "./pages/MyListings";
-import Settings from "./pages/Settings";
-import AdCampaign from "./pages/AdCampaign";
-import AdminDashboard from "./pages/AdminDashboard";
-import Auth from "./pages/Auth";
-import ForgotPassword from "./pages/ForgotPassword";
-import NotFound from "./pages/NotFound";
+
+// Route-based code splitting
+const Index = lazy(() => import("./pages/Index"));
+const Listings = lazy(() => import("./pages/Listings"));
+const PropertyDetails = lazy(() => import("./pages/PropertyDetails"));
+const Favorites = lazy(() => import("./pages/Favorites"));
+const MapView = lazy(() => import("./pages/MapView"));
+const Profile = lazy(() => import("./pages/Profile"));
+const EditProfile = lazy(() => import("./pages/EditProfile"));
+const Messages = lazy(() => import("./pages/Messages"));
+const AddProperty = lazy(() => import("./pages/AddProperty"));
+const MyListings = lazy(() => import("./pages/MyListings"));
+const Settings = lazy(() => import("./pages/Settings"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
+const TermsOfService = lazy(() => import("./pages/TermsOfService.tsx"));
+const AdCampaign = lazy(() => import("./pages/AdCampaign"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Auth = lazy(() => import("./pages/Auth"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
+const ProfileSetup = lazy(() => import("./pages/ProfileSetup"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -35,26 +43,32 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Index />} />
-                <Route path="listings" element={<Listings />} />
-                <Route path="property/:id" element={<PropertyDetails />} />
-                <Route path="favorites" element={<Favorites />} />
-                <Route path="map" element={<MapView />} />
-                <Route path="profile" element={<Profile />} />
-                <Route path="profile/edit" element={<EditProfile />} />
-                <Route path="messages" element={<Messages />} />
-                <Route path="add-property" element={<AddProperty />} />
-                <Route path="my-listings" element={<MyListings />} />
-                <Route path="settings" element={<Settings />} />
-                <Route path="ad-campaign" element={<AdCampaign />} />
-                <Route path="admin-dashboard" element={<AdminDashboard />} />
-              </Route>
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <Suspense fallback={<div className="p-6 text-center">Loading…</div>}>
+              <Routes>
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/setup-profile" element={<ProfileSetup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<RequireAuth><Index /></RequireAuth>} />
+                  <Route path="listings" element={<Listings />} />
+                  <Route path="property/:id" element={<PropertyDetails />} />
+                  <Route path="favorites" element={<RequireAuth><Favorites /></RequireAuth>} />
+                  <Route path="map" element={<MapView />} />
+                    <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />
+                    <Route path="profile/edit" element={<RequireAuth><EditProfile /></RequireAuth>} />
+                    <Route path="messages" element={<RequireAuth><Messages /></RequireAuth>} />
+                    <Route path="add-property" element={<RequireAuth><AddProperty /></RequireAuth>} />
+                    <Route path="my-listings" element={<RequireAuth><MyListings /></RequireAuth>} />
+                    <Route path="settings" element={<RequireAuth><Settings /></RequireAuth>} />
+                  <Route path="privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="terms-of-service" element={<TermsOfService />} />
+                    <Route path="ad-campaign" element={<RequireAuth><AdCampaign /></RequireAuth>} />
+                    <Route path="admin-dashboard" element={<RequireAuth><AdminDashboard /></RequireAuth>} />
+                </Route>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </AuthProvider>

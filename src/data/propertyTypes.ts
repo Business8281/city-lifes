@@ -1,0 +1,18 @@
+export const propertyTypes = [
+  { type: "apartment", icon: "🏢", label: "Apartment" },
+  { type: "house", icon: "🏠", label: "House" },
+  { type: "flat", icon: "🏘️", label: "Flat" },
+  { type: "commercial", icon: "🏬", label: "Commercial" },
+  { type: "office", icon: "🏢", label: "Office" },
+  { type: "farmland", icon: "🌾", label: "Farmland" },
+  { type: "pg", icon: "🛏️", label: "PG" },
+  { type: "hostel", icon: "🏨", label: "Hostel" },
+  { type: "restaurant", icon: "🍽️", label: "Restaurant" },
+  { type: "cafe", icon: "☕", label: "Cafe" },
+  { type: "farmhouse", icon: "🏡", label: "Farmhouse" },
+  { type: "warehouse", icon: "📦", label: "Warehouse" },
+  { type: "cars", icon: "🚗", label: "Cars" },
+  { type: "bikes", icon: "🏍️", label: "Bikes" },
+  { type: "hotels", icon: "🏨", label: "Hotels" },
+  { type: "business", icon: "💼", label: "Business" },
+];

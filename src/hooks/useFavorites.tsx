@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Favorite } from '@/types/database';
 import { toast } from 'sonner';
+import { App as CapacitorApp } from '@capacitor/app';
+import type { PluginListenerHandle } from '@capacitor/core';
 
 export function useFavorites(userId: string | undefined) {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
-  const fetchFavorites = async () => {
+  const fetchFavorites = useCallback(async () => {
     if (!userId) {
       setLoading(false);
       return;
@@ -34,19 +36,50 @@ export function useFavorites(userId: string | undefined) {
 
       if (error) throw error;
       
-      setFavorites((data || []) as unknown as Favorite[]);
-      setFavoriteIds(new Set(data?.map(f => f.property_id) || []));
-    } catch (error: any) {
+  setFavorites((data || []) as unknown as Favorite[]);
+  setFavoriteIds(new Set(((data || []) as any[]).map((f: any) => f.property_id)));
+    } catch (error: unknown) {
       console.error('Error fetching favorites:', error);
       toast.error('Failed to load favorites');
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     fetchFavorites();
-  }, [userId]);
+
+    // Keep favorites fresh on app/tab activation and connection restore
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') fetchFavorites();
+    };
+    const onOnline = () => fetchFavorites();
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('online', onOnline);
+
+    const appHandle = CapacitorApp.addListener?.('appStateChange', ({ isActive }) => {
+      if (isActive) fetchFavorites();
+    }) as unknown as PluginListenerHandle | undefined;
+
+    // Live updates when favorites table changes for this user
+    const channel = userId
+      ? supabase
+          .channel('favorites-live')
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'favorites', filter: `user_id=eq.${userId}` },
+            () => fetchFavorites()
+          )
+          .subscribe()
+      : null;
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('online', onOnline);
+      appHandle?.remove?.();
+      if (channel) supabase.removeChannel(channel);
+    };
+  }, [userId, fetchFavorites]);
 
   const toggleFavorite = async (propertyId: string) => {
     if (!userId) {
@@ -74,7 +107,7 @@ export function useFavorites(userId: string | undefined) {
       }
 
       fetchFavorites();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error toggling favorite:', error);
       toast.error('Failed to update favorites');
     }

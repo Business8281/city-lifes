@@ -4,7 +4,7 @@ import SearchBar from "@/components/SearchBar";
 import PropertyCard from "@/components/PropertyCard";
 import BottomNav from "@/components/BottomNav";
 import LocationSelector from "@/components/LocationSelector";
-import { propertyTypes } from "@/data/properties";
+import { propertyTypes } from "@/data/propertyTypes";
 import { ArrowLeft, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {

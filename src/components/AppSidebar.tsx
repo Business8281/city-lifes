@@ -33,7 +33,7 @@ const actionItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const isCollapsed = state === "collapsed";
   const [profile, setProfile] = useState<{ full_name: string | null; phone: string | null } | null>(null);
 
@@ -70,8 +70,9 @@ export function AppSidebar() {
   };
 
   const getUserInitial = () => {
-    const name = profile?.full_name || user?.user_metadata?.full_name || user?.email;
-    return name ? name.charAt(0).toUpperCase() : 'U';
+    const name = profile?.full_name || user?.user_metadata?.full_name;
+    if (!name) return '';
+    return name.charAt(0).toUpperCase();
   };
 
   return (
@@ -92,15 +93,25 @@ export function AppSidebar() {
         {!isCollapsed && (
           <>
             <div className="px-4 py-3">
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarFallback className="bg-accent text-accent-foreground">{getUserInitial()}</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium">{profile?.full_name || user?.user_metadata?.full_name || 'User'}</span>
-                  <span className="text-xs text-muted-foreground">{user?.email}</span>
+              {loading ? null : (user && (profile?.full_name || user?.user_metadata?.full_name)) ? (
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarFallback className="bg-accent text-accent-foreground">{getUserInitial()}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{profile?.full_name || user?.user_metadata?.full_name}</span>
+                    <span className="text-xs text-muted-foreground">{user?.email}</span>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">Welcome</span>
+                    <span className="text-xs text-muted-foreground">Sign in to sync and save</span>
+                  </div>
+                  <NavLink to="/auth" className="text-sm font-medium text-primary hover:underline">Sign in</NavLink>
+                </div>
+              )}
             </div>
             <Separator className="my-2" />
           </>

@@ -1,0 +1,34 @@
+# Vite/React SPA rewrite rules for Apache (Hostinger)
+
+# Ensure index.html is served as the default file in directories
+DirectoryIndex index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  # Force HTTPS
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # Canonicalize www to apex for citylifes.in
+  RewriteCond %{HTTP_HOST} ^www\.citylifes\.in$ [NC]
+  RewriteRule ^ https://citylifes.in%{REQUEST_URI} [L,R=301]
+  # Serve existing files/directories directly
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Otherwise, route all requests to index.html
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Optional: Cache static assets aggressively (adjust as needed)
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 30 days"
+  ExpiresByType application/javascript "access plus 30 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+  ExpiresByType image/jpeg "access plus 30 days"
+  ExpiresByType image/webp "access plus 30 days"
+</IfModule>

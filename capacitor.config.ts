@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.citylifes.marketplace',
-  appName: 'Citylifes Marketplace',
+  appId: 'com.citylifes.app',
+  appName: 'Citylifes',
   webDir: 'dist',
   // Uncomment the server config below for live reload during development
   // server: {

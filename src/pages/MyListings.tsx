@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, Edit, Trash2, Eye, MoreVertical, Circle, Loader2 } fro
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +24,8 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useMyListings } from "@/hooks/useProperties";
 import { format } from "date-fns";
-import { toast } from "sonner";
+import type { Property } from "@/types/database";
+import { Capacitor } from "@capacitor/core";
 
 const MyListings = () => {
   const navigate = useNavigate();
@@ -31,6 +33,8 @@ const MyListings = () => {
   const { properties, loading, deleteProperty, updatePropertyStatus } = useMyListings(user?.id);
   const [deleteDialog, setDeleteDialog] = useState<string | null>(null);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const isIOS = Capacitor?.getPlatform?.() === 'ios';
+  const [localStatus, setLocalStatus] = useState<Record<string, 'available' | 'rented' | 'unavailable'>>({});
 
   const handleDelete = async () => {
     console.log('🗑️ handleDelete called, deleteDialog:', deleteDialog);
@@ -61,17 +65,31 @@ const MyListings = () => {
     return <Badge variant="secondary" className="bg-gray-500/20 text-gray-700 dark:text-gray-400">Unavailable</Badge>;
   };
 
-  const getCurrentStatus = (property: any): 'available' | 'rented' | 'unavailable' => {
+  const getCurrentStatus = (property: Property): 'available' | 'rented' | 'unavailable' => {
     if (property.status === 'rented') return 'rented';
     if (property.status === 'active' && property.available) return 'available';
     if (property.status === 'inactive' || property.status === 'draft') return 'unavailable';
     return 'unavailable';
   };
 
+  const getDisplayStatus = (property: Property): 'available' | 'rented' | 'unavailable' => {
+    return localStatus[property.id] ?? getCurrentStatus(property);
+  };
+
   const handleStatusChange = async (propertyId: string, newStatus: 'available' | 'rented' | 'unavailable') => {
+    // Local override so UI reflects selection immediately and reliably
+    setLocalStatus((prev) => ({ ...prev, [propertyId]: newStatus }));
     setUpdatingStatus(propertyId);
     await updatePropertyStatus(propertyId, newStatus);
     setUpdatingStatus(null);
+    // Clear the override shortly after to let actual state take over
+    setTimeout(() => {
+      setLocalStatus((prev) => {
+        const next = { ...prev };
+        delete next[propertyId];
+        return next;
+      });
+    }, 200);
   };
 
 
@@ -113,15 +131,17 @@ const MyListings = () => {
             {properties.map((listing) => (
               <Card key={listing.id} className="overflow-hidden">
                 <div className="flex flex-col md:flex-row">
-                  <div className="md:w-64 h-48 md:h-auto">
-                    <img
-                      src={listing.images[0] || '/placeholder.svg'}
-                      alt={listing.title}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="w-full md:w-56">
+                    <div className="relative h-32 md:aspect-[4/3] md:h-auto">
+                      <img
+                        src={listing.images[0] || '/placeholder.svg'}
+                        alt={listing.title}
+                        className="absolute inset-0 w-full h-full object-cover rounded-t-md md:rounded-none"
+                      />
+                    </div>
                   </div>
 
-                  <div className="flex-1 p-6">
+                  <div className="flex-1 p-4 md:p-6">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
@@ -141,93 +161,194 @@ const MyListings = () => {
                         </p>
                       </div>
 
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreVertical className="h-5 w-5" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56">
-                          {/* Status Change Options */}
-                          <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-                            Change Status
-                          </div>
-                          <DropdownMenuItem
-                            onClick={() => handleStatusChange(listing.id, 'available')}
-                            disabled={updatingStatus === listing.id}
-                            className={getCurrentStatus(listing) === 'available' ? 'bg-green-500/10' : ''}
-                          >
-                            {updatingStatus === listing.id && getCurrentStatus(listing) !== 'available' ? (
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            ) : (
-                              <Circle className="h-4 w-4 mr-2 fill-green-500 text-green-500" />
-                            )}
-                            <div className="flex flex-col flex-1">
-                              <span className="font-medium text-green-700 dark:text-green-400">Available</span>
-                              <span className="text-xs text-muted-foreground">Live - Visible to users</span>
+                      {isIOS ? (
+                        <Sheet>
+                          <SheetTrigger asChild>
+                            <Button aria-label="Listing actions" variant="ghost" size="icon" style={{ touchAction: 'manipulation' }}>
+                              <MoreVertical className="h-5 w-5" />
+                            </Button>
+                          </SheetTrigger>
+                          <SheetContent side="bottom" className="pb-8">
+                            <SheetHeader>
+                              <SheetTitle>Listing actions</SheetTitle>
+                            </SheetHeader>
+                            <div className="mt-4 space-y-2">
+                              {/* Status Change */}
+                              <div className="text-xs font-semibold text-muted-foreground px-1">Change Status</div>
+                              <button
+                                  disabled={updatingStatus === listing.id}
+                                  onClick={() => handleStatusChange(listing.id, 'available')}
+                                  className={`w-full flex items-center gap-3 rounded-md px-3 py-3 text-left ${getCurrentStatus(listing) === 'available' ? 'bg-green-500/10' : 'hover:bg-accent'}`}
+                                >
+                                  {updatingStatus === listing.id && getCurrentStatus(listing) !== 'available' ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Circle className="h-4 w-4 fill-green-500 text-green-500" />
+                                  )}
+                                  <div className="flex flex-col">
+                                    <span className="font-medium text-green-700 dark:text-green-400">Available</span>
+                                    <span className="text-xs text-muted-foreground">Live - Visible to users</span>
+                                  </div>
+                                  {getCurrentStatus(listing) === 'available' && <span className="ml-auto">✓</span>}
+                                </button>
+                              <button
+                                  disabled={updatingStatus === listing.id}
+                                  onClick={() => handleStatusChange(listing.id, 'rented')}
+                                  className={`w-full flex items-center gap-3 rounded-md px-3 py-3 text-left ${getCurrentStatus(listing) === 'rented' ? 'bg-orange-500/10' : 'hover:bg-accent'}`}
+                                >
+                                  {updatingStatus === listing.id && getCurrentStatus(listing) !== 'rented' ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Circle className="h-4 w-4 fill-orange-500 text-orange-500" />
+                                  )}
+                                  <div className="flex flex-col">
+                                    <span className="font-medium text-orange-700 dark:text-orange-400">Rented</span>
+                                    <span className="text-xs text-muted-foreground">Hidden from users</span>
+                                  </div>
+                                  {getCurrentStatus(listing) === 'rented' && <span className="ml-auto">✓</span>}
+                                </button>
+                              <button
+                                  disabled={updatingStatus === listing.id}
+                                  onClick={() => handleStatusChange(listing.id, 'unavailable')}
+                                  className={`w-full flex items-center gap-3 rounded-md px-3 py-3 text-left ${getCurrentStatus(listing) === 'unavailable' ? 'bg-gray-500/10' : 'hover:bg-accent'}`}
+                                >
+                                  {updatingStatus === listing.id && getCurrentStatus(listing) !== 'unavailable' ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <Circle className="h-4 w-4 fill-gray-500 text-gray-500" />
+                                  )}
+                                  <div className="flex flex-col">
+                                    <span className="font-medium text-gray-700 dark:text-gray-400">Unavailable</span>
+                                    <span className="text-xs text-muted-foreground">Draft - Hidden</span>
+                                  </div>
+                                  {getCurrentStatus(listing) === 'unavailable' && <span className="ml-auto">✓</span>}
+                                </button>
+
+                              <div className="my-2 h-px bg-border" />
+
+                              {/* Other actions */}
+                              <SheetClose asChild>
+                                <button
+                                  onClick={() => navigate(`/property/${listing.id}`)}
+                                  className="w-full flex items-center gap-3 rounded-md px-3 py-3 text-left hover:bg-accent"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                  <span>View</span>
+                                </button>
+                              </SheetClose>
+                              <SheetClose asChild>
+                                <button
+                                  onClick={() => navigate(`/add-property?edit=${listing.id}`)}
+                                  className="w-full flex items-center gap-3 rounded-md px-3 py-3 text-left hover:bg-accent"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                  <span>Edit</span>
+                                </button>
+                              </SheetClose>
+                              <SheetClose asChild>
+                                <button
+                                  onClick={() => {
+                                    console.log('🗑️ Delete button clicked for property:', listing.id, listing.title);
+                                    setDeleteDialog(listing.id);
+                                  }}
+                                  className="w-full flex items-center gap-3 rounded-md px-3 py-3 text-left text-destructive hover:bg-destructive/10"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  <span>Delete</span>
+                                </button>
+                              </SheetClose>
                             </div>
-                            {getCurrentStatus(listing) === 'available' && <span className="ml-2">✓</span>}
-                          </DropdownMenuItem>
-                          
-                          <DropdownMenuItem
-                            onClick={() => handleStatusChange(listing.id, 'rented')}
-                            disabled={updatingStatus === listing.id}
-                            className={getCurrentStatus(listing) === 'rented' ? 'bg-orange-500/10' : ''}
-                          >
-                            {updatingStatus === listing.id && getCurrentStatus(listing) !== 'rented' ? (
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            ) : (
-                              <Circle className="h-4 w-4 mr-2 fill-orange-500 text-orange-500" />
-                            )}
-                            <div className="flex flex-col flex-1">
-                              <span className="font-medium text-orange-700 dark:text-orange-400">Rented</span>
-                              <span className="text-xs text-muted-foreground">Hidden from users</span>
+                          </SheetContent>
+                        </Sheet>
+                      ) : (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-label="Listing actions" variant="ghost" size="icon" style={{ touchAction: 'manipulation' }}>
+                              <MoreVertical className="h-5 w-5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-56">
+                            {/* Status Change Options */}
+                            <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
+                              Change Status
                             </div>
-                            {getCurrentStatus(listing) === 'rented' && <span className="ml-2">✓</span>}
-                          </DropdownMenuItem>
-                          
-                          <DropdownMenuItem
-                            onClick={() => handleStatusChange(listing.id, 'unavailable')}
-                            disabled={updatingStatus === listing.id}
-                            className={getCurrentStatus(listing) === 'unavailable' ? 'bg-gray-500/10' : ''}
-                          >
-                            {updatingStatus === listing.id && getCurrentStatus(listing) !== 'unavailable' ? (
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            ) : (
-                              <Circle className="h-4 w-4 mr-2 fill-gray-500 text-gray-500" />
-                            )}
-                            <div className="flex flex-col flex-1">
-                              <span className="font-medium text-gray-700 dark:text-gray-400">Unavailable</span>
-                              <span className="text-xs text-muted-foreground">Draft - Hidden</span>
-                            </div>
-                            {getCurrentStatus(listing) === 'unavailable' && <span className="ml-2">✓</span>}
-                          </DropdownMenuItem>
-                          
-                          <div className="my-1 h-px bg-border" />
-                          
-                          {/* Other Options */}
-                          <DropdownMenuItem
-                            onClick={() => navigate(`/property/${listing.id}`)}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => navigate(`/add-property?edit=${listing.id}`)}>
-                            <Edit className="h-4 w-4 mr-2" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              console.log('🗑️ Delete button clicked for property:', listing.id, listing.title);
-                              setDeleteDialog(listing.id);
-                            }}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            <DropdownMenuItem
+                              onSelect={() => handleStatusChange(listing.id, 'available')}
+                              disabled={updatingStatus === listing.id}
+                              className={getDisplayStatus(listing) === 'available' ? 'bg-green-500/10' : ''}
+                            >
+                              {updatingStatus === listing.id && getDisplayStatus(listing) !== 'available' ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Circle className="h-4 w-4 mr-2 fill-green-500 text-green-500" />
+                              )}
+                              <div className="flex flex-col flex-1">
+                                <span className="font-medium text-green-700 dark:text-green-400">Available</span>
+                                <span className="text-xs text-muted-foreground">Live - Visible to users</span>
+                              </div>
+                              {getDisplayStatus(listing) === 'available' && <span className="ml-2">✓</span>}
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuItem
+                              onSelect={() => handleStatusChange(listing.id, 'rented')}
+                              disabled={updatingStatus === listing.id}
+                              className={getDisplayStatus(listing) === 'rented' ? 'bg-orange-500/10' : ''}
+                            >
+                              {updatingStatus === listing.id && getDisplayStatus(listing) !== 'rented' ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Circle className="h-4 w-4 mr-2 fill-orange-500 text-orange-500" />
+                              )}
+                              <div className="flex flex-col flex-1">
+                                <span className="font-medium text-orange-700 dark:text-orange-400">Rented</span>
+                                <span className="text-xs text-muted-foreground">Hidden from users</span>
+                              </div>
+                              {getDisplayStatus(listing) === 'rented' && <span className="ml-2">✓</span>}
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuItem
+                              onSelect={() => handleStatusChange(listing.id, 'unavailable')}
+                              disabled={updatingStatus === listing.id}
+                              className={getDisplayStatus(listing) === 'unavailable' ? 'bg-gray-500/10' : ''}
+                            >
+                              {updatingStatus === listing.id && getDisplayStatus(listing) !== 'unavailable' ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <Circle className="h-4 w-4 mr-2 fill-gray-500 text-gray-500" />
+                              )}
+                              <div className="flex flex-col flex-1">
+                                <span className="font-medium text-gray-700 dark:text-gray-400">Unavailable</span>
+                                <span className="text-xs text-muted-foreground">Draft - Hidden</span>
+                              </div>
+                              {getDisplayStatus(listing) === 'unavailable' && <span className="ml-2">✓</span>}
+                            </DropdownMenuItem>
+                            
+                            <div className="my-1 h-px bg-border" />
+                            
+                            {/* Other Options */}
+                            <DropdownMenuItem
+                              onSelect={() => navigate(`/property/${listing.id}`)}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onSelect={() => navigate(`/add-property?edit=${listing.id}`)}>
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onSelect={() => {
+                                console.log('🗑️ Delete button clicked for property:', listing.id, listing.title);
+                                setDeleteDialog(listing.id);
+                              }}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
                     </div>
 
                     <div className="flex gap-6 text-sm">

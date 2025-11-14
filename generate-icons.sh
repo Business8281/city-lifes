@@ -34,6 +34,10 @@ convert temp_icon.png -resize 32x32 public/favicon.ico
 echo "📱 Generating iOS app icons..."
 IOS_PATH="ios/App/App/Assets.xcassets/AppIcon.appiconset"
 
+# Ensure directory exists and clean out old PNGs to avoid unassigned children in Xcode
+mkdir -p "$IOS_PATH"
+rm -f "$IOS_PATH"/*.png 2>/dev/null || true
+
 convert temp_icon_ios.png -strip -resize 20x20 "$IOS_PATH/AppIcon-20x20@1x.png"
 convert temp_icon_ios.png -strip -resize 40x40 "$IOS_PATH/AppIcon-20x20@2x.png"
 convert temp_icon_ios.png -strip -resize 60x60 "$IOS_PATH/AppIcon-20x20@3x.png"

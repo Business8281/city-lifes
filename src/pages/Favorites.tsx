@@ -4,7 +4,7 @@ import BottomNav from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useAuth } from "@/contexts/AuthContext";
-import { propertyTypes } from "@/data/properties";
+import { propertyTypes } from "@/data/propertyTypes";
 import { Property } from "@/types/database";
 
 const Favorites = () => {

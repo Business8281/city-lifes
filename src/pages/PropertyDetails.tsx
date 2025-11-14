@@ -5,7 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import BottomNav from "@/components/BottomNav";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import ListingGallery from '@/components/ListingGallery';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useProperty } from "@/hooks/useProperties";
@@ -20,6 +21,42 @@ const PropertyDetails = () => {
   const { property, loading } = useProperty(id);
   const { favoriteIds, toggleFavorite } = useFavorites(user?.id);
   const [currentImage, setCurrentImage] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+
+  const goPrev = () => {
+    setCurrentImage((prev) => {
+      const total = property?.images?.length || 0;
+      if (total <= 1) return prev;
+      return (prev - 1 + total) % total;
+    });
+  };
+
+  const goNext = () => {
+    setCurrentImage((prev) => {
+      const total = property?.images?.length || 0;
+      if (total <= 1) return prev;
+      return (prev + 1) % total;
+    });
+  };
+
+  const onTouchStart: React.TouchEventHandler<HTMLDivElement> = (e) => {
+    touchStartX.current = e.changedTouches[0].clientX;
+  };
+
+  const onTouchEnd: React.TouchEventHandler<HTMLDivElement> = (e) => {
+    touchEndX.current = e.changedTouches[0].clientX;
+    if (touchStartX.current === null || touchEndX.current === null) return;
+    const delta = touchEndX.current - touchStartX.current;
+    const threshold = 50; // px
+    if (delta > threshold) {
+      goPrev();
+    } else if (delta < -threshold) {
+      goNext();
+    }
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
 
   const isFavorite = id ? favoriteIds.has(id) : false;
 
@@ -95,30 +132,7 @@ const PropertyDetails = () => {
       </div>
 
       {/* Image Gallery */}
-      <div className="relative aspect-[16/9] md:aspect-[21/9] max-h-[300px] md:max-h-[400px] bg-muted">
-        <img
-          src={property.images[currentImage] || '/placeholder.svg'}
-          alt={property.title}
-          className="w-full h-full object-cover"
-        />
-        
-        {property.images.length > 1 && (
-          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-            {property.images.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentImage(index)}
-                className={cn(
-                  "w-2 h-2 rounded-full transition-all",
-                  currentImage === index
-                    ? "bg-white w-6"
-                    : "bg-white/50"
-                )}
-              />
-            ))}
-          </div>
-        )}
-      </div>
+      <ListingGallery images={property.images} title={property.title} />
 
       <div className="max-w-7xl mx-auto px-3 md:px-4 py-3 md:py-4 space-y-3 md:space-y-4 overflow-x-hidden">
         {/* Title and Price */}

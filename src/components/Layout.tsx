@@ -21,7 +21,7 @@ export function Layout() {
           
           {/* Page Content - scrollable */}
           <div
-            className="flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain touch-pan-y px-safe-edge mobile-page"
+            className="flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain touch-pan-y px-safe-edge pt-safe-edge mobile-page"
             style={{ WebkitOverflowScrolling: 'touch' }}
           >
             <Outlet />

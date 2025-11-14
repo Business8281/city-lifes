@@ -83,7 +83,52 @@ run the script above to ensure all sizes exist and the iOS icons are opaque (no 
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/06589d33-2c62-4311-98dd-430f000dd51c) and click on Share -> Publish.
+### Hostinger (Apache) static hosting
+
+This is a Vite React SPA — deploy the built `dist/` to your Hostinger site's document root and add an Apache rewrite for client-side routing.
+
+1) Configure environment for production
+
+Create `.env.production` at repo root using `.env.production.example` and fill your Supabase values:
+
+```
+VITE_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+VITE_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+```
+
+2) Build production assets
+
+```
+npm ci
+npm run build
+```
+
+3) Ensure SPA rewrites
+
+An Apache `.htaccess` is provided in `public/.htaccess` and will be copied to `dist/.htaccess` on build. It rewrites unknown routes to `index.html` so React Router works on refresh/deep links.
+
+4) Upload to Hostinger
+
+- In hPanel → Files → File Manager, open your domain's `public_html/` (or subdomain root).
+- Upload the contents of `dist/` (not the folder itself). Ensure `index.html`, `assets/`, and `.htaccess` are present in the root.
+
+5) Configure SSL and DNS
+
+- Issue a Let’s Encrypt SSL for your domain in hPanel → Security → SSL.
+- If issuance fails due to CAA, add a CAA record for `letsencrypt.org` and retry.
+
+6) Supabase Auth settings
+
+- In Supabase Dashboard → Authentication → URL Configuration:
+	- Site URL: `https://your-domain.com`
+	- Redirect URLs: add `https://your-domain.com/auth/callback`
+- For Google provider: ensure authorized domains include your domain in Google Cloud Console.
+
+Common pitfalls
+
+- Missing `.htaccess` → 404s on refresh. Ensure the file exists in the deployed root.
+- Wrong env keys at build time → auth/API calls fail in production. Rebuild after fixing `.env.production`.
+- Mixed content/HTTP → force HTTPS in Hostinger and Supabase URLs.
 
 ## Can I connect a custom domain to my Lovable project?
 

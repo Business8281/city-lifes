@@ -1,4 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
+import { App as CapacitorApp } from '@capacitor/app';
+import type { PluginListenerHandle } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 import { Property } from '@/types/database';
 import { toast } from 'sonner';
@@ -39,18 +41,48 @@ export function useProperties(filters?: PropertyFilters) {
         effectiveFilters.radiusKm = effectiveFilters.radiusKm || 10;
       }
 
-      // Use the search function for location-based filtering
-      if (effectiveFilters.city || effectiveFilters.area || effectiveFilters.pinCode || 
-          (effectiveFilters.latitude && effectiveFilters.longitude)) {
+      // Location-aware querying
+      // 1) If we have live coordinates, use the geospatial RPC for distance filtering
+      if (effectiveFilters.latitude && effectiveFilters.longitude) {
         const { data, error } = await supabase.rpc('search_properties_by_location', {
           search_city: effectiveFilters.city || null,
           search_area: effectiveFilters.area || null,
           search_pin_code: effectiveFilters.pinCode || null,
-          search_latitude: effectiveFilters.latitude || null,
-          search_longitude: effectiveFilters.longitude || null,
+          search_latitude: effectiveFilters.latitude,
+          search_longitude: effectiveFilters.longitude,
           radius_km: effectiveFilters.radiusKm || 10,
           property_type_filter: effectiveFilters.propertyType || null,
         });
+
+        if (error) throw error;
+        setProperties((data || []) as unknown as Property[]);
+      }
+      // 2) If we only have textual filters (city/area/pincode), use ILIKE/equals directly
+      else if (effectiveFilters.city || effectiveFilters.area || effectiveFilters.pinCode) {
+        let query = supabase
+          .from('properties')
+          .select('*')
+          .eq('status', 'active')
+          .eq('available', true);
+
+        if (effectiveFilters.city) {
+          query = query.ilike('city', `%${(effectiveFilters.city || '').trim()}%`);
+        }
+        if (effectiveFilters.area) {
+          query = query.ilike('area', `%${(effectiveFilters.area || '').trim()}%`);
+        }
+        if (effectiveFilters.pinCode) {
+          // Pin code should be an exact match, but allow partial starts-with
+          const pin = (effectiveFilters.pinCode || '').trim();
+          query = pin.length === 6 ? query.eq('pin_code', pin) : query.ilike('pin_code', `${pin}%`);
+        }
+        if (effectiveFilters.propertyType) {
+          query = query.eq('property_type', effectiveFilters.propertyType);
+        }
+
+        const { data, error } = await query
+          .order('created_at', { ascending: false })
+          .limit(100);
 
         if (error) throw error;
         setProperties((data || []) as unknown as Property[]);
@@ -82,6 +114,41 @@ export function useProperties(filters?: PropertyFilters) {
 
   useEffect(() => {
     fetchProperties();
+
+    // 1) Revalidate when app/tab becomes active again
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchProperties();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    // 2) Revalidate when network returns
+    const onOnline = () => fetchProperties();
+    window.addEventListener('online', onOnline);
+
+    // 3) Revalidate when app comes to foreground (native builds)
+    const removeAppListener = CapacitorApp.addListener?.('appStateChange', ({ isActive }) => {
+      if (isActive) fetchProperties();
+    }) as unknown as PluginListenerHandle | undefined;
+
+    // 4) Live updates: refetch on any change to properties table
+    const channel = supabase
+      .channel('properties-live')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'properties' },
+        () => fetchProperties()
+      )
+      .subscribe();
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('online', onOnline);
+      // remove AppState listener if present
+      removeAppListener?.remove?.();
+      supabase.removeChannel(channel);
+    };
   }, [fetchProperties]);
 
   return { properties, loading, refetch: fetchProperties };
@@ -218,7 +285,7 @@ export function useMyListings(userId: string | undefined) {
     try {
       let updateData: { status: string; available: boolean };
       let statusMessage: string;
-      
+
       switch (newStatus) {
         case 'available':
           // Property is live and visible to users
@@ -233,18 +300,33 @@ export function useMyListings(userId: string | undefined) {
         case 'unavailable':
           // Property is in draft mode, not visible to users
           updateData = { status: 'inactive', available: false };
-          statusMessage = 'Property saved as draft (hidden from users)';
+          statusMessage = 'Property saved as draft (hidden)';
           break;
       }
+
+      // Optimistic UI: snapshot previous value for potential rollback
+      const previous = properties.find((p) => p.id === propertyId) || null;
+
+      // Apply optimistic update so UI reflects selection immediately
+      setProperties((prev) =>
+        prev.map((p) => (p.id === propertyId ? { ...p, status: updateData.status, available: updateData.available } : p))
+      );
 
       const { error } = await supabase
         .from('properties')
         .update(updateData)
         .eq('id', propertyId);
 
-      if (error) throw error;
-      
+      if (error) {
+        // Rollback on failure
+        if (previous) {
+          setProperties((prev) => prev.map((p) => (p.id === propertyId ? previous : p)));
+        }
+        throw error;
+      }
+
       toast.success(statusMessage);
+      // Refresh from server to ensure consistency (and catch external updates)
       fetchMyListings();
     } catch (error) {
       console.error('Error updating property status:', error);

@@ -133,6 +133,10 @@ All colors MUST be HSL.
     scroll-behavior: auto;
   }
 
+    /* Hide scrollbars for elements that may need overflow scroll (auth container) */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
   #root {
     position: fixed;
     inset: 0;

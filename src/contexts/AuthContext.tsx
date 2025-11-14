@@ -1,23 +1,24 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
+import { Capacitor } from '@capacitor/core';
+import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, fullName: string, phone: string) => Promise<{ error: any }>;
-  verifyOTP: (email: string, token: string) => Promise<{ error: any; data: any }>;
-  resendOTP: (email: string) => Promise<{ error: any }>;
-  signInWithGoogle: () => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, password: string, fullName: string, phone: string) => Promise<{ error: AuthError | null }>;
+  verifyOTP: (email: string, token: string) => Promise<{ error: AuthError | null; data: unknown }>;
+  resendOTP: (email: string) => Promise<{ error: AuthError | null }>;
+  signInWithGoogle: () => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
-  resetPassword: (email: string) => Promise<{ error: any }>;
-  updatePassword: (newPassword: string) => Promise<{ error: any }>;
-  verifyPasswordResetOTP: (email: string, token: string, newPassword: string) => Promise<{ error: any; data: any }>;
-  changeEmail: (newEmail: string) => Promise<{ error: any }>;
-  verifyEmailChangeOTP: (token: string) => Promise<{ error: any; data: any }>;
-  updatePhone: (phone: string) => Promise<{ error: any }>;
+  resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
+  updatePassword: (newPassword: string) => Promise<{ error: AuthError | null }>;
+  verifyPasswordResetOTP: (email: string, token: string, newPassword: string) => Promise<{ error: AuthError | null; data: unknown }>;
+  changeEmail: (newEmail: string) => Promise<{ error: AuthError | null }>;
+  verifyEmailChangeOTP: (token: string) => Promise<{ error: AuthError | null; data: unknown }>;
+  updatePhone: (phone: string) => Promise<{ error: unknown | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -90,17 +91,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
+    const isNative = Capacitor.isNativePlatform?.() === true;
+    const redirectTo = isNative
+      ? 'citylife://auth-callback'
+      : `${window.location.origin}/auth/callback`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo,
       },
     });
     return { error };
   };
 
   const signOut = async () => {
+    // Sign out from Supabase and ensure local state is cleared across platforms
     await supabase.auth.signOut();
+    setSession(null);
+    setUser(null);
   };
 
   const resetPassword = async (email: string) => {
@@ -196,6 +204,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

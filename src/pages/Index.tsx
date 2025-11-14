@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "@/components/SearchBar";
 import PropertyCard from "@/components/PropertyCard";
-import { propertyTypes } from "@/data/properties";
+import { propertyTypes } from "@/data/propertyTypes";
 import heroImage from "@/assets/hero-cityscape.jpg";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";

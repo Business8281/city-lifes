@@ -27,9 +27,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
+// import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
-import { propertyTypes } from "@/data/properties";
+import { propertyTypes } from "@/data/propertyTypes";
 import { allCities, areas, pinCodes } from "@/data/indianLocations";
 import { useLocation } from "@/contexts/LocationContext";
 import { useAuth } from "@/contexts/AuthContext";
@@ -184,7 +184,7 @@ const businessTypes = [
 
 const AddProperty = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  // const { toast } = useToast(); // unused
   const { location } = useLocation();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -351,9 +351,20 @@ const AddProperty = () => {
     const files = e.target.files;
     if (!files) return;
     const filesArray = Array.from(files);
+
+    // Enforce maximum of 10 images total
+    const remainingSlots = Math.max(0, 10 - images.length);
+    if (remainingSlots === 0) {
+      sonnerToast.error("You can upload up to 10 images only");
+      return;
+    }
+    if (filesArray.length > remainingSlots) {
+      sonnerToast.info(`Only ${remainingSlots} more image${remainingSlots > 1 ? 's' : ''} allowed (max 10)`);
+    }
+    const limitedFiles = filesArray.slice(0, remainingSlots);
     const processedImages: { preview: string; file: File }[] = [];
 
-    for (const file of filesArray) {
+    for (const file of limitedFiles) {
       // Limit file size to 10MB
       if (file.size > 10 * 1024 * 1024) {
         sonnerToast.error(`Image ${file.name} is too large (max 10MB allowed)`);
@@ -454,7 +465,7 @@ const AddProperty = () => {
         longitude: position.coords.longitude.toString(),
       }));
       sonnerToast.success("Location captured successfully");
-    } catch (error) {
+    } catch {
       sonnerToast.error("Could not get your location");
     }
   };
@@ -760,12 +771,14 @@ const AddProperty = () => {
                     accept="image/*"
                     onChange={handleImageUpload}
                     className="hidden"
+                    disabled={images.length >= 10}
                   />
                   <label htmlFor="images" className="cursor-pointer">
                     <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
-                      Click to upload images
+                      {images.length >= 10 ? "Maximum 10 images uploaded" : "Click to upload images"}
                     </p>
+                    <p className="text-xs text-muted-foreground mt-1">{images.length}/10 images</p>
                   </label>
                 </div>
 

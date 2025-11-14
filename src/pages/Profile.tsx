@@ -42,6 +42,22 @@ const Profile = () => {
     };
     
     loadProfile();
+
+    // Subscribe to live changes to this user's profile so the UI stays fresh
+    if (user?.id) {
+      const channel = supabase
+        .channel('profile-live')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+          () => loadProfile()
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, [user]);
 
   const menuItems = [

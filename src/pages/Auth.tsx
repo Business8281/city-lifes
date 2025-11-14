@@ -15,7 +15,7 @@ import { z } from "zod";
 
 const Auth = () => {
   const navigate = useNavigate();
-  const { signIn, signUp, verifyOTP, resendOTP, user, loading: authLoading } = useAuth();
+  const { signIn, signUp, verifyOTP, resendOTP, user, loading: authLoading, signInWithGoogle } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -34,10 +34,10 @@ const Auth = () => {
     confirmPassword: "",
   });
 
-  // Redirect if already logged in
+  // Redirect if already logged in (email login) -> home
   useEffect(() => {
     if (!authLoading && user) {
-      navigate("/");
+      navigate("/", { replace: true });
     }
   }, [user, authLoading, navigate]);
 
@@ -131,7 +131,7 @@ const Auth = () => {
 
     setLoading(true);
 
-    const { data, error } = await verifyOTP(pendingEmail, otpCode);
+    const { data: _data, error } = await verifyOTP(pendingEmail, otpCode);
 
     if (error) {
       const errorMessage = getErrorMessage(error);
@@ -143,15 +143,42 @@ const Auth = () => {
       });
       setLoading(false);
     } else {
-      toast({
-        title: "Email Verified!",
-        description: "Your account has been verified successfully.",
-      });
+      try {
+        // Fetch authenticated user
+        const { data: userData } = await supabase.auth.getUser();
+        const authedUser = userData?.user;
+        if (authedUser) {
+          const fullName = signupData.fullName;
+          const phoneE164 = `+91${signupData.phone}`;
+          // Upsert profile row
+          await supabase.from('profiles').upsert({
+            id: authedUser.id,
+            full_name: fullName,
+            phone: phoneE164,
+            updated_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+          });
+          // Mark profile completed in user metadata
+          await supabase.auth.updateUser({
+            data: {
+              profile_completed: true,
+              full_name: fullName,
+              phone: phoneE164,
+            },
+          });
+        }
+        toast({
+          title: "Email Verified!",
+          description: "Account ready. Welcome!",
+        });
+      } catch (profileErr: any) {
+        console.error('Profile creation error:', profileErr);
+        toast({ variant: 'destructive', title: 'Profile setup issue', description: 'Signed in, but profile could not be saved.' });
+      }
       setError("");
       setShowOTPVerification(false);
       setOtpCode("");
       setPendingEmail("");
-      // Clear signup form
       setSignupData({
         email: "",
         password: "",
@@ -160,7 +187,7 @@ const Auth = () => {
         confirmPassword: "",
       });
       setLoading(false);
-      navigate("/");
+      navigate("/", { replace: true });
     }
   };
 
@@ -185,22 +212,29 @@ const Auth = () => {
 
   if (authLoading) {
     return (
-      <div className="fixed inset-0 bg-[#368ab6] flex items-center justify-center">
+  <div className="fixed inset-0 bg-[#368bb7] flex items-center justify-center">
         <div className="text-white text-lg">Loading...</div>
       </div>
     );
   }
 
+  // Disable body scroll while auth page mounted
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
   return (
-    <div className="fixed inset-0 bg-[#368ab6] flex items-center justify-center p-4 mobile-frame">
-  <div className="w-full max-w-md space-y-6 max-h-[100dvh] overflow-y-auto overscroll-y-contain touch-pan-y px-safe-edge pb-safe-edge" style={{ WebkitOverflowScrolling: 'touch' }}>
+    <div className="fixed inset-0 bg-[#368bb7] flex items-center justify-center mobile-frame h-[100dvh]">
+      <div className="w-full max-w-md space-y-4 px-safe-edge pb-safe-edge max-h-[100dvh] overflow-y-auto no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
         {/* Logo and Branding */}
-        <div className="flex flex-col items-center space-y-3 text-white">
-          <div className="w-44 h-44 sm:w-48 sm:h-48 flex items-center justify-center p-8 animate-fade-in">
-            <img src={citylifesLogo} alt="citylifes" className="w-full h-full object-contain drop-shadow-2xl" />
+        <div className="flex flex-col items-center space-y-1 text-white">
+          <div className="w-28 h-28 sm:w-36 sm:h-36 flex items-center justify-center p-2 sm:p-3 animate-fade-in">
+            <img src={citylifesLogo} alt="citylifes" className="w-full h-full object-contain drop-shadow-none" />
           </div>
-          <h1 className="text-4xl font-bold animate-fade-in">citylifes</h1>
-          <p className="text-lg text-white/90 animate-fade-in">Find your perfect space</p>
+          <h1 className="text-3xl font-bold animate-fade-in">citylifes</h1>
+          <p className="text-base text-white/90 animate-fade-in">Find your perfect space</p>
         </div>
 
         {/* OTP Verification Card */}
@@ -241,7 +275,7 @@ const Auth = () => {
 
                   <Button 
                     type="submit" 
-                    className="w-full h-12 text-base bg-[#368ab6] hover:bg-[#2d7298]" 
+                    className="w-full h-12 text-base bg-[#368bb7] hover:bg-[#2d7298]" 
                     disabled={loading || otpCode.length !== 6}
                   >
                     {loading ? "Verifying..." : "Verify Email"}
@@ -356,12 +390,36 @@ const Auth = () => {
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full h-12 text-base bg-[#368ab6] hover:bg-[#2d7298]" 
+                    className="w-full h-12 text-base bg-[#368bb7] hover:bg-[#2d7298]" 
                     disabled={loading}
                   >
                     {loading ? "Logging in..." : "Login"}
                   </Button>
                 </form>
+
+                <div className="relative py-2">
+                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-background px-2 text-muted-foreground">or</span>
+                  </div>
+                </div>
+
+                <Button 
+                  type="button"
+                  variant="outline"
+                  className="w-full h-12 text-base"
+                  onClick={async () => {
+                    setError("");
+                    const { error } = await signInWithGoogle();
+                    if (error) {
+                      setError(error.message || 'Google sign-in failed');
+                    }
+                  }}
+                >
+                  Continue with Google
+                </Button>
               </TabsContent>
 
               <TabsContent value="signup" className="space-y-4">
@@ -469,12 +527,36 @@ const Auth = () => {
                   </div>
                   <Button 
                     type="submit" 
-                    className="w-full h-12 text-base bg-[#368ab6] hover:bg-[#2d7298]" 
+                    className="w-full h-12 text-base bg-[#368bb7] hover:bg-[#2d7298]" 
                     disabled={loading}
                   >
                     {loading ? "Creating account..." : "Sign Up"}
                   </Button>
                 </form>
+
+                <div className="relative py-2">
+                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-background px-2 text-muted-foreground">or</span>
+                  </div>
+                </div>
+
+                <Button 
+                  type="button"
+                  variant="outline"
+                  className="w-full h-12 text-base"
+                  onClick={async () => {
+                    setError("");
+                    const { error } = await signInWithGoogle();
+                    if (error) {
+                      setError(error.message || 'Google sign-in failed');
+                    }
+                  }}
+                >
+                  Continue with Google
+                </Button>
               </TabsContent>
             </Tabs>
           </CardContent>
