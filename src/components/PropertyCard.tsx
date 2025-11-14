@@ -70,7 +70,7 @@ const PropertyCard = ({
       {sponsored && (
         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-orange-500/5 pointer-events-none z-0" />
       )}
-      <div className="relative aspect-[4/3]">
+      <div className="relative aspect-square">
         <img
           src={image}
           alt={title}
