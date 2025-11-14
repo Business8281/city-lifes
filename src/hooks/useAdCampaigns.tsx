@@ -67,7 +67,7 @@ export function useAdCampaigns(businessOnly: boolean = false) {
         );
       }
 
-      setCampaigns(filteredData as AdCampaign[]);
+      setCampaigns(filteredData as unknown as AdCampaign[]);
     } catch (error: any) {
       console.error('Error fetching ad campaigns:', error);
       toast.error('Failed to load campaigns');

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { App as CapacitorApp } from '@capacitor/app';
+import { App as CapacitorApp, URLOpenListenerEvent } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Capacitor } from '@capacitor/core';

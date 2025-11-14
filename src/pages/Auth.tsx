@@ -12,6 +12,7 @@ import citylifesLogo from "@/assets/citylifes-logo.png";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { authSchema } from "@/schemas/validationSchemas";
 import { z } from "zod";
+import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -151,13 +152,14 @@ const Auth = () => {
           const fullName = signupData.fullName;
           const phoneE164 = `+91${signupData.phone}`;
           // Upsert profile row
-          await supabase.from('profiles').upsert({
+          await supabase.from('profiles').upsert([{
             id: authedUser.id,
+            email: authedUser.email || '',
             full_name: fullName,
             phone: phoneE164,
             updated_at: new Date().toISOString(),
             created_at: new Date().toISOString(),
-          });
+          }]);
           // Mark profile completed in user metadata
           await supabase.auth.updateUser({
             data: {

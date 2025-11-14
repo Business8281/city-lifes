@@ -122,7 +122,8 @@ const EditProfile = () => {
     setEmailChanging(false);
 
     if (error) {
-      setError(error.message || "Failed to change email");
+      const errorMsg = (error as { message?: string })?.message || "Failed to change email";
+      setError(errorMsg);
       toast.error("Failed to change email");
       return;
     }
@@ -153,7 +154,8 @@ const EditProfile = () => {
     setPhoneChanging(false);
 
     if (error) {
-      setError(error.message || "Failed to update phone number");
+      const errorMsg = (error as { message?: string })?.message || "Failed to update phone number";
+      setError(errorMsg);
       toast.error("Failed to update phone number");
       return;
     }

@@ -55,17 +55,16 @@ const ProfileSetup = () => {
         return;
       }
       const phone10 = normalizePhone(phone);
-      const payload: Record<string, any> = {
+      const payload = {
         id: user.id,
+        email: user.email || '',
         full_name: fullName.trim(),
         phone: phone10,
-        email: user.email,
         updated_at: new Date().toISOString(),
       };
       const { error } = await supabase
         .from('profiles')
-        .upsert(payload, { onConflict: 'id' })
-        .eq('id', user.id);
+        .upsert([payload], { onConflict: 'id' });
       if (error) throw error;
 
       // Optionally reflect into user_metadata for convenience

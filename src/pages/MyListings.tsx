@@ -131,12 +131,12 @@ const MyListings = () => {
             {properties.map((listing) => (
               <Card key={listing.id} className="overflow-hidden">
                 <div className="flex flex-col md:flex-row">
-                  <div className="w-full md:w-56">
-                    <div className="relative h-32 md:aspect-[4/3] md:h-auto">
+                  <div className="w-full md:w-56 flex-shrink-0">
+                    <div className="relative aspect-[16/9] md:aspect-[4/3]">
                       <img
                         src={listing.images[0] || '/placeholder.svg'}
                         alt={listing.title}
-                        className="absolute inset-0 w-full h-full object-cover rounded-t-md md:rounded-none"
+                        className="absolute inset-0 w-full h-full object-cover rounded-t-md md:rounded-l-md md:rounded-tr-none"
                       />
                     </div>
                   </div>
