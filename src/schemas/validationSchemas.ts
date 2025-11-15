@@ -146,6 +146,19 @@ export const propertySchema = z.object({
   isAgent: z.boolean(),
   amenities: z.array(z.string()).optional(),
   images: z.array(z.string()).optional(),
+  // Business-specific fields
+  businessCategory: z.string().optional(),
+  yearEstablished: z.string().optional(),
+  employees: z.string().optional(),
+  services: z.string().optional(),
+  website: z.string().url().optional().or(z.literal('')),
+  facebook: z.string().optional(),
+  instagram: z.string().optional(),
+  twitter: z.string().optional(),
+  linkedin: z.string().optional(),
+  businessLicense: z.string().optional(),
+  gstNumber: z.string().optional(),
+  operatingHours: z.record(z.any()).optional(),
 });
 
 export type AuthFormData = z.infer<typeof authSchema>;

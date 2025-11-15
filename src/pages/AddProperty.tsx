@@ -38,6 +38,7 @@ import { Geolocation } from "@capacitor/geolocation";
 import { propertySchema } from "@/schemas/validationSchemas";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
+import { BusinessProfileForm } from "@/components/BusinessProfileForm";
 
 const categoryConfigs = {
   apartment: { 
@@ -225,9 +226,29 @@ const AddProperty = () => {
     businessType: "",
     revenue: "",
     employees: "",
+    // Google My Business style fields
+    businessCategory: "",
+    yearEstablished: "",
+    services: "",
+    website: "",
+    facebook: "",
+    instagram: "",
+    twitter: "",
+    linkedin: "",
+    businessLicense: "",
+    gstNumber: "",
   });
   const [images, setImages] = useState<string[]>([]);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [operatingHours, setOperatingHours] = useState({
+    monday: { isOpen: true, open: "09:00", close: "18:00" },
+    tuesday: { isOpen: true, open: "09:00", close: "18:00" },
+    wednesday: { isOpen: true, open: "09:00", close: "18:00" },
+    thursday: { isOpen: true, open: "09:00", close: "18:00" },
+    friday: { isOpen: true, open: "09:00", close: "18:00" },
+    saturday: { isOpen: true, open: "09:00", close: "18:00" },
+    sunday: { isOpen: false, open: "09:00", close: "18:00" },
+  });
 
   // Load property data if editing
   useEffect(() => {
@@ -274,6 +295,16 @@ const AddProperty = () => {
             businessType: "",
             revenue: "",
             employees: "",
+            businessCategory: "",
+            yearEstablished: "",
+            services: "",
+            website: "",
+            facebook: "",
+            instagram: "",
+            twitter: "",
+            linkedin: "",
+            businessLicense: "",
+            gstNumber: "",
           });
           setImages(data.images || []);
         }
@@ -582,16 +613,45 @@ const AddProperty = () => {
       // Prepare property data for database
       // For business category, append business details to description
       let finalDescription = formData.description;
-      if (formData.type === 'business' && formData.businessType) {
+      let businessMetadata = null;
+      
+      if (formData.type === 'business') {
+        // Create comprehensive business metadata
+        businessMetadata = {
+          category: formData.businessCategory,
+          yearEstablished: formData.yearEstablished,
+          employees: formData.employees,
+          services: formData.services,
+          website: formData.website,
+          socialMedia: {
+            facebook: formData.facebook,
+            instagram: formData.instagram,
+            twitter: formData.twitter,
+            linkedin: formData.linkedin,
+          },
+          businessLicense: formData.businessLicense,
+          gstNumber: formData.gstNumber,
+          operatingHours: operatingHours,
+        };
+        
+        // Create a formatted description
         const businessDetails = [
-          `Business Type: ${formData.businessType}`,
-          formData.revenue ? `Revenue: ₹${formData.revenue}` : '',
-          formData.employees ? `Employees: ${formData.employees}` : ''
+          formData.businessCategory ? `Category: ${formData.businessCategory}` : '',
+          formData.yearEstablished ? `Established: ${formData.yearEstablished}` : '',
+          formData.employees ? `Team Size: ${formData.employees}` : '',
         ].filter(Boolean).join(' | ');
         
-        finalDescription = finalDescription 
-          ? `${businessDetails}\n\n${formData.description}`
-          : businessDetails;
+        const operatingHoursText = Object.entries(operatingHours)
+          .filter(([_, hours]: any) => hours.isOpen)
+          .map(([day, hours]: any) => `${day.charAt(0).toUpperCase() + day.slice(1)}: ${hours.open} - ${hours.close}`)
+          .join('\n');
+        
+        finalDescription = [
+          businessDetails,
+          formData.services ? `\n\nServices: ${formData.services}` : '',
+          operatingHoursText ? `\n\nOperating Hours:\n${operatingHoursText}` : '',
+          formData.description ? `\n\n${formData.description}` : '',
+        ].filter(Boolean).join('');
       }
       
       // For cars/bikes, append vehicle details to description
@@ -644,6 +704,7 @@ const AddProperty = () => {
         status: 'active',
         available: true,
         verified: true,
+        business_metadata: businessMetadata,
       };
 
       if (editPropertyId) {
@@ -701,7 +762,7 @@ const AddProperty = () => {
     
     // Additional validation for business
     if (formData.type === 'business') {
-      if (!formData.businessType) return false;
+      if (!formData.businessCategory) return false;
     }
     
     return true;
@@ -1062,87 +1123,14 @@ const AddProperty = () => {
                     </div>
                   )}
 
-                  {/* Business fields */}
+                  {/* Business fields - Google My Business style */}
                   {formData.type === "business" && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="businessType">Business Type *</Label>
-                        <Popover open={businessTypeOpen} onOpenChange={setBusinessTypeOpen}>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              role="combobox"
-                              aria-expanded={businessTypeOpen}
-                              className="w-full justify-between"
-                            >
-                              {formData.businessType
-                                ? businessTypes.find((type) => type.value === formData.businessType)?.label
-                                : "Select business type..."}
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-full p-0" align="start">
-                            <Command>
-                              <CommandInput placeholder="Search business type..." />
-                              <CommandList>
-                                <CommandEmpty>No business type found.</CommandEmpty>
-                                <CommandGroup>
-                                  {businessTypes.map((type) => (
-                                    <CommandItem
-                                      key={type.value}
-                                      value={type.value}
-                                      onSelect={(currentValue) => {
-                                        setFormData({ 
-                                          ...formData, 
-                                          businessType: currentValue === formData.businessType ? "" : currentValue 
-                                        });
-                                        setBusinessTypeOpen(false);
-                                      }}
-                                    >
-                                      <Check
-                                        className={cn(
-                                          "mr-2 h-4 w-4",
-                                          formData.businessType === type.value ? "opacity-100" : "opacity-0"
-                                        )}
-                                      />
-                                      {type.label}
-                                    </CommandItem>
-                                  ))}
-                                </CommandGroup>
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                        <p className="text-xs text-muted-foreground">
-                          Type to search and select your business category
-                        </p>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="revenue">Annual Revenue</Label>
-                          <Input
-                            id="revenue"
-                            placeholder="₹50,00,000"
-                            value={formData.revenue}
-                            onChange={(e) =>
-                              setFormData({ ...formData, revenue: e.target.value })
-                            }
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="employees">Number of Employees</Label>
-                          <Input
-                            id="employees"
-                            type="number"
-                            placeholder="25"
-                            value={formData.employees}
-                            onChange={(e) =>
-                              setFormData({ ...formData, employees: e.target.value })
-                            }
-                          />
-                        </div>
-                      </div>
-                    </>
+                    <BusinessProfileForm
+                      formData={formData}
+                      setFormData={setFormData}
+                      operatingHours={operatingHours}
+                      setOperatingHours={setOperatingHours}
+                    />
                   )}
                 </>
               )}
