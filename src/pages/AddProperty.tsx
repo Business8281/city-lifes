@@ -578,8 +578,8 @@ const AddProperty = () => {
         title: formData.title,
         description: formData.description || undefined,
         propertyType: formData.type,
-        price: parseFloat(formData.price),
-        priceType: validationPriceType,
+        price: formData.type === 'business' ? undefined : parseFloat(formData.price),
+        priceType: formData.type === 'business' ? undefined : validationPriceType,
         city: formData.city,
         area: formData.area,
         pinCode: formData.pinCode,
@@ -684,7 +684,7 @@ const AddProperty = () => {
         title: formData.title,
         description: finalDescription,
         property_type: formData.type,
-        price: parseFloat(formData.price),
+        price: formData.type === 'business' ? 0 : parseFloat(formData.price),
         price_type: priceType,
         city: formData.city,
         area: formData.area,
@@ -933,30 +933,27 @@ const AddProperty = () => {
                 </div>
               )}
 
-              <div className="space-y-2">
-                <Label htmlFor="price">
-                  {formData.type === "business" ? "Business Value" : 
-                   formData.listingType === "sale" ? "Sale Price" : 
-                   formData.listingType === "rent" ? "Monthly Rent" : "Price"} *
-                </Label>
-                <Input
-                  id="price"
-                  placeholder={
-                    formData.type === "business" ? "₹50,00,000" :
-                    formData.listingType === "sale" ? "₹75,00,000" : "₹25,000"
-                  }
-                  value={formData.price}
-                  onChange={(e) =>
-                    setFormData({ ...formData, price: e.target.value })
-                  }
-                />
-                {formData.type !== "business" && formData.listingType === "rent" && (
-                  <p className="text-xs text-muted-foreground">Enter monthly rent amount</p>
-                )}
-                {formData.type === "business" && (
-                  <p className="text-xs text-muted-foreground">List your business in the app and run ad campaigns to reach more customers</p>
-                )}
-              </div>
+              {formData.type !== "business" && (
+                <div className="space-y-2">
+                  <Label htmlFor="price">
+                    {formData.listingType === "sale" ? "Sale Price" : 
+                     formData.listingType === "rent" ? "Monthly Rent" : "Price"} *
+                  </Label>
+                  <Input
+                    id="price"
+                    placeholder={
+                      formData.listingType === "sale" ? "₹75,00,000" : "₹25,000"
+                    }
+                    value={formData.price}
+                    onChange={(e) =>
+                      setFormData({ ...formData, price: e.target.value })
+                    }
+                  />
+                  {formData.listingType === "rent" && (
+                    <p className="text-xs text-muted-foreground">Enter monthly rent amount</p>
+                  )}
+                </div>
+              )}
 
               {/* Dynamic fields based on property type */}
               {formData.type && categoryConfigs[formData.type as keyof typeof categoryConfigs] && (
