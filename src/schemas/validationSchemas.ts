@@ -88,8 +88,9 @@ export const propertySchema = z.object({
   price: z
     .number()
     .positive({ message: 'Price must be positive' })
-    .max(99999999, { message: 'Price is too high' }),
-  priceType: z.enum(['monthly', 'yearly', 'fixed'], { message: 'Invalid price type' }),
+    .max(99999999, { message: 'Price is too high' })
+    .optional(),
+  priceType: z.enum(['monthly', 'yearly', 'fixed'], { message: 'Invalid price type' }).optional(),
   city: z
     .string()
     .trim()
