@@ -1,15 +1,425 @@
-// Deprecated: The generated Supabase types file became corrupted.
-// We now use src/integrations/supabase/dbTypes.ts instead.
-// Keeping this file as a harmless stub so the TS compiler doesn't choke.
-export {};
-/*
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.5"
+  }
+  public: {
+    Tables: {
+      ad_campaigns: {
+        Row: {
+          budget: number
+          clicks: number
+          created_at: string
+          created_by_email: string | null
+          created_by_name: string | null
+          end_date: string
+          id: string
+          impressions: number
+          property_id: string
+          spent: number
+          start_date: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          budget?: number
+          clicks?: number
+          created_at?: string
+          created_by_email?: string | null
+          created_by_name?: string | null
+          end_date: string
+          id?: string
+          impressions?: number
+          property_id: string
+          spent?: number
+          start_date?: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          budget?: number
+          clicks?: number
+          created_at?: string
+          created_by_email?: string | null
+          created_by_name?: string | null
+          end_date?: string
+          id?: string
+          impressions?: number
+          property_id?: string
+          spent?: number
+          start_date?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_campaigns_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: string | null
+          new_data: Json | null
+          old_data: Json | null
+          record_id: string | null
+          table_name: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: string | null
+          new_data?: Json | null
+          old_data?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      contact_reveals: {
+        Row: {
+          id: string
+          property_id: string
+          revealed_at: string | null
+          revealed_to: string
+        }
+        Insert: {
+          id?: string
+          property_id: string
+          revealed_at?: string | null
+          revealed_to: string
+        }
+        Update: {
+          id?: string
+          property_id?: string
+          revealed_at?: string | null
+          revealed_to?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_reveals_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          property_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          property_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          property_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fcm_tokens: {
+        Row: {
+          created_at: string | null
+          device_type: string | null
+          id: string
+          token: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          device_type?: string | null
+          id?: string
+          token: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          device_type?: string | null
+          id?: string
+          token?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      inquiries: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          property_id: string
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          property_id: string
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          property_id?: string
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiries_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          deleted: boolean | null
+          duration_seconds: number | null
+          edited: boolean | null
+          edited_at: string | null
+          file_name: string | null
+          file_size: number | null
+          file_url: string | null
+          id: string
+          message_type: string | null
+          property_id: string | null
+          read: boolean | null
+          receiver_id: string
+          sender_email: string | null
+          sender_id: string
+          sender_name: string | null
+          status: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          deleted?: boolean | null
+          duration_seconds?: number | null
+          edited?: boolean | null
+          edited_at?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          message_type?: string | null
+          property_id?: string | null
+          read?: boolean | null
+          receiver_id: string
+          sender_email?: string | null
+          sender_id: string
+          sender_name?: string | null
+          status?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          deleted?: boolean | null
+          duration_seconds?: number | null
+          edited?: boolean | null
+          edited_at?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          message_type?: string | null
+          property_id?: string | null
+          read?: boolean | null
+          receiver_id?: string
+          sender_email?: string | null
+          sender_id?: string
+          sender_name?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string
+          read: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message: string
+          read?: boolean | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string
+          read?: boolean | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          address: string | null
+          amenities: string[] | null
+          area: string
+          area_sqft: number | null
+          available: boolean | null
+          bathrooms: number | null
+          bedrooms: number | null
+          business_metadata: Json | null
+          city: string
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string | null
+          created_by_email: string | null
+          created_by_name: string | null
+          description: string | null
+          id: string
+          images: string[] | null
+          is_agent: boolean | null
+          latitude: number | null
+          location: unknown
+          longitude: number | null
+          pin_code: string
+          price: number
+          price_type: string | null
+          property_type: string
+          status: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+          verified: boolean | null
+          views: number | null
+        }
+        Insert: {
+          address?: string | null
+          amenities?: string[] | null
+          area: string
+          area_sqft?: number | null
+          available?: boolean | null
           bathrooms?: number | null
           bedrooms?: number | null
+          business_metadata?: Json | null
           city: string
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string | null
+          created_by_email?: string | null
+          created_by_name?: string | null
           description?: string | null
           id?: string
           images?: string[] | null
@@ -36,11 +446,14 @@ export {};
           available?: boolean | null
           bathrooms?: number | null
           bedrooms?: number | null
+          business_metadata?: Json | null
           city?: string
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string | null
+          created_by_email?: string | null
+          created_by_name?: string | null
           description?: string | null
           id?: string
           images?: string[] | null
@@ -115,6 +528,44 @@ export {};
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          created_at: string | null
+          id: string
+          property_id: string
+          rating: number
+          review_text: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          property_id: string
+          rating: number
+          review_text?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          property_id?: string
+          rating?: number
+          review_text?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spatial_ref_sys: {
         Row: {
           auth_name: string | null
@@ -138,6 +589,103 @@ export {};
           srtext?: string | null
         }
         Relationships: []
+      }
+      support_ticket_attachments: {
+        Row: {
+          created_at: string
+          id: string
+          mime_type: string | null
+          path: string
+          size: number | null
+          ticket_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mime_type?: string | null
+          path: string
+          size?: number | null
+          ticket_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mime_type?: string | null
+          path?: string
+          size?: number | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_ticket_attachments_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          status: string
+          subject: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          status?: string
+          subject?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          status?: string
+          subject?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      typing_indicators: {
+        Row: {
+          is_typing: boolean | null
+          property_id: string
+          receiver_id: string
+          sender_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          is_typing?: boolean | null
+          property_id: string
+          receiver_id: string
+          sender_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          is_typing?: boolean | null
+          property_id?: string
+          receiver_id?: string
+          sender_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "typing_indicators_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -334,6 +882,8 @@ export {};
             Returns: string
           }
       approve_property: { Args: { property_id: string }; Returns: undefined }
+      check_campaign_budgets: { Args: never; Returns: undefined }
+      complete_expired_campaigns: { Args: never; Returns: undefined }
       disablelongtransactions: { Args: never; Returns: string }
       dropgeometrycolumn:
         | {
@@ -479,6 +1029,45 @@ export {};
           properties_count: number
         }[]
       }
+      get_nearby_properties: {
+        Args: {
+          lat: number
+          lng: number
+          max_results?: number
+          radius_km?: number
+        }
+        Returns: {
+          address: string
+          amenities: Json
+          area: string
+          area_sqft: number
+          available: boolean
+          bathrooms: number
+          bedrooms: number
+          city: string
+          contact_email: string
+          contact_name: string
+          contact_phone: string
+          created_at: string
+          description: string
+          distance_km: number
+          furnished: string
+          id: string
+          images: Json
+          latitude: number
+          longitude: number
+          pin_code: string
+          price: number
+          price_type: string
+          property_type: string
+          status: string
+          title: string
+          transaction_type: string
+          updated_at: string
+          user_id: string
+          views: number
+        }[]
+      }
       get_properties_paginated: {
         Args: {
           filter_city?: string
@@ -556,6 +1145,7 @@ export {};
           images: string[]
           is_agent: boolean
           latitude: number
+          location: unknown
           longitude: number
           pin_code: string
           price: number
@@ -672,6 +1262,10 @@ export {};
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      purge_old_audit_logs: {
+        Args: { retention_days?: number }
+        Returns: undefined
+      }
       reject_property: { Args: { property_id: string }; Returns: undefined }
       reveal_property_contact: {
         Args: { p_property_id: string }
@@ -1290,6 +1884,14 @@ export {};
         Args: { geom: unknown; move: number; wrap: number }
         Returns: unknown
       }
+      track_campaign_click: {
+        Args: { campaign_id: string }
+        Returns: undefined
+      }
+      track_campaign_impression: {
+        Args: { campaign_id: string }
+        Returns: undefined
+      }
       unlockrows: { Args: { "": string }; Returns: number }
       updategeometrysrid: {
         Args: {
@@ -1443,5 +2045,3 @@ export const Constants = {
     },
   },
 } as const
-*/
-export {};
