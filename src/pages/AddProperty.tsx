@@ -105,6 +105,10 @@ const categoryConfigs = {
     amenities: [],
     fields: ["businessType", "revenue", "employees"]
   },
+  roommate: {
+    amenities: ["WiFi", "Parking", "AC", "Laundry", "Kitchen", "Furnished", "TV", "Fridge", "Washing Machine"],
+    fields: ["bedrooms", "bathrooms"]
+  },
 };
 
 const businessTypes = [
@@ -250,6 +254,16 @@ const AddProperty = () => {
     sunday: { isOpen: false, open: "09:00", close: "18:00" },
   });
 
+  // Roommate-specific state
+  const [roommateData, setRoommateData] = useState({
+    availableFrom: '',
+    preferredGender: 'any',
+    occupancyType: 'shared',
+    roomType: 'private',
+    foodIncluded: false,
+    currentRoommates: 0,
+  });
+
   // Load property data if editing
   useEffect(() => {
     const loadProperty = async () => {
@@ -307,6 +321,41 @@ const AddProperty = () => {
             gstNumber: "",
           });
           setImages(data.images || []);
+          
+          // Load business metadata if it's a business listing
+          if (data.property_type === 'business' && (data as any).business_metadata) {
+            const metadata = (data as any).business_metadata;
+            setFormData(prev => ({
+              ...prev,
+              businessCategory: metadata?.category || '',
+              yearEstablished: metadata?.yearEstablished || '',
+              employees: metadata?.employees || '',
+              services: metadata?.services || '',
+              website: metadata?.website || '',
+              facebook: metadata?.socialMedia?.facebook || '',
+              instagram: metadata?.socialMedia?.instagram || '',
+              twitter: metadata?.socialMedia?.twitter || '',
+              linkedin: metadata?.socialMedia?.linkedin || '',
+              businessLicense: metadata?.businessLicense || '',
+              gstNumber: metadata?.gstNumber || '',
+            }));
+            if (metadata?.operatingHours) {
+              setOperatingHours(metadata.operatingHours);
+            }
+          }
+
+          // Load roommate data if it's a roommate listing
+          if (data.property_type === 'roommate' && (data as any).business_metadata) {
+            const metadata = (data as any).business_metadata;
+            setRoommateData({
+              availableFrom: metadata.availableFrom || '',
+              preferredGender: metadata.preferredGender || 'any',
+              occupancyType: metadata.occupancyType || 'shared',
+              roomType: metadata.roomType || 'private',
+              foodIncluded: metadata.foodIncluded || false,
+              currentRoommates: metadata.currentRoommates || 0,
+            });
+          }
         }
       } catch (error) {
         console.error('Error loading property:', error);
@@ -1128,6 +1177,90 @@ const AddProperty = () => {
                       operatingHours={operatingHours}
                       setOperatingHours={setOperatingHours}
                     />
+                  )}
+
+                  {/* Roommate-specific fields */}
+                  {formData.type === "roommate" && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Roommate Details</h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="availableFrom">Available From *</Label>
+                          <Input
+                            id="availableFrom"
+                            type="date"
+                            value={roommateData.availableFrom}
+                            onChange={(e) => setRoommateData({ ...roommateData, availableFrom: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="preferredGender">Preferred Gender *</Label>
+                          <select
+                            id="preferredGender"
+                            className="w-full h-10 px-3 border border-input rounded-md bg-background"
+                            value={roommateData.preferredGender}
+                            onChange={(e) => setRoommateData({ ...roommateData, preferredGender: e.target.value })}
+                          >
+                            <option value="any">Any</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="occupancyType">Occupancy Type *</Label>
+                          <select
+                            id="occupancyType"
+                            className="w-full h-10 px-3 border border-input rounded-md bg-background"
+                            value={roommateData.occupancyType}
+                            onChange={(e) => setRoommateData({ ...roommateData, occupancyType: e.target.value })}
+                          >
+                            <option value="shared">Shared Room</option>
+                            <option value="private">Private Room</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="roomType">Room Type *</Label>
+                          <select
+                            id="roomType"
+                            className="w-full h-10 px-3 border border-input rounded-md bg-background"
+                            value={roommateData.roomType}
+                            onChange={(e) => setRoommateData({ ...roommateData, roomType: e.target.value })}
+                          >
+                            <option value="private">Private Room</option>
+                            <option value="shared">Shared Room</option>
+                            <option value="master">Master Bedroom</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="currentRoommates">Current Roommates</Label>
+                          <Input
+                            id="currentRoommates"
+                            type="number"
+                            min="0"
+                            value={roommateData.currentRoommates}
+                            onChange={(e) => setRoommateData({ ...roommateData, currentRoommates: parseInt(e.target.value) || 0 })}
+                          />
+                        </div>
+
+                        <div className="flex items-center space-x-2 pt-8">
+                          <input
+                            type="checkbox"
+                            id="foodIncluded"
+                            className="h-4 w-4 rounded border-input"
+                            checked={roommateData.foodIncluded}
+                            onChange={(e) => setRoommateData({ ...roommateData, foodIncluded: e.target.checked })}
+                          />
+                          <Label htmlFor="foodIncluded" className="cursor-pointer">
+                            Food Included
+                          </Label>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </>
               )}

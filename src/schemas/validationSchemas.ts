@@ -160,6 +160,13 @@ export const propertySchema = z.object({
   businessLicense: z.string().optional(),
   gstNumber: z.string().optional(),
   operatingHours: z.record(z.any()).optional(),
+  // Roommate-specific fields
+  availableFrom: z.string().optional(),
+  preferredGender: z.string().optional(),
+  occupancyType: z.string().optional(),
+  roomType: z.string().optional(),
+  foodIncluded: z.boolean().optional(),
+  currentRoommates: z.number().optional(),
 });
 
 export type AuthFormData = z.infer<typeof authSchema>;
