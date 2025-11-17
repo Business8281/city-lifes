@@ -614,7 +614,7 @@ const AddProperty = () => {
       
       // Determine price_type for validation
       let validationPriceType: 'monthly' | 'yearly' | 'fixed' = 'monthly';
-      if (formData.type === 'business') {
+      if (formData.type === 'business' || formData.type === 'roommate') {
         validationPriceType = 'fixed';
       } else if (formData.listingType === 'sale') {
         validationPriceType = 'fixed';
@@ -627,8 +627,8 @@ const AddProperty = () => {
         title: formData.title,
         description: formData.description || undefined,
         propertyType: formData.type,
-        price: formData.type === 'business' ? undefined : parseFloat(formData.price),
-        priceType: formData.type === 'business' ? undefined : validationPriceType,
+        price: (formData.type === 'business' || formData.type === 'roommate') ? undefined : parseFloat(formData.price),
+        priceType: (formData.type === 'business' || formData.type === 'roommate') ? undefined : validationPriceType,
         city: formData.city,
         area: formData.area,
         pinCode: formData.pinCode,
@@ -720,8 +720,8 @@ const AddProperty = () => {
       
       // Determine price_type based on category and listing type
       let priceType = 'monthly'; // default
-      if (formData.type === 'business') {
-        priceType = 'fixed'; // Business value is a fixed amount
+      if (formData.type === 'business' || formData.type === 'roommate') {
+        priceType = 'fixed'; // Business/Roommate are special categories
       } else if (formData.listingType === 'sale') {
         priceType = 'fixed'; // Sale price is one-time
       } else if (formData.listingType === 'rent') {
@@ -733,8 +733,8 @@ const AddProperty = () => {
         title: formData.title,
         description: finalDescription,
         property_type: formData.type,
-        price: formData.type === 'business' ? 0 : parseFloat(formData.price),
-        price_type: priceType,
+        price: (formData.type === 'business' || formData.type === 'roommate') ? 0 : parseFloat(formData.price),
+        price_type: (formData.type === 'business' || formData.type === 'roommate') ? null : priceType,
         city: formData.city,
         area: formData.area,
         pin_code: formData.pinCode,
@@ -753,7 +753,7 @@ const AddProperty = () => {
         status: 'active',
         available: true,
         verified: true,
-        business_metadata: businessMetadata,
+        business_metadata: formData.type === 'business' ? businessMetadata : formData.type === 'roommate' ? roommateData : null,
       };
 
       if (editPropertyId) {
@@ -812,6 +812,11 @@ const AddProperty = () => {
     // Additional validation for business
     if (formData.type === 'business') {
       if (!formData.businessCategory) return false;
+    }
+    
+    // Additional validation for roommate
+    if (formData.type === 'roommate') {
+      if (!roommateData.availableFrom) return false;
     }
     
     return true;
@@ -961,8 +966,8 @@ const AddProperty = () => {
                 </Select>
               </div>
 
-              {/* Listing Type - Only show for properties that can be rented/sold, not for business */}
-              {formData.type && formData.type !== "business" && (
+              {/* Listing Type - Only show for properties that can be rented/sold, not for business or roommate */}
+              {formData.type && formData.type !== "business" && formData.type !== "roommate" && (
                 <div className="space-y-2">
                   <Label htmlFor="listingType">Listing Type *</Label>
                   <Select
@@ -982,7 +987,7 @@ const AddProperty = () => {
                 </div>
               )}
 
-              {formData.type !== "business" && (
+              {formData.type !== "business" && formData.type !== "roommate" && (
                 <div className="space-y-2">
                   <Label htmlFor="price">
                     {formData.listingType === "sale" ? "Sale Price" : 
