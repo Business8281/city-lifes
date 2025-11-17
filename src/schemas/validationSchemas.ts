@@ -167,6 +167,11 @@ export const propertySchema = z.object({
   roomType: z.string().optional(),
   foodIncluded: z.boolean().optional(),
   currentRoommates: z.number().optional(),
+  occupation: z.string().optional(),
+  monthlyRent: z.number().optional(),
+  smoking: z.string().optional(),
+  drinking: z.string().optional(),
+  foodPreference: z.string().optional(),
 });
 
 export type AuthFormData = z.infer<typeof authSchema>;

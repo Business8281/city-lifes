@@ -262,6 +262,11 @@ const AddProperty = () => {
     roomType: 'private',
     foodIncluded: false,
     currentRoommates: 0,
+    occupation: 'student',
+    monthlyRent: '',
+    smoking: 'no',
+    drinking: 'no',
+    foodPreference: 'veg',
   });
 
   // Load property data if editing
@@ -354,6 +359,11 @@ const AddProperty = () => {
               roomType: metadata.roomType || 'private',
               foodIncluded: metadata.foodIncluded || false,
               currentRoommates: metadata.currentRoommates || 0,
+              occupation: metadata.occupation || 'student',
+              monthlyRent: metadata.monthlyRent || '',
+              smoking: metadata.smoking || 'no',
+              drinking: metadata.drinking || 'no',
+              foodPreference: metadata.foodPreference || 'veg',
             });
           }
         }
@@ -816,7 +826,7 @@ const AddProperty = () => {
     
     // Additional validation for roommate
     if (formData.type === 'roommate') {
-      if (!roommateData.availableFrom) return false;
+      if (!roommateData.availableFrom || !roommateData.monthlyRent || !roommateData.occupation) return false;
     }
     
     return true;
@@ -1201,6 +1211,32 @@ const AddProperty = () => {
                         </div>
 
                         <div className="space-y-2">
+                          <Label htmlFor="monthlyRent">Monthly Rent *</Label>
+                          <Input
+                            id="monthlyRent"
+                            type="number"
+                            placeholder="₹8,000"
+                            value={roommateData.monthlyRent}
+                            onChange={(e) => setRoommateData({ ...roommateData, monthlyRent: e.target.value })}
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="occupation">Occupation *</Label>
+                          <select
+                            id="occupation"
+                            className="w-full h-10 px-3 border border-input rounded-md bg-background"
+                            value={roommateData.occupation}
+                            onChange={(e) => setRoommateData({ ...roommateData, occupation: e.target.value })}
+                          >
+                            <option value="student">Student</option>
+                            <option value="working">Working Professional</option>
+                            <option value="business">Business</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
                           <Label htmlFor="preferredGender">Preferred Gender *</Label>
                           <select
                             id="preferredGender"
@@ -1263,6 +1299,51 @@ const AddProperty = () => {
                           <Label htmlFor="foodIncluded" className="cursor-pointer">
                             Food Included
                           </Label>
+                        </div>
+                      </div>
+
+                      <h3 className="text-lg font-semibold mt-6">Lifestyle & Preferences</h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="smoking">Do you smoke?</Label>
+                          <select
+                            id="smoking"
+                            className="w-full h-10 px-3 border border-input rounded-md bg-background"
+                            value={roommateData.smoking}
+                            onChange={(e) => setRoommateData({ ...roommateData, smoking: e.target.value })}
+                          >
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="drinking">Do you drink?</Label>
+                          <select
+                            id="drinking"
+                            className="w-full h-10 px-3 border border-input rounded-md bg-background"
+                            value={roommateData.drinking}
+                            onChange={(e) => setRoommateData({ ...roommateData, drinking: e.target.value })}
+                          >
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="foodPreference">Food Preference</Label>
+                          <select
+                            id="foodPreference"
+                            className="w-full h-10 px-3 border border-input rounded-md bg-background"
+                            value={roommateData.foodPreference}
+                            onChange={(e) => setRoommateData({ ...roommateData, foodPreference: e.target.value })}
+                          >
+                            <option value="veg">Veg</option>
+                            <option value="nonveg">Non-Veg</option>
+                          </select>
                         </div>
                       </div>
                     </div>
