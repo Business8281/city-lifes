@@ -1067,7 +1067,7 @@ const AddProperty = () => {
                   <SelectTrigger>
                     <SelectValue placeholder="Select property type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-[400px] overflow-y-auto">
                     {propertyTypes.map((type) => (
                       <SelectItem key={type.type} value={type.type}>
                         {type.icon} {type.label}
@@ -1090,7 +1090,7 @@ const AddProperty = () => {
                     <SelectTrigger>
                       <SelectValue placeholder="Select listing type" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-[300px] overflow-y-auto">
                       {propertyTypes.find(pt => pt.type === formData.type)?.availableFor.map((type) => (
                         <SelectItem key={type} value={type}>
                           {type === 'rent' && 'For Rent'}
@@ -1116,12 +1116,10 @@ const AddProperty = () => {
                     <SelectTrigger>
                       <SelectValue placeholder="Select target audience" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-[300px] overflow-y-auto">
                       {propertyTypes.find(pt => pt.type === formData.type)?.targetAudience?.map((audience) => (
                         <SelectItem key={audience} value={audience}>
-                          {audience === 'bachelors' && 'Bachelors'}
-                          {audience === 'families' && 'Families'}
-                          {audience === 'both' && 'Both Bachelors & Families'}
+                          {audience.charAt(0).toUpperCase() + audience.slice(1)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -1142,7 +1140,7 @@ const AddProperty = () => {
                     <SelectTrigger>
                       <SelectValue placeholder="Select PG type" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="max-h-[300px] overflow-y-auto">
                       <SelectItem value="boys">Boys PG</SelectItem>
                       <SelectItem value="girls">Girls PG</SelectItem>
                       <SelectItem value="coliving">Co-living Space</SelectItem>
