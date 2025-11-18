@@ -132,7 +132,7 @@ const MyListings = () => {
               <Card key={listing.id} className="overflow-hidden">
                 <div className="flex flex-col md:flex-row">
                   <div className="w-full md:w-56 flex-shrink-0">
-                    <div className="relative aspect-[16/9] md:aspect-[4/3]">
+                    <div className="relative aspect-square">
                       <img
                         src={listing.images[0] || '/placeholder.svg'}
                         alt={listing.title}
