@@ -765,7 +765,32 @@ const AddProperty = () => {
       // For properties with target audience, save it in business_metadata
       if (categoryConfigs[formData.type as keyof typeof categoryConfigs]?.hasTargetAudience && formData.targetAudience) {
         businessMetadata = {
+          ...businessMetadata,
           targetAudience: formData.targetAudience,
+        };
+      }
+      
+      // For PG properties, save pgType in business_metadata
+      if (formData.type === 'pg' && formData.pgType) {
+        businessMetadata = {
+          ...businessMetadata,
+          pgType: formData.pgType,
+        };
+      }
+      
+      // For Hotels, save rooms in business_metadata
+      if (formData.type === 'hotels' && formData.rooms) {
+        businessMetadata = {
+          ...businessMetadata,
+          rooms: parseInt(formData.rooms),
+        };
+      }
+      
+      // For Restaurants and Cafes, save seatingCapacity in business_metadata
+      if ((formData.type === 'restaurant' || formData.type === 'cafe') && formData.seatingCapacity) {
+        businessMetadata = {
+          ...businessMetadata,
+          seatingCapacity: parseInt(formData.seatingCapacity),
         };
       }
       
