@@ -24,7 +24,7 @@ export function useFavorites(userId: string | undefined) {
           *,
           properties:property_id (
             *,
-            profiles:user_id (
+            user:user_id (
               id,
               full_name,
               phone,
@@ -76,7 +76,9 @@ export function useFavorites(userId: string | undefined) {
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('online', onOnline);
-      appHandle?.remove?.();
+      if (appHandle && typeof appHandle.remove === 'function') {
+        appHandle.remove();
+      }
       if (channel) supabase.removeChannel(channel);
     };
   }, [userId, fetchFavorites]);
