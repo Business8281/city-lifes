@@ -250,6 +250,7 @@ const Listings = () => {
                       image={property.images[0] || '/placeholder.svg'}
                       title={property.title}
                       type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
+                      propertyType={property.property_type}
                       price={`₹${property.price.toLocaleString()}`}
                       priceType={property.price_type}
                       location={`${property.area}, ${property.city}`}
@@ -288,6 +289,7 @@ const Listings = () => {
                   image={property.images[0] || '/placeholder.svg'}
                   title={property.title}
                   type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
+                  propertyType={property.property_type}
                   price={`₹${property.price.toLocaleString()}`}
                   priceType={property.price_type}
                   location={`${property.area}, ${property.city}`}
