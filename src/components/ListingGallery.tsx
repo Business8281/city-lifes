@@ -122,12 +122,12 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
       )}
 
       <Dialog open={lightbox} onOpenChange={setLightbox}>
-        <DialogContent className="p-0 max-w-[95vw] w-[95vw] h-[90vh] flex flex-col bg-black border border-border">
-          <div className="flex-1 relative flex items-center justify-center">
+        <DialogContent className="p-0 max-w-[95vw] max-h-[95vh] flex flex-col bg-black border border-border">
+          <div className="relative aspect-square w-full max-w-[min(95vw,95vh)] mx-auto">
             <img
               src={images[active]}
               alt={title}
-              className="max-w-full max-h-full object-contain cursor-zoom-out"
+              className="w-full h-full object-cover cursor-zoom-out"
               onClick={() => setLightbox(false)}
             />
             {isMultiple && (
