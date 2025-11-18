@@ -350,10 +350,10 @@ const PropertyDetails = () => {
                     </Badge>
                   </div>
                 )}
-                {(property.business_metadata as any).yearOfPurchase && (
+                {(property.business_metadata as any).year && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Year of Purchase:</span>
-                    <span className="font-medium">{(property.business_metadata as any).yearOfPurchase}</span>
+                    <span className="font-medium">{(property.business_metadata as any).year}</span>
                   </div>
                 )}
                 {(property.business_metadata as any).warranty && (
