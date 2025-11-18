@@ -205,8 +205,11 @@ const PropertyDetails = () => {
 
         <Separator />
 
-        {/* Property Details - Residential */}
-        {(property.bedrooms || property.bathrooms || property.area_sqft) && (
+        {/* Property Details - Residential, PG, Hotels, Restaurants, Cafes */}
+        {(property.bedrooms || property.bathrooms || property.area_sqft || 
+          (property.property_type === 'pg' && property.business_metadata) ||
+          (property.property_type === 'hotels' && property.business_metadata) ||
+          ((property.property_type === 'restaurant' || property.property_type === 'cafe') && property.business_metadata)) && (
           <>
             <Card className="p-3 md:p-4">
               <h3 className="font-semibold text-sm md:text-base mb-3">Property Details</h3>
@@ -229,7 +232,31 @@ const PropertyDetails = () => {
                     <div className="text-xs md:text-sm text-muted-foreground">sq.ft</div>
                   </div>
                 )}
+                {property.property_type === 'hotels' && (property.business_metadata as any)?.rooms && (
+                  <div className="text-center">
+                    <div className="text-xl md:text-2xl font-bold text-primary">{(property.business_metadata as any).rooms}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Rooms</div>
+                  </div>
+                )}
+                {(property.property_type === 'restaurant' || property.property_type === 'cafe') && (property.business_metadata as any)?.seatingCapacity && (
+                  <div className="text-center">
+                    <div className="text-xl md:text-2xl font-bold text-primary">{(property.business_metadata as any).seatingCapacity}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Seating</div>
+                  </div>
+                )}
               </div>
+              
+              {/* PG Type */}
+              {property.property_type === 'pg' && (property.business_metadata as any)?.pgType && (
+                <div className="mt-3 pt-3 border-t border-border">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">PG Type:</span>
+                    <Badge variant="secondary" className="capitalize">
+                      {(property.business_metadata as any).pgType}
+                    </Badge>
+                  </div>
+                </div>
+              )}
             </Card>
             <Separator />
           </>
@@ -418,31 +445,67 @@ const PropertyDetails = () => {
             <Card className="p-3 md:p-4">
               <h3 className="font-semibold text-sm md:text-base mb-3">Business Details</h3>
               <div className="space-y-2.5">
-                {property.business_metadata.category && (
+                {(property.business_metadata as any).category && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Category:</span>
-                    <span className="font-medium">{property.business_metadata.category}</span>
+                    <span className="font-medium capitalize">{(property.business_metadata as any).category}</span>
                   </div>
                 )}
-                {property.business_metadata.operatingHours && (
+                {(property.business_metadata as any).yearEstablished && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Operating Hours:</span>
-                    <span className="font-medium">{property.business_metadata.operatingHours}</span>
+                    <span className="text-muted-foreground">Year Established:</span>
+                    <span className="font-medium">{(property.business_metadata as any).yearEstablished}</span>
                   </div>
                 )}
-                {property.business_metadata.website && (
+                {(property.business_metadata as any).employees && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Team Size:</span>
+                    <span className="font-medium">{(property.business_metadata as any).employees}</span>
+                  </div>
+                )}
+                {(property.business_metadata as any).services && (
+                  <div className="space-y-1">
+                    <span className="text-sm text-muted-foreground">Services/Products:</span>
+                    <p className="text-sm font-medium">{(property.business_metadata as any).services}</p>
+                  </div>
+                )}
+                {(property.business_metadata as any).operatingHours && Object.keys((property.business_metadata as any).operatingHours).length > 0 && (
+                  <div className="space-y-1.5">
+                    <span className="text-sm text-muted-foreground font-semibold">Operating Hours:</span>
+                    <div className="space-y-1">
+                      {Object.entries((property.business_metadata as any).operatingHours)
+                        .filter(([_, hours]: any) => hours.isOpen)
+                        .map(([day, hours]: any) => (
+                          <div key={day} className="flex justify-between text-xs md:text-sm">
+                            <span className="text-muted-foreground capitalize">{day}:</span>
+                            <span className="font-medium">{hours.open} - {hours.close}</span>
+                          </div>
+                        ))}
+                      {Object.entries((property.business_metadata as any).operatingHours)
+                        .filter(([_, hours]: any) => !hours.isOpen).length > 0 && (
+                        <div className="text-xs text-muted-foreground italic">
+                          Closed: {Object.entries((property.business_metadata as any).operatingHours)
+                            .filter(([_, hours]: any) => !hours.isOpen)
+                            .map(([day]: any) => day.charAt(0).toUpperCase() + day.slice(1))
+                            .join(', ')}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {(property.business_metadata as any).website && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Website:</span>
-                    <a href={property.business_metadata.website} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
+                    <a href={(property.business_metadata as any).website} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
                       Visit Website
                     </a>
                   </div>
                 )}
-                {property.business_metadata.socialMedia && Object.keys(property.business_metadata.socialMedia).length > 0 && (
+                {(property.business_metadata as any).socialMedia && Object.values((property.business_metadata as any).socialMedia).some(url => url) && (
                   <div>
                     <span className="text-sm text-muted-foreground mb-1.5 block">Social Media:</span>
                     <div className="flex flex-wrap gap-2">
-                      {Object.entries(property.business_metadata.socialMedia).map(([platform, url]) => (
+                      {Object.entries((property.business_metadata as any).socialMedia).map(([platform, url]) => (
                         url && (
                           <a key={platform} href={url as string} target="_blank" rel="noopener noreferrer">
                             <Badge variant="outline" className="capitalize cursor-pointer hover:bg-secondary">
@@ -452,6 +515,18 @@ const PropertyDetails = () => {
                         )
                       ))}
                     </div>
+                  </div>
+                )}
+                {(property.business_metadata as any).businessLicense && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Business License:</span>
+                    <span className="font-medium">{(property.business_metadata as any).businessLicense}</span>
+                  </div>
+                )}
+                {(property.business_metadata as any).gstNumber && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">GST Number:</span>
+                    <span className="font-medium">{(property.business_metadata as any).gstNumber}</span>
                   </div>
                 )}
               </div>
