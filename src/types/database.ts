@@ -29,6 +29,7 @@ export interface Property {
   area_sqft: number | null;
   images: string[];
   amenities: string[];
+  business_metadata?: any;
   // Status
   status: string;
   verified: boolean;
