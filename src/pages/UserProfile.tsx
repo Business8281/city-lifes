@@ -256,6 +256,7 @@ export default function UserProfile() {
                     image={property.images?.[0] || '/placeholder.svg'}
                     title={property.title}
                     type={property.property_type}
+                    propertyType={property.property_type}
                     price={`₹${property.price.toLocaleString()}`}
                     priceType={property.price_type}
                     location={`${property.area}, ${property.city}`}

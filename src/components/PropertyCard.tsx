@@ -9,6 +9,7 @@ interface PropertyCardProps {
   image: string;
   title: string;
   type: string;
+  propertyType?: string; // Actual property type string
   price: string;
   priceType?: string; // 'monthly', 'fixed', 'yearly'
   location: string;
@@ -26,6 +27,7 @@ const PropertyCard = ({
   image,
   title,
   type,
+  propertyType,
   price,
   priceType = 'monthly',
   location,
@@ -129,7 +131,7 @@ const PropertyCard = ({
           </div>
         )}
         
-        {type !== 'business' && (
+        {propertyType !== 'business' && (
           <div className="pt-2 flex items-center justify-between">
             <span className="text-2xl font-bold text-primary">{price}</span>
             {priceType === 'monthly' && (
@@ -144,7 +146,7 @@ const PropertyCard = ({
           </div>
         )}
         
-        {type === 'business' && (
+        {propertyType === 'business' && (
           <div className="pt-2">
             <Badge variant="secondary">Business Listing</Badge>
           </div>
