@@ -22,15 +22,7 @@ export function useFavorites(userId: string | undefined) {
         .from('favorites')
         .select(`
           *,
-          properties:property_id (
-            *,
-            user:user_id (
-              id,
-              full_name,
-              phone,
-              email
-            )
-          )
+          properties:property_id (*)
         `)
         .eq('user_id', userId);
 
