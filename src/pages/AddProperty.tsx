@@ -117,6 +117,17 @@ const categoryConfigs = {
     fields: ["brand", "model", "condition", "warranty", "electronicsType", "yearOfPurchase"],
     hasTargetAudience: false as const
   },
+  business: {
+    amenities: [],
+    fields: [],
+    hasTargetAudience: false as const,
+    isBusinessListing: true as const
+  },
+  roommate: {
+    amenities: ["WiFi", "Parking", "AC", "Laundry", "Kitchen Access", "Furnished"],
+    fields: [],
+    hasTargetAudience: false as const
+  },
 };
 
 const businessTypes = [
