@@ -129,21 +129,26 @@ const PropertyCard = ({
           </div>
         )}
         
-        <div className="pt-2 flex items-center justify-between">
-          <span className="text-2xl font-bold text-primary">{price}</span>
-          {priceType === 'monthly' && (
-            <span className="text-sm text-muted-foreground">/month</span>
-          )}
-          {priceType === 'yearly' && (
-            <span className="text-sm text-muted-foreground">/year</span>
-          )}
-          {priceType === 'fixed' && type !== 'business' && (
-            <Badge variant="secondary" className="ml-2">For Sale</Badge>
-          )}
-          {type === 'business' && (
-            <Badge variant="secondary" className="ml-2">Business</Badge>
-          )}
-        </div>
+        {type !== 'business' && (
+          <div className="pt-2 flex items-center justify-between">
+            <span className="text-2xl font-bold text-primary">{price}</span>
+            {priceType === 'monthly' && (
+              <span className="text-sm text-muted-foreground">/month</span>
+            )}
+            {priceType === 'yearly' && (
+              <span className="text-sm text-muted-foreground">/year</span>
+            )}
+            {priceType === 'fixed' && (
+              <Badge variant="secondary" className="ml-2">For Sale</Badge>
+            )}
+          </div>
+        )}
+        
+        {type === 'business' && (
+          <div className="pt-2">
+            <Badge variant="secondary">Business Listing</Badge>
+          </div>
+        )}
       </div>
     </div>
   );
