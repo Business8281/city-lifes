@@ -205,11 +205,11 @@ const PropertyDetails = () => {
 
         <Separator />
 
-        {/* Property Details */}
+        {/* Property Details - Residential */}
         {(property.bedrooms || property.bathrooms || property.area_sqft) && (
           <>
             <Card className="p-3 md:p-4">
-              <h3 className="font-semibold text-sm md:text-base mb-2">Property Details</h3>
+              <h3 className="font-semibold text-sm md:text-base mb-3">Property Details</h3>
               <div className="grid grid-cols-3 gap-3">
                 {property.bedrooms && (
                   <div className="text-center">
@@ -227,6 +227,158 @@ const PropertyDetails = () => {
                   <div className="text-center">
                     <div className="text-xl md:text-2xl font-bold text-primary">{property.area_sqft}</div>
                     <div className="text-xs md:text-sm text-muted-foreground">sq.ft</div>
+                  </div>
+                )}
+              </div>
+            </Card>
+            <Separator />
+          </>
+        )}
+
+        {/* Vehicle Details - Cars & Bikes */}
+        {(property.property_type === 'cars' || property.property_type === 'bikes') && property.business_metadata && (
+          <>
+            <Card className="p-3 md:p-4">
+              <h3 className="font-semibold text-sm md:text-base mb-3">
+                {property.property_type === 'cars' ? 'Car' : 'Bike'} Details
+              </h3>
+              <div className="space-y-2">
+                {(property.business_metadata as any).brand && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Brand:</span>
+                    <span className="font-medium">{(property.business_metadata as any).brand}</span>
+                  </div>
+                )}
+                {(property.business_metadata as any).model && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Model:</span>
+                    <span className="font-medium">{(property.business_metadata as any).model}</span>
+                  </div>
+                )}
+                {(property.business_metadata as any).year && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Year:</span>
+                    <span className="font-medium">{(property.business_metadata as any).year}</span>
+                  </div>
+                )}
+                {(property.business_metadata as any).fuelType && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Fuel Type:</span>
+                    <span className="font-medium capitalize">{(property.business_metadata as any).fuelType}</span>
+                  </div>
+                )}
+                {(property.business_metadata as any).transmission && property.property_type === 'cars' && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Transmission:</span>
+                    <span className="font-medium capitalize">{(property.business_metadata as any).transmission}</span>
+                  </div>
+                )}
+                {(property.business_metadata as any).kmDriven && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">KM Driven:</span>
+                    <span className="font-medium">{(property.business_metadata as any).kmDriven.toLocaleString()} km</span>
+                  </div>
+                )}
+                {(property.business_metadata as any).owners && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Owners:</span>
+                    <span className="font-medium">{(property.business_metadata as any).owners}</span>
+                  </div>
+                )}
+              </div>
+            </Card>
+            <Separator />
+          </>
+        )}
+
+        {/* Electronics Details */}
+        {property.property_type === 'electronics' && property.business_metadata && (
+          <>
+            <Card className="p-3 md:p-4">
+              <h3 className="font-semibold text-sm md:text-base mb-3">Product Details</h3>
+              <div className="space-y-2">
+                {(property.business_metadata as any).electronicsType && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Type:</span>
+                    <span className="font-medium capitalize">{(property.business_metadata as any).electronicsType}</span>
+                  </div>
+                )}
+                {(property.business_metadata as any).brand && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Brand:</span>
+                    <span className="font-medium">{(property.business_metadata as any).brand}</span>
+                  </div>
+                )}
+                {(property.business_metadata as any).model && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Model:</span>
+                    <span className="font-medium">{(property.business_metadata as any).model}</span>
+                  </div>
+                )}
+                {(property.business_metadata as any).condition && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Condition:</span>
+                    <Badge variant={(property.business_metadata as any).condition === 'new' ? 'default' : 'secondary'}>
+                      {(property.business_metadata as any).condition}
+                    </Badge>
+                  </div>
+                )}
+                {(property.business_metadata as any).yearOfPurchase && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Year of Purchase:</span>
+                    <span className="font-medium">{(property.business_metadata as any).yearOfPurchase}</span>
+                  </div>
+                )}
+                {(property.business_metadata as any).warranty && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Warranty:</span>
+                    <span className="font-medium">{(property.business_metadata as any).warranty}</span>
+                  </div>
+                )}
+              </div>
+            </Card>
+            <Separator />
+          </>
+        )}
+
+        {/* Roommate Details */}
+        {property.property_type === 'roommate' && property.business_metadata && (
+          <>
+            <Card className="p-3 md:p-4">
+              <h3 className="font-semibold text-sm md:text-base mb-3">Room Details</h3>
+              <div className="space-y-2">
+                {(property.business_metadata as any).occupation && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Occupation:</span>
+                    <span className="font-medium capitalize">{(property.business_metadata as any).occupation}</span>
+                  </div>
+                )}
+                {(property.business_metadata as any).monthlyRent && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Monthly Rent:</span>
+                    <span className="font-medium">₹{(property.business_metadata as any).monthlyRent.toLocaleString()}</span>
+                  </div>
+                )}
+                {(property.business_metadata as any).foodPreference && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Food Preference:</span>
+                    <Badge variant="outline" className="capitalize">
+                      {(property.business_metadata as any).foodPreference}
+                    </Badge>
+                  </div>
+                )}
+                {(property.business_metadata as any).lifestylePreferences && (
+                  <div className="space-y-1">
+                    <span className="text-sm text-muted-foreground">Lifestyle:</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {Object.entries((property.business_metadata as any).lifestylePreferences).map(([key, value]) => 
+                        value && (
+                          <Badge key={key} variant="secondary" className="text-xs capitalize">
+                            {key === 'nonSmoking' ? 'Non-Smoking' : key === 'nonDrinking' ? 'Non-Drinking' : key}
+                          </Badge>
+                        )
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
@@ -261,11 +413,11 @@ const PropertyDetails = () => {
         )}
 
         {/* Business Metadata - for business properties */}
-        {property.business_metadata && Object.keys(property.business_metadata).length > 0 && (
+        {property.property_type === 'business' && property.business_metadata && Object.keys(property.business_metadata).length > 0 && (
           <>
             <Card className="p-3 md:p-4">
               <h3 className="font-semibold text-sm md:text-base mb-3">Business Details</h3>
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {property.business_metadata.category && (
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Category:</span>
@@ -288,7 +440,7 @@ const PropertyDetails = () => {
                 )}
                 {property.business_metadata.socialMedia && Object.keys(property.business_metadata.socialMedia).length > 0 && (
                   <div>
-                    <span className="text-sm text-muted-foreground mb-1 block">Social Media:</span>
+                    <span className="text-sm text-muted-foreground mb-1.5 block">Social Media:</span>
                     <div className="flex flex-wrap gap-2">
                       {Object.entries(property.business_metadata.socialMedia).map(([platform, url]) => (
                         url && (
