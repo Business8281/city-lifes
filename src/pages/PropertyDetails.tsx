@@ -195,14 +195,10 @@ const PropertyDetails = () => {
                 Verified
               </Badge>
             )}
-            {getPropertyTypeInfo()?.targetAudience && (
-              <>
-                {getPropertyTypeInfo()?.targetAudience?.map((audience) => (
-                  <Badge key={audience} variant="outline" className="capitalize">
-                    {audience}
-                  </Badge>
-                ))}
-              </>
+            {property.business_metadata && (property.business_metadata as any).targetAudience && (
+              <Badge variant="outline" className="capitalize">
+                {(property.business_metadata as any).targetAudience}
+              </Badge>
             )}
           </div>
         </div>
