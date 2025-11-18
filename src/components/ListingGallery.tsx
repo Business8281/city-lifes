@@ -52,21 +52,30 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
       <div className="relative group">
         <div
           className={cn(
-            'overflow-hidden w-full bg-black rounded-none md:rounded-lg',
+            'overflow-hidden w-full bg-muted rounded-none md:rounded-lg',
             'aspect-square'
           )}
           ref={emblaRef}
         >
-          <div className="flex touch-pan-y select-none h-full">
+          <div className="flex touch-pan-y select-none" style={{ height: '100%' }}>
             {images.map((src, i) => {
               return (
-                <div className="flex-[0_0_100%] relative flex items-center justify-center h-full" key={i}>
+                <div 
+                  className="flex-[0_0_100%] relative min-w-0" 
+                  style={{ height: '100%' }}
+                  key={i}
+                >
                   <img
                     src={src}
-                    alt={title}
+                    alt={`${title} - Image ${i + 1}`}
                     onClick={() => setLightbox(true)}
                     className="w-full h-full object-cover cursor-zoom-in transition-opacity duration-300 select-none"
                     draggable={false}
+                    loading="eager"
+                    onError={(e) => {
+                      console.error('Image failed to load:', src);
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                 </div>
               );
