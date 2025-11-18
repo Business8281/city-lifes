@@ -73,22 +73,24 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
       let filterLat = null;
       let filterLng = null;
 
-      switch (location.method) {
-        case 'city':
-          filterCity = location.value;
-          break;
-        case 'area':
-          filterArea = location.value;
-          break;
-        case 'pincode':
-          filterPinCode = location.value;
-          break;
-        case 'live':
-          if (location.coordinates) {
-            filterLat = location.coordinates.lat;
-            filterLng = location.coordinates.lng;
-          }
-          break;
+      if (location?.method) {
+        switch (location.method) {
+          case 'city':
+            filterCity = location.value;
+            break;
+          case 'area':
+            filterArea = location.value;
+            break;
+          case 'pincode':
+            filterPinCode = location.value;
+            break;
+          case 'live':
+            if (location.coordinates) {
+              filterLat = location.coordinates.lat;
+              filterLng = location.coordinates.lng;
+            }
+            break;
+        }
       }
 
       // If no filters present, call RPC with null filters to get generic sponsored ads.
