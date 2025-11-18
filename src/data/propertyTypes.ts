@@ -16,4 +16,5 @@ export const propertyTypes = [
   { type: "hotels", icon: "🏨", label: "Hotels" },
   { type: "business", icon: "💼", label: "Business" },
   { type: "roommate", icon: "🤝", label: "Roommate" },
+  { type: "electronics", icon: "📱", label: "Electronics" },
 ];
