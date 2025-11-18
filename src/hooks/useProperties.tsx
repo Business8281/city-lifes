@@ -128,25 +128,34 @@ export function useProperties(filters?: PropertyFilters) {
     window.addEventListener('online', onOnline);
 
     // 3) Revalidate when app comes to foreground (native builds)
-    const removeAppListener = CapacitorApp.addListener?.('appStateChange', ({ isActive }) => {
-      if (isActive) fetchProperties();
-    }) as unknown as PluginListenerHandle | undefined;
+    let removeAppListener: PluginListenerHandle | undefined;
+    if (CapacitorApp.addListener) {
+      removeAppListener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+        if (isActive) fetchProperties();
+      }) as unknown as PluginListenerHandle;
+    }
 
-    // 4) Live updates: refetch on any change to properties table
+    // 4) Throttled live updates to prevent excessive queries
+    let updateTimeout: NodeJS.Timeout;
     const channel = supabase
       .channel('properties-live')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'properties' },
-        () => fetchProperties()
+        () => {
+          clearTimeout(updateTimeout);
+          updateTimeout = setTimeout(() => fetchProperties(), 1000);
+        }
       )
       .subscribe();
 
     return () => {
+      clearTimeout(updateTimeout);
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('online', onOnline);
-      // remove AppState listener if present
-      removeAppListener?.remove?.();
+      if (removeAppListener?.remove) {
+        removeAppListener.remove();
+      }
       supabase.removeChannel(channel);
     };
   }, [fetchProperties]);
