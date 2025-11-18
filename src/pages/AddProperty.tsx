@@ -762,6 +762,13 @@ const AddProperty = () => {
         ].filter(Boolean).join('');
       }
       
+      // For properties with target audience, save it in business_metadata
+      if (categoryConfigs[formData.type as keyof typeof categoryConfigs]?.hasTargetAudience && formData.targetAudience) {
+        businessMetadata = {
+          targetAudience: formData.targetAudience,
+        };
+      }
+      
       // For cars/bikes, append vehicle details to description
       if ((formData.type === 'cars' || formData.type === 'bikes') && formData.brand) {
         const vehicleMetadata = {
