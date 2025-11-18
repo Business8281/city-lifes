@@ -73,16 +73,16 @@ export function WriteReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto mx-4">
         <DialogHeader>
-          <DialogTitle>Write a Review for {reviewedUserName || 'User'}</DialogTitle>
+          <DialogTitle className="text-base sm:text-lg">Write a Review for {reviewedUserName || 'User'}</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-3 sm:space-y-4 py-3 sm:py-4">
           {/* Star Rating */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Rating</label>
-            <div className="flex gap-1">
+            <label className="text-xs sm:text-sm font-medium">Rating</label>
+            <div className="flex gap-1 justify-center sm:justify-start">
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
@@ -90,11 +90,11 @@ export function WriteReviewDialog({
                   onClick={() => setRating(star)}
                   onMouseEnter={() => setHoveredRating(star)}
                   onMouseLeave={() => setHoveredRating(0)}
-                  className="transition-colors"
+                  className="transition-colors touch-manipulation"
                 >
                   <Star
                     className={cn(
-                      'h-8 w-8',
+                      'h-7 w-7 sm:h-8 sm:w-8',
                       (hoveredRating || rating) >= star
                         ? 'fill-yellow-400 text-yellow-400'
                         : 'text-gray-300'
@@ -107,7 +107,7 @@ export function WriteReviewDialog({
 
           {/* Review Text */}
           <div className="space-y-2">
-            <label htmlFor="review-text" className="text-sm font-medium">
+            <label htmlFor="review-text" className="text-xs sm:text-sm font-medium">
               Review (Optional)
             </label>
             <Textarea
@@ -117,6 +117,7 @@ export function WriteReviewDialog({
               onChange={(e) => setReviewText(e.target.value)}
               rows={4}
               maxLength={500}
+              className="text-sm resize-none"
             />
             <p className="text-xs text-muted-foreground text-right">
               {reviewText.length}/500
@@ -124,11 +125,20 @@ export function WriteReviewDialog({
           </div>
         </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
+        <DialogFooter className="flex-col sm:flex-row gap-2">
+          <Button 
+            variant="outline" 
+            onClick={() => onOpenChange(false)} 
+            disabled={submitting}
+            className="w-full sm:w-auto text-sm"
+          >
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={submitting || rating === 0}>
+          <Button 
+            onClick={handleSubmit} 
+            disabled={submitting || rating === 0}
+            className="w-full sm:w-auto text-sm"
+          >
             {submitting ? 'Submitting...' : 'Submit Review'}
           </Button>
         </DialogFooter>
