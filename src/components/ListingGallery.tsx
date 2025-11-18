@@ -22,18 +22,25 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
   const [active, setActive] = useState(0);
   const [lightbox, setLightbox] = useState(false);
   const [ratios, setRatios] = useState<string[]>([]);
-  const isMultiple = images.length > 1;
+  
+  // Handle empty or invalid images array
+  const validImages = Array.isArray(images) ? images.filter(img => img && typeof img === 'string') : [];
+  const isMultiple = validImages.length > 1;
 
   // Load image dimensions once for adaptive styling
   useEffect(() => {
-    const promises = images.map(src => new Promise<string>((resolve) => {
+    if (validImages.length === 0) return;
+    const promises = validImages.map(src => new Promise<string>((resolve) => {
       const img = new Image();
       img.onload = () => resolve(classifyRatio(img.width, img.height));
-      img.onerror = () => resolve('normal');
+      img.onerror = () => {
+        console.error('Failed to load image:', src);
+        resolve('normal');
+      };
       img.src = src;
     }));
     Promise.all(promises).then(setRatios);
-  }, [images]);
+  }, [validImages]);
 
   // Track selected slide
   useEffect(() => {
@@ -47,6 +54,17 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
   const prev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const next = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
+  // Show placeholder if no images
+  if (validImages.length === 0) {
+    return (
+      <div className="w-full">
+        <div className="aspect-square w-full bg-muted rounded-none md:rounded-lg flex items-center justify-center">
+          <p className="text-muted-foreground">No images available</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
       <div className="relative group">
@@ -58,7 +76,7 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
           ref={emblaRef}
         >
           <div className="flex touch-pan-y select-none" style={{ height: '100%' }}>
-            {images.map((src, i) => {
+            {validImages.map((src, i) => {
               return (
                 <div 
                   className="flex-[0_0_100%] relative min-w-0" 
@@ -101,23 +119,23 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
           </>
         )}
         <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-2 pointer-events-none">
-          {images.map((_, i) => (
+          {validImages.map((_, i) => (
             <div
               key={i}
               className={cn('h-2 rounded-full transition-all', active === i ? 'bg-white w-8' : 'bg-white/50 w-2')}
             />
           ))}
         </div>
-        {images.length > 0 && (
+        {validImages.length > 0 && (
           <div className="absolute top-3 right-3 bg-black/55 text-white text-xs px-2 py-1 rounded">
-            {active + 1} / {images.length}
+            {active + 1} / {validImages.length}
           </div>
         )}
       </div>
 
       {isMultiple && (
         <div className="mt-2 hidden md:flex gap-2 overflow-x-auto pb-1">
-          {images.map((src, i) => (
+          {validImages.map((src, i) => (
             <button
               key={i}
               onClick={() => scrollTo(i)}
@@ -134,7 +152,7 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
         <DialogContent className="p-0 max-w-[95vw] max-h-[95vh] flex flex-col bg-black border border-border">
           <div className="relative aspect-square w-full max-w-[min(95vw,95vh)] mx-auto">
             <img
-              src={images[active]}
+              src={validImages[active]}
               alt={title}
               className="w-full h-full object-cover cursor-zoom-out"
               onClick={() => setLightbox(false)}
@@ -158,12 +176,12 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
               </>
             )}
             <div className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
-              {active + 1} / {images.length}
+              {active + 1} / {validImages.length}
             </div>
           </div>
           {isMultiple && (
             <div className="flex gap-2 p-3 overflow-x-auto bg-black/60">
-              {images.map((src, i) => (
+              {validImages.map((src, i) => (
                 <button
                   key={i}
                   onClick={() => scrollTo(i)}
