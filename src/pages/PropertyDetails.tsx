@@ -215,12 +215,12 @@ const PropertyDetails = () => {
         {/* Owner Details */}
         {(property.contact_name || property.contact_phone || property.contact_email) && (
           <Card className="p-3 md:p-4">
-            <div className="flex items-center gap-2.5 mb-3">
+            <div className="flex items-center gap-2.5 mb-3 cursor-pointer" onClick={() => navigate(`/user/${property.user_id}`)}>
               <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-base md:text-lg">
                 {property.contact_name?.charAt(0) || 'U'}
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-sm md:text-base truncate">{property.contact_name || 'Property Owner'}</h4>
+                <h4 className="font-semibold text-sm md:text-base truncate hover:text-primary transition-colors">{property.contact_name || 'Property Owner'}</h4>
                 <p className="text-xs md:text-sm text-muted-foreground truncate">{property.contact_phone || property.contact_email}</p>
               </div>
             </div>

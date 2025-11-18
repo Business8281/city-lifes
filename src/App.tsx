@@ -29,6 +29,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const ProfileSetup = lazy(() => import("./pages/ProfileSetup"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const UserProfile = lazy(() => import("./pages/UserProfile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const App = () => {
                   <Route index element={<RequireAuth><Index /></RequireAuth>} />
                   <Route path="listings" element={<Listings />} />
                   <Route path="property/:id" element={<PropertyDetails />} />
+                  <Route path="user/:userId" element={<UserProfile />} />
                   <Route path="favorites" element={<RequireAuth><Favorites /></RequireAuth>} />
                   <Route path="map" element={<MapView />} />
                     <Route path="profile" element={<RequireAuth><Profile /></RequireAuth>} />

@@ -687,6 +687,36 @@ export type Database = {
           },
         ]
       }
+      user_reviews: {
+        Row: {
+          created_at: string | null
+          id: string
+          rating: number
+          review_text: string | null
+          reviewed_user_id: string
+          reviewer_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          rating: number
+          review_text?: string | null
+          reviewed_user_id: string
+          reviewer_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          rating?: number
+          review_text?: string | null
+          reviewed_user_id?: string
+          reviewer_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -1191,6 +1221,13 @@ export type Database = {
           user_id: string
           verified: boolean
           views: number
+        }[]
+      }
+      get_user_rating_stats: {
+        Args: { _user_id: string }
+        Returns: {
+          average_rating: number
+          total_reviews: number
         }[]
       }
       get_user_role: {
