@@ -880,7 +880,7 @@ const AddProperty = () => {
         title: formData.title,
         description: finalDescription,
         property_type: formData.type,
-        price: formData.type === 'roommate' ? 0 : parseFloat(formData.price),
+        price: (formData.type === 'roommate' || formData.type === 'business') ? 0 : parseFloat(formData.price),
         price_type: dbPriceType,
         city: formData.city,
         area: formData.area,
@@ -949,11 +949,11 @@ const AddProperty = () => {
   const isStep2Valid = (() => {
     if (!formData.title || !formData.type) return false;
     
-    // Listing type is required for all properties except roommate
-    if (formData.type !== 'roommate' && !formData.listingType) return false;
+    // Listing type is required for all properties except roommate and business
+    if (formData.type !== 'roommate' && formData.type !== 'business' && !formData.listingType) return false;
     
-    // Price is required for all properties except roommate
-    if (formData.type !== 'roommate' && !formData.price) return false;
+    // Price is required for all properties except roommate and business
+    if (formData.type !== 'roommate' && formData.type !== 'business' && !formData.price) return false;
     
     // Target audience validation
     if (categoryConfigs[formData.type as keyof typeof categoryConfigs]?.hasTargetAudience && !formData.targetAudience) return false;
@@ -975,6 +975,11 @@ const AddProperty = () => {
     // Additional validation for electronics
     if (formData.type === 'electronics') {
       if (!formData.brand || !formData.model || !formData.electronicsType || !formData.condition) return false;
+    }
+    
+    // Additional validation for business
+    if (formData.type === 'business') {
+      if (!formData.businessCategory) return false;
     }
     
     return true;
