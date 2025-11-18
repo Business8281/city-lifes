@@ -147,7 +147,7 @@ const PropertyDetails = () => {
       </div>
 
       {/* Image Gallery */}
-      <ListingGallery images={property.images} title={property.title} />
+      <ListingGallery images={property.images || []} title={property.title} />
 
       <div className="max-w-7xl mx-auto px-3 md:px-4 py-3 md:py-4 space-y-3 md:space-y-4 overflow-x-hidden">
         {/* Title and Price */}
