@@ -11,7 +11,9 @@ export const propertyTypes = [
   { type: "cafe", icon: "☕", label: "Cafes", availableFor: ["rent", "sale"] },
   { type: "farmhouse", icon: "🏡", label: "Farmhouses", availableFor: ["daily_rent", "sale"] },
   { type: "warehouse", icon: "📦", label: "Warehouses", availableFor: ["rent", "sale"] },
+  { type: "business", icon: "🏪", label: "Business Listings", availableFor: ["rent", "sale"] },
   { type: "cars", icon: "🚗", label: "Cars", availableFor: ["daily_rent", "sale"] },
   { type: "bikes", icon: "🏍️", label: "Bikes", availableFor: ["daily_rent", "sale"] },
   { type: "electronics", icon: "📱", label: "Electronics", availableFor: ["sale"] },
+  { type: "roommate", icon: "👥", label: "Roommate Sharing", availableFor: [] },
 ];
