@@ -209,26 +209,26 @@ const PropertyDetails = () => {
         {(property.bedrooms || property.bathrooms || property.area_sqft || 
           property.business_metadata || property.property_type) && (
           <>
-            <Card className="p-6 md:p-8">
-              <h3 className="text-xl md:text-2xl font-bold mb-6">Property Details</h3>
-              <div className="grid grid-cols-3 gap-6 md:gap-8">
+            <Card className="p-4 md:p-6">
+              <h3 className="text-lg md:text-xl font-bold mb-4 md:mb-6">Property Details</h3>
+              <div className="grid grid-cols-3 gap-4 md:gap-6">
                 {/* Residential Properties */}
                 {property.bedrooms && (
                   <div className="text-center">
-                    <div className="text-4xl md:text-5xl font-bold text-primary mb-2">{property.bedrooms}</div>
-                    <div className="text-sm md:text-base text-muted-foreground">Bedrooms</div>
+                    <div className="text-2xl md:text-4xl font-bold text-primary mb-1 md:mb-2">{property.bedrooms}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Bedrooms</div>
                   </div>
                 )}
                 {property.bathrooms && (
                   <div className="text-center">
-                    <div className="text-4xl md:text-5xl font-bold text-primary mb-2">{property.bathrooms}</div>
-                    <div className="text-sm md:text-base text-muted-foreground">Bathrooms</div>
+                    <div className="text-2xl md:text-4xl font-bold text-primary mb-1 md:mb-2">{property.bathrooms}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">Bathrooms</div>
                   </div>
                 )}
                 {property.area_sqft && (
                   <div className="text-center">
-                    <div className="text-4xl md:text-5xl font-bold text-primary mb-2">{property.area_sqft}</div>
-                    <div className="text-sm md:text-base text-muted-foreground">sq.ft</div>
+                    <div className="text-2xl md:text-4xl font-bold text-primary mb-1 md:mb-2">{property.area_sqft}</div>
+                    <div className="text-xs md:text-sm text-muted-foreground">sq.ft</div>
                   </div>
                 )}
 
@@ -237,26 +237,26 @@ const PropertyDetails = () => {
                   <>
                     {(property.business_metadata as any).pgType && (
                       <div className="text-center col-span-3">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2 capitalize">{(property.business_metadata as any).pgType}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">PG Type</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2 capitalize">{(property.business_metadata as any).pgType}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">PG Type</div>
                       </div>
                     )}
                     {(property.business_metadata as any).roomType && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2 capitalize">{(property.business_metadata as any).roomType}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Room Type</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2 capitalize">{(property.business_metadata as any).roomType}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Room Type</div>
                       </div>
                     )}
                     {(property.business_metadata as any).foodIncluded !== undefined && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).foodIncluded ? 'Yes' : 'No'}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Food Included</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2">{(property.business_metadata as any).foodIncluded ? 'Yes' : 'No'}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Food Included</div>
                       </div>
                     )}
                     {(property.business_metadata as any).securityDeposit && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">₹{(property.business_metadata as any).securityDeposit}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Security Deposit</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2">₹{(property.business_metadata as any).securityDeposit}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Security Deposit</div>
                       </div>
                     )}
                   </>
@@ -267,20 +267,20 @@ const PropertyDetails = () => {
                   <>
                     {(property.business_metadata as any).roomTypes && (
                       <div className="text-center col-span-3">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).roomTypes}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Room Types</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2">{(property.business_metadata as any).roomTypes}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Room Types</div>
                       </div>
                     )}
                     {(property.business_metadata as any).totalRooms && (
                       <div className="text-center">
-                        <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{(property.business_metadata as any).totalRooms}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Total Rooms</div>
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-1 md:mb-2">{(property.business_metadata as any).totalRooms}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Total Rooms</div>
                       </div>
                     )}
                     {(property.business_metadata as any).starRating && (
                       <div className="text-center">
-                        <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{(property.business_metadata as any).starRating} ⭐</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Star Rating</div>
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-1 md:mb-2">{(property.business_metadata as any).starRating} ⭐</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Star Rating</div>
                       </div>
                     )}
                   </>
@@ -291,14 +291,14 @@ const PropertyDetails = () => {
                   <>
                     {(property.business_metadata as any).cuisine && (
                       <div className="text-center col-span-3">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).cuisine}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Cuisine Type</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2">{(property.business_metadata as any).cuisine}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Cuisine Type</div>
                       </div>
                     )}
                     {(property.business_metadata as any).seatingCapacity && (
                       <div className="text-center">
-                        <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{(property.business_metadata as any).seatingCapacity}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Seating Capacity</div>
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-1 md:mb-2">{(property.business_metadata as any).seatingCapacity}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Seating Capacity</div>
                       </div>
                     )}
                   </>
@@ -309,38 +309,38 @@ const PropertyDetails = () => {
                   <>
                     {(property.business_metadata as any).brand && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).brand}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Brand</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2">{(property.business_metadata as any).brand}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Brand</div>
                       </div>
                     )}
                     {(property.business_metadata as any).model && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).model}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Model</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2">{(property.business_metadata as any).model}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Model</div>
                       </div>
                     )}
                     {(property.business_metadata as any).year && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).year}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Year</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2">{(property.business_metadata as any).year}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Year</div>
                       </div>
                     )}
                     {(property.business_metadata as any).mileage && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).mileage}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Mileage</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2">{(property.business_metadata as any).mileage}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Mileage</div>
                       </div>
                     )}
                     {(property.business_metadata as any).fuelType && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2 capitalize">{(property.business_metadata as any).fuelType}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Fuel Type</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2 capitalize">{(property.business_metadata as any).fuelType}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Fuel Type</div>
                       </div>
                     )}
                     {(property.business_metadata as any).transmission && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2 capitalize">{(property.business_metadata as any).transmission}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Transmission</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2 capitalize">{(property.business_metadata as any).transmission}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Transmission</div>
                       </div>
                     )}
                   </>
@@ -351,26 +351,26 @@ const PropertyDetails = () => {
                   <>
                     {(property.business_metadata as any).brand && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).brand}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Brand</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2">{(property.business_metadata as any).brand}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Brand</div>
                       </div>
                     )}
                     {(property.business_metadata as any).model && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).model}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Model</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2">{(property.business_metadata as any).model}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Model</div>
                       </div>
                     )}
                     {(property.business_metadata as any).condition && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2 capitalize">{(property.business_metadata as any).condition}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Condition</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2 capitalize">{(property.business_metadata as any).condition}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Condition</div>
                       </div>
                     )}
                     {(property.business_metadata as any).warranty && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).warranty ? 'Yes' : 'No'}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Warranty</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2">{(property.business_metadata as any).warranty ? 'Yes' : 'No'}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Warranty</div>
                       </div>
                     )}
                   </>
@@ -381,20 +381,20 @@ const PropertyDetails = () => {
                   <>
                     {(property.business_metadata as any).occupation && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2 capitalize">{(property.business_metadata as any).occupation}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Occupation</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2 capitalize">{(property.business_metadata as any).occupation}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Occupation</div>
                       </div>
                     )}
                     {(property.business_metadata as any).monthlyRent && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">₹{(property.business_metadata as any).monthlyRent}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Monthly Rent</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2">₹{(property.business_metadata as any).monthlyRent}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Monthly Rent</div>
                       </div>
                     )}
                     {(property.business_metadata as any).foodPreference && (
                       <div className="text-center">
-                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2 capitalize">{(property.business_metadata as any).foodPreference}</div>
-                        <div className="text-sm md:text-base text-muted-foreground">Food Preference</div>
+                        <div className="text-xl md:text-2xl font-bold text-primary mb-1 md:mb-2 capitalize">{(property.business_metadata as any).foodPreference}</div>
+                        <div className="text-xs md:text-sm text-muted-foreground">Food Preference</div>
                       </div>
                     )}
                   </>
@@ -407,8 +407,8 @@ const PropertyDetails = () => {
 
         {/* Description */}
         <div>
-          <h3 className="text-xl md:text-2xl font-bold mb-4">About this property</h3>
-          <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{property.description}</p>
+          <h3 className="text-lg md:text-xl font-bold mb-3">About this property</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">{property.description}</p>
         </div>
 
         <Separator />
@@ -417,12 +417,12 @@ const PropertyDetails = () => {
         {property.amenities && property.amenities.length > 0 && (
           <>
             <div>
-              <h3 className="text-xl md:text-2xl font-bold mb-4">Amenities</h3>
+              <h3 className="text-lg md:text-xl font-bold mb-3">Amenities</h3>
               <div className="flex flex-wrap gap-2">
                 {property.amenities.map((amenity) => (
                   <Badge 
                     key={amenity} 
-                    className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 text-sm md:text-base rounded-full"
+                    className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 text-xs md:text-sm rounded-full"
                   >
                     {amenity}
                   </Badge>
@@ -531,30 +531,28 @@ const PropertyDetails = () => {
 
         {/* Owner Details */}
         {(property.contact_name || property.contact_phone || property.contact_email) && (
-          <Card className="p-6 md:p-8">
-            <div className="flex items-center gap-4 mb-6 cursor-pointer" onClick={() => navigate(`/user/${property.user_id}`)}>
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-bold text-2xl md:text-3xl">
+          <Card className="p-4 md:p-6">
+            <div className="flex items-center gap-3 mb-4 cursor-pointer" onClick={() => navigate(`/user/${property.user_id}`)}>
+              <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-bold text-lg md:text-2xl">
                 {property.contact_name?.charAt(0) || 'U'}
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-lg md:text-xl font-bold truncate hover:text-primary transition-colors">{property.contact_name || 'Property Owner'}</h4>
-                <p className="text-sm md:text-base text-muted-foreground truncate">{property.contact_phone || property.contact_email}</p>
+                <h4 className="text-base md:text-lg font-bold truncate hover:text-primary transition-colors">{property.contact_name || 'Property Owner'}</h4>
+                <p className="text-xs md:text-sm text-muted-foreground truncate">{property.contact_phone || property.contact_email}</p>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2 md:gap-3">
               <Button 
-                size="lg" 
-                className="gap-2 text-sm md:text-base py-6" 
+                className="gap-2 text-sm py-5 md:py-6" 
                 onClick={() => property.contact_phone && (window.location.href = `tel:${property.contact_phone}`)}
               >
-                <Phone className="h-5 w-5" />
+                <Phone className="h-4 w-4" />
                 Call
               </Button>
               <Button 
-                size="lg"
                 variant="outline" 
-                className="gap-2 text-sm md:text-base py-6" 
+                className="gap-2 text-sm py-5 md:py-6" 
                 onClick={() => {
                   if (!user) {
                     toast.error("Please login to start a conversation");
@@ -564,7 +562,7 @@ const PropertyDetails = () => {
                   navigate(`/messages?user=${property.user_id}&property=${id}`);
                 }}
               >
-                <MessageCircle className="h-5 w-5" />
+                <MessageCircle className="h-4 w-4" />
                 Chat
               </Button>
             </div>
