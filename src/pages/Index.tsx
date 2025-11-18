@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import SearchBar from "@/components/SearchBar";
 import PropertyCard from "@/components/PropertyCard";
@@ -13,9 +13,11 @@ import LocationSelector from "@/components/LocationSelector";
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationSelectorOpen, setLocationSelectorOpen] = useState(false);
+  const [displayedCount, setDisplayedCount] = useState(12);
   const navigate = useNavigate();
   const { properties } = useProperties();
   const { location } = useLocation();
+  const loadMoreRef = useRef<HTMLDivElement>(null);
 
   // Filter properties based on location
   const filteredProperties = properties.filter((property) => {
@@ -38,7 +40,25 @@ const Index = () => {
     }
   });
 
-  const featuredProperties = filteredProperties.slice(0, 4);
+  const displayedProperties = filteredProperties.slice(0, displayedCount);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && displayedCount < filteredProperties.length) {
+          setDisplayedCount(prev => Math.min(prev + 12, filteredProperties.length));
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [displayedCount, filteredProperties.length]);
 
   return (
     <div className="min-h-screen bg-background mobile-page overflow-x-hidden max-w-full">
@@ -122,20 +142,16 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Featured Properties */}
+        {/* All Properties with Infinite Scroll */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-foreground">Featured Properties</h2>
-            <Button
-              variant="link"
-              className="text-primary p-0 h-auto"
-              onClick={() => navigate("/listings")}
-            >
-              See More
-            </Button>
+            <h2 className="text-xl font-bold text-foreground">All Properties</h2>
+            <span className="text-sm text-muted-foreground">
+              Showing {displayedProperties.length} of {filteredProperties.length}
+            </span>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 max-w-full">
-            {featuredProperties.map((property) => (
+            {displayedProperties.map((property) => (
               <PropertyCard
                 key={property.id}
                 id={property.id}
@@ -154,6 +170,19 @@ const Index = () => {
               />
             ))}
           </div>
+          
+          {/* Load More Trigger */}
+          {displayedCount < filteredProperties.length && (
+            <div ref={loadMoreRef} className="py-8 text-center">
+              <div className="text-muted-foreground">Loading more properties...</div>
+            </div>
+          )}
+          
+          {displayedProperties.length === 0 && (
+            <div className="text-center py-12 text-muted-foreground">
+              No properties found in this location
+            </div>
+          )}
         </section>
 
         {/* Call to Action */}
