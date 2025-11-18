@@ -158,7 +158,7 @@ const PropertyDetails = () => {
         <Separator />
 
         {/* Property Details */}
-        {(property.bedrooms || property.bathrooms || property.area) && (
+        {(property.bedrooms || property.bathrooms || property.area_sqft) && (
           <>
             <Card className="p-3 md:p-4">
               <h3 className="font-semibold text-sm md:text-base mb-2">Property Details</h3>
@@ -175,9 +175,9 @@ const PropertyDetails = () => {
                     <div className="text-xs md:text-sm text-muted-foreground">Bathrooms</div>
                   </div>
                 )}
-                {property.area && (
+                {property.area_sqft && (
                   <div className="text-center">
-                    <div className="text-xl md:text-2xl font-bold text-primary">{property.area}</div>
+                    <div className="text-xl md:text-2xl font-bold text-primary">{property.area_sqft}</div>
                     <div className="text-xs md:text-sm text-muted-foreground">sq.ft</div>
                   </div>
                 )}
