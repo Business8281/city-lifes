@@ -805,7 +805,10 @@ const AddProperty = () => {
           kmDriven: formData.kmDriven,
           owners: formData.owners,
         };
-        businessMetadata = vehicleMetadata;
+        businessMetadata = {
+          ...businessMetadata,
+          ...vehicleMetadata,
+        };
         
         const vehicleDetails = [
           `Brand: ${formData.brand}`,
@@ -823,15 +826,18 @@ const AddProperty = () => {
       }
       
       // For electronics, create metadata and append details to description
-      let electronicsMetadata = null;
       if (formData.type === 'electronics' && formData.brand) {
-        electronicsMetadata = {
+        const electronicsData = {
           electronicsType: formData.electronicsType,
           brand: formData.brand,
           model: formData.model,
           condition: formData.condition,
           warranty: formData.warranty,
           year: formData.year,
+        };
+        businessMetadata = {
+          ...businessMetadata,
+          ...electronicsData,
         };
         
         const electronicsDetails = [
@@ -848,17 +854,15 @@ const AddProperty = () => {
           : electronicsDetails;
       }
       
-      // Determine price_type based on category and listing type
-      let priceType = 'monthly'; // default
+      // For roommate, create roommate metadata
       if (formData.type === 'roommate') {
-        priceType = 'monthly';
-      } else if (formData.listingType === 'sale') {
-        priceType = 'fixed';
-      } else if (formData.listingType === 'rent') {
-        priceType = 'monthly';
-      } else if (formData.listingType === 'daily_rent') {
-        priceType = 'daily';
+        businessMetadata = {
+          ...businessMetadata,
+          ...roommateData,
+        };
       }
+      
+      // Determine price_type based on category and listing type (dbPriceType already set earlier)
       
       const propertyData = {
         user_id: user.id,
@@ -885,7 +889,7 @@ const AddProperty = () => {
         status: 'active',
         available: true,
         verified: true,
-        business_metadata: businessMetadata || electronicsMetadata || (formData.type === 'roommate' ? roommateData : null),
+        business_metadata: businessMetadata || null,
         created_by_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Anonymous',
         created_by_email: user.email || null,
       };
