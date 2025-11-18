@@ -109,6 +109,10 @@ const categoryConfigs = {
     amenities: ["WiFi", "Parking", "AC", "Laundry", "Kitchen", "Furnished", "TV", "Fridge", "Washing Machine"],
     fields: ["bedrooms", "bathrooms"]
   },
+  electronics: {
+    amenities: [],
+    fields: ["brand", "model", "condition", "warranty", "electronicsType"]
+  },
 };
 
 const businessTypes = [
@@ -223,6 +227,10 @@ const AddProperty = () => {
     year: "",
     fuelType: "",
     transmission: "",
+    // Electronics fields
+    electronicsType: "",
+    condition: "",
+    warranty: "",
     // Hotels/Restaurant fields
     rooms: "",
     seatingCapacity: "",
@@ -309,6 +317,9 @@ const AddProperty = () => {
             year: "",
             fuelType: "",
             transmission: "",
+            electronicsType: "",
+            condition: "",
+            warranty: "",
             rooms: "",
             seatingCapacity: "",
             businessType: "",
@@ -365,6 +376,20 @@ const AddProperty = () => {
               drinking: metadata.drinking || 'no',
               foodPreference: metadata.foodPreference || 'veg',
             });
+          }
+          
+          // Load electronics data if it's an electronics listing
+          if (data.property_type === 'electronics' && (data as any).business_metadata) {
+            const metadata = (data as any).business_metadata;
+            setFormData(prev => ({
+              ...prev,
+              electronicsType: metadata?.electronicsType || '',
+              brand: metadata?.brand || '',
+              model: metadata?.model || '',
+              condition: metadata?.condition || '',
+              warranty: metadata?.warranty || '',
+              year: metadata?.year || '',
+            }));
           }
         }
       } catch (error) {
@@ -728,6 +753,32 @@ const AddProperty = () => {
           : vehicleDetails;
       }
       
+      // For electronics, create metadata and append details to description
+      let electronicsMetadata = null;
+      if (formData.type === 'electronics' && formData.brand) {
+        electronicsMetadata = {
+          electronicsType: formData.electronicsType,
+          brand: formData.brand,
+          model: formData.model,
+          condition: formData.condition,
+          warranty: formData.warranty,
+          year: formData.year,
+        };
+        
+        const electronicsDetails = [
+          `Type: ${formData.electronicsType}`,
+          `Brand: ${formData.brand}`,
+          `Model: ${formData.model}`,
+          `Condition: ${formData.condition}`,
+          formData.warranty ? `Warranty: ${formData.warranty}` : '',
+          formData.year ? `Year: ${formData.year}` : ''
+        ].filter(Boolean).join(' | ');
+        
+        finalDescription = finalDescription 
+          ? `${electronicsDetails}\n\n${formData.description}`
+          : electronicsDetails;
+      }
+      
       // Determine price_type based on category and listing type
       let priceType = 'monthly'; // default
       if (formData.type === 'business' || formData.type === 'roommate') {
@@ -763,7 +814,7 @@ const AddProperty = () => {
         status: 'active',
         available: true,
         verified: true,
-        business_metadata: formData.type === 'business' ? businessMetadata : formData.type === 'roommate' ? roommateData : null,
+        business_metadata: formData.type === 'business' ? businessMetadata : formData.type === 'roommate' ? roommateData : formData.type === 'electronics' ? electronicsMetadata : null,
       };
 
       if (editPropertyId) {
@@ -827,6 +878,11 @@ const AddProperty = () => {
     // Additional validation for roommate
     if (formData.type === 'roommate') {
       if (!roommateData.availableFrom || !roommateData.monthlyRent || !roommateData.occupation) return false;
+    }
+    
+    // Additional validation for electronics
+    if (formData.type === 'electronics') {
+      if (!formData.brand || !formData.model || !formData.electronicsType || !formData.condition) return false;
     }
     
     return true;
@@ -1166,6 +1222,114 @@ const AddProperty = () => {
                         }
                       />
                     </div>
+                  )}
+
+                  {/* Electronics fields */}
+                  {formData.type === "electronics" && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="electronicsType">Electronics Type *</Label>
+                        <Select
+                          value={formData.electronicsType}
+                          onValueChange={(value) =>
+                            setFormData({ ...formData, electronicsType: value })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="mobile">Mobile Phone</SelectItem>
+                            <SelectItem value="laptop">Laptop</SelectItem>
+                            <SelectItem value="tablet">Tablet</SelectItem>
+                            <SelectItem value="tv">Television</SelectItem>
+                            <SelectItem value="camera">Camera</SelectItem>
+                            <SelectItem value="smartwatch">Smartwatch</SelectItem>
+                            <SelectItem value="headphones">Headphones</SelectItem>
+                            <SelectItem value="speaker">Speaker</SelectItem>
+                            <SelectItem value="gaming">Gaming Console</SelectItem>
+                            <SelectItem value="appliance">Home Appliance</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="brand">Brand *</Label>
+                          <Input
+                            id="brand"
+                            placeholder="Apple, Samsung, Sony..."
+                            value={formData.brand}
+                            onChange={(e) =>
+                              setFormData({ ...formData, brand: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="model">Model *</Label>
+                          <Input
+                            id="model"
+                            placeholder="iPhone 15, Galaxy S24..."
+                            value={formData.model}
+                            onChange={(e) =>
+                              setFormData({ ...formData, model: e.target.value })
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="condition">Condition *</Label>
+                          <Select
+                            value={formData.condition}
+                            onValueChange={(value) =>
+                              setFormData({ ...formData, condition: value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select condition" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="new">Brand New</SelectItem>
+                              <SelectItem value="like-new">Like New</SelectItem>
+                              <SelectItem value="excellent">Excellent</SelectItem>
+                              <SelectItem value="good">Good</SelectItem>
+                              <SelectItem value="fair">Fair</SelectItem>
+                              <SelectItem value="refurbished">Refurbished</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="warranty">Warranty Status</Label>
+                          <Select
+                            value={formData.warranty}
+                            onValueChange={(value) =>
+                              setFormData({ ...formData, warranty: value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select warranty" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="under-warranty">Under Warranty</SelectItem>
+                              <SelectItem value="expired">Warranty Expired</SelectItem>
+                              <SelectItem value="no-warranty">No Warranty</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="year">Year of Purchase</Label>
+                        <Input
+                          id="year"
+                          placeholder="2023"
+                          value={formData.year}
+                          onChange={(e) =>
+                            setFormData({ ...formData, year: e.target.value })
+                          }
+                        />
+                      </div>
+                    </>
                   )}
 
                   {/* Restaurant/Cafe fields */}
