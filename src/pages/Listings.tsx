@@ -25,11 +25,13 @@ const Listings = () => {
   const [selectedType, setSelectedType] = useState(searchParams.get("type") || "all");
   const [sortBy, setSortBy] = useState("recent");
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
+  const [displayedCount, setDisplayedCount] = useState(12);
   const { properties, loading } = useProperties();
   const { location } = useLocation();
   const { sponsoredProperties, loading: sponsoredLoading, incrementClicks, incrementImpressions } = useSponsoredProperties(location);
   const sponsoredRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const trackedImpressions = useRef<Set<string>>(new Set());
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const sponsoredCampaignByProperty = new Map(
     sponsoredProperties
       .filter((p) => !!p.campaign_id)
@@ -112,6 +114,31 @@ const Listings = () => {
     }
     return 0; // recent (default order from DB)
   });
+
+  const displayedProperties = sortedProperties.slice(0, displayedCount);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && displayedCount < sortedProperties.length) {
+          setDisplayedCount(prev => Math.min(prev + 12, sortedProperties.length));
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [displayedCount, sortedProperties.length]);
+
+  // Reset displayed count when filters change
+  useEffect(() => {
+    setDisplayedCount(12);
+  }, [selectedType, searchQuery, sortBy, location.value]);
 
   return (
     <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
@@ -212,7 +239,7 @@ const Listings = () => {
           </div>
           
           <p className="text-sm text-muted-foreground px-1">
-            {loading ? 'Loading...' : `${sortedProperties.length} properties found`}
+            {loading ? 'Loading...' : `Showing ${displayedProperties.length} of ${sortedProperties.length} properties`}
           </p>
         </div>
       </div>
@@ -278,11 +305,11 @@ const Listings = () => {
           <div className="flex justify-center py-20">
             <div className="text-muted-foreground">Loading properties...</div>
           </div>
-        ) : sortedProperties.length > 0 ? (
+        ) : displayedProperties.length > 0 ? (
           <div>
             <h2 className="text-lg font-semibold mb-3">All Properties</h2>
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 max-w-full">
-              {sortedProperties.map((property) => (
+              {displayedProperties.map((property) => (
                 <PropertyCard
                   key={property.id}
                   id={property.id}
@@ -306,6 +333,13 @@ const Listings = () => {
                 />
               ))}
             </div>
+            
+            {/* Load More Trigger */}
+            {displayedCount < sortedProperties.length && (
+              <div ref={loadMoreRef} className="py-8 text-center">
+                <div className="text-muted-foreground">Loading more properties...</div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center">
