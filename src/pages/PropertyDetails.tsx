@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Heart, Share2, MapPin, Phone, MessageCircle, Calendar } from "lucide-react";
+import { ArrowLeft, Heart, Share2, MapPin, Phone, MessageCircle, Calendar, Tag, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import { useProperty } from "@/hooks/useProperties";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
+import { propertyTypes } from "@/data/propertyTypes";
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -59,6 +60,20 @@ const PropertyDetails = () => {
   };
 
   const isFavorite = id ? favoriteIds.has(id) : false;
+
+  const getPropertyTypeInfo = () => {
+    return propertyTypes.find(pt => pt.type === property?.property_type);
+  };
+
+  const formatPriceType = (priceType: string) => {
+    const typeMap: Record<string, string> = {
+      'rent': 'For Rent',
+      'sale': 'For Sale',
+      'daily_rent': 'Daily Rent',
+      'month': 'Monthly'
+    };
+    return typeMap[priceType] || priceType;
+  };
 
   if (loading) {
     return (
@@ -149,9 +164,33 @@ const PropertyDetails = () => {
             <span>{property.area}, {property.city} - {property.pin_code}</span>
           </div>
           
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-2xl md:text-3xl font-bold text-primary">₹{property.price.toLocaleString()}</span>
-            <span className="text-sm text-muted-foreground">/month</span>
+          {property.price > 0 && (
+            <div className="flex items-baseline gap-1.5 mb-2">
+              <span className="text-2xl md:text-3xl font-bold text-primary">₹{property.price.toLocaleString()}</span>
+              <span className="text-sm text-muted-foreground">/{property.price_type || 'month'}</span>
+            </div>
+          )}
+
+          {/* Category and Type Info */}
+          <div className="flex flex-wrap gap-2 mt-2">
+            <Badge variant="outline" className="gap-1">
+              <Tag className="h-3 w-3" />
+              {getPropertyTypeInfo()?.label || property.property_type}
+            </Badge>
+            {property.price_type && (
+              <Badge variant="secondary">
+                {formatPriceType(property.price_type)}
+              </Badge>
+            )}
+            {getPropertyTypeInfo()?.targetAudience && (
+              <>
+                {getPropertyTypeInfo()?.targetAudience?.map((audience) => (
+                  <Badge key={audience} variant="outline" className="capitalize">
+                    {audience}
+                  </Badge>
+                ))}
+              </>
+            )}
           </div>
         </div>
 
@@ -196,7 +235,7 @@ const PropertyDetails = () => {
         <Separator />
 
         {/* Amenities */}
-        {property.amenities.length > 0 && (
+        {property.amenities && property.amenities.length > 0 && (
           <>
             <div>
               <h3 className="font-semibold text-sm md:text-base mb-2">Amenities</h3>
@@ -208,6 +247,54 @@ const PropertyDetails = () => {
                 ))}
               </div>
             </div>
+            <Separator />
+          </>
+        )}
+
+        {/* Business Metadata - for business properties */}
+        {property.business_metadata && Object.keys(property.business_metadata).length > 0 && (
+          <>
+            <Card className="p-3 md:p-4">
+              <h3 className="font-semibold text-sm md:text-base mb-3">Business Details</h3>
+              <div className="space-y-2">
+                {property.business_metadata.category && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Category:</span>
+                    <span className="font-medium">{property.business_metadata.category}</span>
+                  </div>
+                )}
+                {property.business_metadata.operatingHours && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Operating Hours:</span>
+                    <span className="font-medium">{property.business_metadata.operatingHours}</span>
+                  </div>
+                )}
+                {property.business_metadata.website && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Website:</span>
+                    <a href={property.business_metadata.website} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
+                      Visit Website
+                    </a>
+                  </div>
+                )}
+                {property.business_metadata.socialMedia && Object.keys(property.business_metadata.socialMedia).length > 0 && (
+                  <div>
+                    <span className="text-sm text-muted-foreground mb-1 block">Social Media:</span>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(property.business_metadata.socialMedia).map(([platform, url]) => (
+                        url && (
+                          <a key={platform} href={url as string} target="_blank" rel="noopener noreferrer">
+                            <Badge variant="outline" className="capitalize cursor-pointer hover:bg-secondary">
+                              {platform}
+                            </Badge>
+                          </a>
+                        )
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
             <Separator />
           </>
         )}
