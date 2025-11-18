@@ -1,7 +1,8 @@
 import { Heart, MapPin, Bed, Bath, Square } from "lucide-react";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
+import { useFavorites } from "@/hooks/useFavorites";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface PropertyCardProps {
   id: string;
@@ -36,23 +37,13 @@ const PropertyCard = ({
   onClick,
   className,
 }: PropertyCardProps) => {
-  const [isFavorite, setIsFavorite] = useState(() => {
-    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    return favorites.includes(id);
-  });
+  const { user } = useAuth();
+  const { favoriteIds, toggleFavorite: toggleFavoriteInDb } = useFavorites(user?.id);
+  const isFavorite = favoriteIds.has(id);
 
-  const toggleFavorite = (e: React.MouseEvent) => {
+  const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
-    
-    if (isFavorite) {
-      const newFavorites = favorites.filter((fav: string) => fav !== id);
-      localStorage.setItem("favorites", JSON.stringify(newFavorites));
-    } else {
-      localStorage.setItem("favorites", JSON.stringify([...favorites, id]));
-    }
-    
-    setIsFavorite(!isFavorite);
+    toggleFavoriteInDb(id);
   };
 
   return (
@@ -85,7 +76,7 @@ const PropertyCard = ({
           </div>
         )}
         <button
-          onClick={toggleFavorite}
+          onClick={handleToggleFavorite}
           className="absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors z-10"
         >
           <Heart
