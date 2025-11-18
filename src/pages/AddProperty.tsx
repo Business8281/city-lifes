@@ -1125,7 +1125,7 @@ const AddProperty = () => {
               </div>
 
               {/* Listing Type - Dynamic based on property type */}
-              {formData.type && formData.type !== "roommate" && propertyTypes.find(pt => pt.type === formData.type) && (
+              {formData.type && formData.type !== "roommate" && formData.type !== "business" && propertyTypes.find(pt => pt.type === formData.type) && (
                 <div className="space-y-2">
                   <Label htmlFor="listingType">Available For *</Label>
                   <Select
@@ -1198,7 +1198,7 @@ const AddProperty = () => {
                 </div>
               )}
 
-              {formData.type !== "roommate" && formData.listingType && (
+              {formData.type !== "roommate" && formData.type !== "business" && formData.listingType && (
                 <div className="space-y-2">
                   <Label htmlFor="price">
                     {formData.listingType === "sale" ? "Sale Price" : 
