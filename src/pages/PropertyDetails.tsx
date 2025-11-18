@@ -205,208 +205,199 @@ const PropertyDetails = () => {
 
         <Separator />
 
-        {/* Property Details - Residential, PG, Hotels, Restaurants, Cafes */}
+        {/* Property Details Card - Unified Style for All Categories */}
         {(property.bedrooms || property.bathrooms || property.area_sqft || 
-          (property.property_type === 'pg' && property.business_metadata) ||
-          (property.property_type === 'hotels' && property.business_metadata) ||
-          ((property.property_type === 'restaurant' || property.property_type === 'cafe') && property.business_metadata)) && (
+          property.business_metadata || property.property_type) && (
           <>
-            <Card className="p-3 md:p-4">
-              <h3 className="font-semibold text-sm md:text-base mb-3">Property Details</h3>
-              <div className="grid grid-cols-3 gap-3">
+            <Card className="p-6 md:p-8">
+              <h3 className="text-xl md:text-2xl font-bold mb-6">Property Details</h3>
+              <div className="grid grid-cols-3 gap-6 md:gap-8">
+                {/* Residential Properties */}
                 {property.bedrooms && (
                   <div className="text-center">
-                    <div className="text-xl md:text-2xl font-bold text-primary">{property.bedrooms}</div>
-                    <div className="text-xs md:text-sm text-muted-foreground">Bedrooms</div>
+                    <div className="text-4xl md:text-5xl font-bold text-primary mb-2">{property.bedrooms}</div>
+                    <div className="text-sm md:text-base text-muted-foreground">Bedrooms</div>
                   </div>
                 )}
                 {property.bathrooms && (
                   <div className="text-center">
-                    <div className="text-xl md:text-2xl font-bold text-primary">{property.bathrooms}</div>
-                    <div className="text-xs md:text-sm text-muted-foreground">Bathrooms</div>
+                    <div className="text-4xl md:text-5xl font-bold text-primary mb-2">{property.bathrooms}</div>
+                    <div className="text-sm md:text-base text-muted-foreground">Bathrooms</div>
                   </div>
                 )}
                 {property.area_sqft && (
                   <div className="text-center">
-                    <div className="text-xl md:text-2xl font-bold text-primary">{property.area_sqft}</div>
-                    <div className="text-xs md:text-sm text-muted-foreground">sq.ft</div>
+                    <div className="text-4xl md:text-5xl font-bold text-primary mb-2">{property.area_sqft}</div>
+                    <div className="text-sm md:text-base text-muted-foreground">sq.ft</div>
                   </div>
                 )}
-                {property.property_type === 'hotels' && (property.business_metadata as any)?.rooms && (
-                  <div className="text-center">
-                    <div className="text-xl md:text-2xl font-bold text-primary">{(property.business_metadata as any).rooms}</div>
-                    <div className="text-xs md:text-sm text-muted-foreground">Rooms</div>
-                  </div>
-                )}
-                {(property.property_type === 'restaurant' || property.property_type === 'cafe') && (property.business_metadata as any)?.seatingCapacity && (
-                  <div className="text-center">
-                    <div className="text-xl md:text-2xl font-bold text-primary">{(property.business_metadata as any).seatingCapacity}</div>
-                    <div className="text-xs md:text-sm text-muted-foreground">Seating</div>
-                  </div>
-                )}
-              </div>
-              
-              {/* PG Type */}
-              {property.property_type === 'pg' && (property.business_metadata as any)?.pgType && (
-                <div className="mt-3 pt-3 border-t border-border">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">PG Type:</span>
-                    <Badge variant="secondary" className="capitalize">
-                      {(property.business_metadata as any).pgType}
-                    </Badge>
-                  </div>
-                </div>
-              )}
-            </Card>
-            <Separator />
-          </>
-        )}
 
-        {/* Vehicle Details - Cars & Bikes */}
-        {(property.property_type === 'cars' || property.property_type === 'bikes') && property.business_metadata && (
-          <>
-            <Card className="p-3 md:p-4">
-              <h3 className="font-semibold text-sm md:text-base mb-3">
-                {property.property_type === 'cars' ? 'Car' : 'Bike'} Details
-              </h3>
-              <div className="space-y-2">
-                {(property.business_metadata as any).brand && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Brand:</span>
-                    <span className="font-medium">{(property.business_metadata as any).brand}</span>
-                  </div>
+                {/* PG Properties */}
+                {property.property_type === 'pg' && property.business_metadata && (
+                  <>
+                    {(property.business_metadata as any).pgType && (
+                      <div className="text-center col-span-3">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2 capitalize">{(property.business_metadata as any).pgType}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">PG Type</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).roomType && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2 capitalize">{(property.business_metadata as any).roomType}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Room Type</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).foodIncluded !== undefined && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).foodIncluded ? 'Yes' : 'No'}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Food Included</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).securityDeposit && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">₹{(property.business_metadata as any).securityDeposit}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Security Deposit</div>
+                      </div>
+                    )}
+                  </>
                 )}
-                {(property.business_metadata as any).model && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Model:</span>
-                    <span className="font-medium">{(property.business_metadata as any).model}</span>
-                  </div>
-                )}
-                {(property.business_metadata as any).year && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Year:</span>
-                    <span className="font-medium">{(property.business_metadata as any).year}</span>
-                  </div>
-                )}
-                {(property.business_metadata as any).fuelType && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Fuel Type:</span>
-                    <span className="font-medium capitalize">{(property.business_metadata as any).fuelType}</span>
-                  </div>
-                )}
-                {(property.business_metadata as any).transmission && property.property_type === 'cars' && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Transmission:</span>
-                    <span className="font-medium capitalize">{(property.business_metadata as any).transmission}</span>
-                  </div>
-                )}
-                {(property.business_metadata as any).kmDriven && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">KM Driven:</span>
-                    <span className="font-medium">{(property.business_metadata as any).kmDriven.toLocaleString()} km</span>
-                  </div>
-                )}
-                {(property.business_metadata as any).owners && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Owners:</span>
-                    <span className="font-medium">{(property.business_metadata as any).owners}</span>
-                  </div>
-                )}
-              </div>
-            </Card>
-            <Separator />
-          </>
-        )}
 
-        {/* Electronics Details */}
-        {property.property_type === 'electronics' && property.business_metadata && (
-          <>
-            <Card className="p-3 md:p-4">
-              <h3 className="font-semibold text-sm md:text-base mb-3">Product Details</h3>
-              <div className="space-y-2">
-                {(property.business_metadata as any).electronicsType && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Type:</span>
-                    <span className="font-medium capitalize">{(property.business_metadata as any).electronicsType}</span>
-                  </div>
+                {/* Hotels */}
+                {property.property_type === 'hotels' && property.business_metadata && (
+                  <>
+                    {(property.business_metadata as any).roomTypes && (
+                      <div className="text-center col-span-3">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).roomTypes}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Room Types</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).totalRooms && (
+                      <div className="text-center">
+                        <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{(property.business_metadata as any).totalRooms}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Total Rooms</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).starRating && (
+                      <div className="text-center">
+                        <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{(property.business_metadata as any).starRating} ⭐</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Star Rating</div>
+                      </div>
+                    )}
+                  </>
                 )}
-                {(property.business_metadata as any).brand && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Brand:</span>
-                    <span className="font-medium">{(property.business_metadata as any).brand}</span>
-                  </div>
-                )}
-                {(property.business_metadata as any).model && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Model:</span>
-                    <span className="font-medium">{(property.business_metadata as any).model}</span>
-                  </div>
-                )}
-                {(property.business_metadata as any).condition && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Condition:</span>
-                    <Badge variant={(property.business_metadata as any).condition === 'new' ? 'default' : 'secondary'}>
-                      {(property.business_metadata as any).condition}
-                    </Badge>
-                  </div>
-                )}
-                {(property.business_metadata as any).year && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Year of Purchase:</span>
-                    <span className="font-medium">{(property.business_metadata as any).year}</span>
-                  </div>
-                )}
-                {(property.business_metadata as any).warranty && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Warranty:</span>
-                    <span className="font-medium">{(property.business_metadata as any).warranty}</span>
-                  </div>
-                )}
-              </div>
-            </Card>
-            <Separator />
-          </>
-        )}
 
-        {/* Roommate Details */}
-        {property.property_type === 'roommate' && property.business_metadata && (
-          <>
-            <Card className="p-3 md:p-4">
-              <h3 className="font-semibold text-sm md:text-base mb-3">Room Details</h3>
-              <div className="space-y-2">
-                {(property.business_metadata as any).occupation && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Occupation:</span>
-                    <span className="font-medium capitalize">{(property.business_metadata as any).occupation}</span>
-                  </div>
+                {/* Restaurants & Cafes */}
+                {(property.property_type === 'restaurant' || property.property_type === 'cafe') && property.business_metadata && (
+                  <>
+                    {(property.business_metadata as any).cuisine && (
+                      <div className="text-center col-span-3">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).cuisine}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Cuisine Type</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).seatingCapacity && (
+                      <div className="text-center">
+                        <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{(property.business_metadata as any).seatingCapacity}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Seating Capacity</div>
+                      </div>
+                    )}
+                  </>
                 )}
-                {(property.business_metadata as any).monthlyRent && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Monthly Rent:</span>
-                    <span className="font-medium">₹{(property.business_metadata as any).monthlyRent.toLocaleString()}</span>
-                  </div>
+
+                {/* Vehicles (Cars & Bikes) */}
+                {(property.property_type === 'cars' || property.property_type === 'bikes') && property.business_metadata && (
+                  <>
+                    {(property.business_metadata as any).brand && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).brand}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Brand</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).model && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).model}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Model</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).year && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).year}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Year</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).mileage && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).mileage}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Mileage</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).fuelType && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2 capitalize">{(property.business_metadata as any).fuelType}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Fuel Type</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).transmission && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2 capitalize">{(property.business_metadata as any).transmission}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Transmission</div>
+                      </div>
+                    )}
+                  </>
                 )}
-                {(property.business_metadata as any).foodPreference && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Food Preference:</span>
-                    <Badge variant="outline" className="capitalize">
-                      {(property.business_metadata as any).foodPreference}
-                    </Badge>
-                  </div>
+
+                {/* Electronics */}
+                {property.property_type === 'electronics' && property.business_metadata && (
+                  <>
+                    {(property.business_metadata as any).brand && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).brand}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Brand</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).model && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).model}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Model</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).condition && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2 capitalize">{(property.business_metadata as any).condition}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Condition</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).warranty && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">{(property.business_metadata as any).warranty ? 'Yes' : 'No'}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Warranty</div>
+                      </div>
+                    )}
+                  </>
                 )}
-                {(property.business_metadata as any).lifestylePreferences && (
-                  <div className="space-y-1">
-                    <span className="text-sm text-muted-foreground">Lifestyle:</span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {Object.entries((property.business_metadata as any).lifestylePreferences).map(([key, value]) => 
-                        value && (
-                          <Badge key={key} variant="secondary" className="text-xs capitalize">
-                            {key === 'nonSmoking' ? 'Non-Smoking' : key === 'nonDrinking' ? 'Non-Drinking' : key}
-                          </Badge>
-                        )
-                      )}
-                    </div>
-                  </div>
+
+                {/* Roommate */}
+                {property.property_type === 'roommate' && property.business_metadata && (
+                  <>
+                    {(property.business_metadata as any).occupation && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2 capitalize">{(property.business_metadata as any).occupation}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Occupation</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).monthlyRent && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2">₹{(property.business_metadata as any).monthlyRent}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Monthly Rent</div>
+                      </div>
+                    )}
+                    {(property.business_metadata as any).foodPreference && (
+                      <div className="text-center">
+                        <div className="text-2xl md:text-3xl font-bold text-primary mb-2 capitalize">{(property.business_metadata as any).foodPreference}</div>
+                        <div className="text-sm md:text-base text-muted-foreground">Food Preference</div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </Card>
@@ -416,8 +407,8 @@ const PropertyDetails = () => {
 
         {/* Description */}
         <div>
-          <h3 className="font-semibold text-sm md:text-base mb-2">About this property</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">{property.description}</p>
+          <h3 className="text-xl md:text-2xl font-bold mb-4">About this property</h3>
+          <p className="text-sm md:text-base text-muted-foreground leading-relaxed">{property.description}</p>
         </div>
 
         <Separator />
@@ -426,10 +417,13 @@ const PropertyDetails = () => {
         {property.amenities && property.amenities.length > 0 && (
           <>
             <div>
-              <h3 className="font-semibold text-sm md:text-base mb-2">Amenities</h3>
-              <div className="flex flex-wrap gap-1.5">
+              <h3 className="text-xl md:text-2xl font-bold mb-4">Amenities</h3>
+              <div className="flex flex-wrap gap-2">
                 {property.amenities.map((amenity) => (
-                  <Badge key={amenity} variant="secondary" className="text-xs">
+                  <Badge 
+                    key={amenity} 
+                    className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 text-sm md:text-base rounded-full"
+                  >
                     {amenity}
                   </Badge>
                 ))}
@@ -537,26 +531,30 @@ const PropertyDetails = () => {
 
         {/* Owner Details */}
         {(property.contact_name || property.contact_phone || property.contact_email) && (
-          <Card className="p-3 md:p-4">
-            <div className="flex items-center gap-2.5 mb-3 cursor-pointer" onClick={() => navigate(`/user/${property.user_id}`)}>
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-base md:text-lg">
+          <Card className="p-6 md:p-8">
+            <div className="flex items-center gap-4 mb-6 cursor-pointer" onClick={() => navigate(`/user/${property.user_id}`)}>
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-bold text-2xl md:text-3xl">
                 {property.contact_name?.charAt(0) || 'U'}
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-sm md:text-base truncate hover:text-primary transition-colors">{property.contact_name || 'Property Owner'}</h4>
-                <p className="text-xs md:text-sm text-muted-foreground truncate">{property.contact_phone || property.contact_email}</p>
+                <h4 className="text-lg md:text-xl font-bold truncate hover:text-primary transition-colors">{property.contact_name || 'Property Owner'}</h4>
+                <p className="text-sm md:text-base text-muted-foreground truncate">{property.contact_phone || property.contact_email}</p>
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-2">
-              <Button size="sm" className="gap-1.5 text-xs md:text-sm" onClick={() => property.contact_phone && (window.location.href = `tel:${property.contact_phone}`)}>
-                <Phone className="h-3.5 w-3.5 md:h-4 md:w-4" />
+            <div className="grid grid-cols-2 gap-3">
+              <Button 
+                size="lg" 
+                className="gap-2 text-sm md:text-base py-6" 
+                onClick={() => property.contact_phone && (window.location.href = `tel:${property.contact_phone}`)}
+              >
+                <Phone className="h-5 w-5" />
                 Call
               </Button>
               <Button 
-                size="sm"
+                size="lg"
                 variant="outline" 
-                className="gap-1.5 text-xs md:text-sm" 
+                className="gap-2 text-sm md:text-base py-6" 
                 onClick={() => {
                   if (!user) {
                     toast.error("Please login to start a conversation");
@@ -566,7 +564,7 @@ const PropertyDetails = () => {
                   navigate(`/messages?user=${property.user_id}&property=${id}`);
                 }}
               >
-                <MessageCircle className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                <MessageCircle className="h-5 w-5" />
                 Chat
               </Button>
             </div>
