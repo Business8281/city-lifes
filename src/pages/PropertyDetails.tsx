@@ -159,9 +159,12 @@ const PropertyDetails = () => {
             )}
           </div>
           
-          <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-2">
-            <MapPin className="h-3.5 w-3.5" />
-            <span>{property.area}, {property.city} - {property.pin_code}</span>
+          <div className="flex items-start gap-1.5 text-sm text-muted-foreground mb-2">
+            <MapPin className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+            <span>
+              {property.address && `${property.address}, `}
+              {property.area}, {property.city} - {property.pin_code}
+            </span>
           </div>
           
           {property.price > 0 && (
@@ -180,6 +183,16 @@ const PropertyDetails = () => {
             {property.price_type && (
               <Badge variant="secondary">
                 {formatPriceType(property.price_type)}
+              </Badge>
+            )}
+            {property.is_agent && (
+              <Badge variant="outline" className="bg-primary/10">
+                Agent
+              </Badge>
+            )}
+            {property.verified && (
+              <Badge variant="outline" className="bg-green-500/10 text-green-700 dark:text-green-400">
+                Verified
               </Badge>
             )}
             {getPropertyTypeInfo()?.targetAudience && (
