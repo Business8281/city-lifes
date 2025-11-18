@@ -105,18 +105,38 @@ export function useAdminStats() {
   useEffect(() => {
     fetchStats();
 
-    // Set up real-time listeners for live updates
+    // Throttled real-time updates for admin dashboard
+    let updateTimeout: NodeJS.Timeout;
     const channel = supabase
       .channel('admin-dashboard-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, fetchStats)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, fetchStats)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, fetchStats)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'favorites' }, fetchStats)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'inquiries' }, fetchStats)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'ad_campaigns' }, fetchStats)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'properties' }, () => {
+        clearTimeout(updateTimeout);
+        updateTimeout = setTimeout(() => fetchStats(), 2000);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+        clearTimeout(updateTimeout);
+        updateTimeout = setTimeout(() => fetchStats(), 2000);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, () => {
+        clearTimeout(updateTimeout);
+        updateTimeout = setTimeout(() => fetchStats(), 2000);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'favorites' }, () => {
+        clearTimeout(updateTimeout);
+        updateTimeout = setTimeout(() => fetchStats(), 2000);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'inquiries' }, () => {
+        clearTimeout(updateTimeout);
+        updateTimeout = setTimeout(() => fetchStats(), 2000);
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ad_campaigns' }, () => {
+        clearTimeout(updateTimeout);
+        updateTimeout = setTimeout(() => fetchStats(), 2000);
+      })
       .subscribe();
 
     return () => {
+      clearTimeout(updateTimeout);
       supabase.removeChannel(channel);
     };
   }, []);

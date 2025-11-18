@@ -114,7 +114,8 @@ export function useMessages(userId: string | undefined) {
 
     if (!userId) return;
 
-    // Set up real-time subscription for live messages
+    // Throttled real-time subscription for live messages
+    let updateTimeout: NodeJS.Timeout;
     const channel = supabase
       .channel('messages-channel')
       .on(
@@ -125,14 +126,15 @@ export function useMessages(userId: string | undefined) {
           table: 'messages',
           filter: `or(sender_id.eq.${userId},receiver_id.eq.${userId})`
         },
-        (payload) => {
-          console.log('Real-time message update:', payload);
-          fetchConversations();
+        () => {
+          clearTimeout(updateTimeout);
+          updateTimeout = setTimeout(() => fetchConversations(), 500);
         }
       )
       .subscribe();
 
     return () => {
+      clearTimeout(updateTimeout);
       supabase.removeChannel(channel);
     };
   }, [userId, fetchConversations]);

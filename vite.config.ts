@@ -18,7 +18,14 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    chunkSizeWarningLimit: 1200, // relax a bit; main reduction comes from code-splitting
+    chunkSizeWarningLimit: 1200,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true
+      }
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {

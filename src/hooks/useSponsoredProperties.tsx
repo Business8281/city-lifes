@@ -38,9 +38,12 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
     window.addEventListener('online', onOnline);
 
     // Native builds foreground
-    const appHandle = CapacitorApp.addListener?.('appStateChange', ({ isActive }) => {
-      if (isActive) fetchSponsoredProperties();
-    }) as unknown as PluginListenerHandle | undefined;
+    let appHandle: PluginListenerHandle | undefined;
+    if (CapacitorApp.addListener) {
+      appHandle = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+        if (isActive) fetchSponsoredProperties();
+      }) as unknown as PluginListenerHandle;
+    }
 
     // Live updates from campaigns table
     const channel = supabase
@@ -55,7 +58,9 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('online', onOnline);
-      appHandle?.remove?.();
+      if (appHandle?.remove) {
+        appHandle.remove();
+      }
       supabase.removeChannel(channel);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
