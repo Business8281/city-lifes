@@ -41,77 +41,81 @@ import { cn } from "@/lib/utils";
 import { BusinessProfileForm } from "@/components/BusinessProfileForm";
 
 const categoryConfigs = {
+  house: { 
+    amenities: ["Garden", "Parking", "Security", "Power Backup", "Water Supply", "Modular Kitchen", "Servant Quarter"],
+    fields: ["bedrooms", "bathrooms", "area"],
+    hasTargetAudience: true as const
+  },
   apartment: { 
     amenities: ["Parking", "Gym", "Swimming Pool", "Security", "Lift", "Power Backup", "Garden", "Club House", "Water Supply", "Maintenance Staff"],
-    fields: ["bedrooms", "bathrooms", "area"]
-  },
-  house: { 
-    amenities: ["Garden", "Parking", "Security", "Power Backup", "Water Supply"],
-    fields: ["bedrooms", "bathrooms", "area"]
+    fields: ["bedrooms", "bathrooms", "area"],
+    hasTargetAudience: true as const
   },
   flat: { 
-    amenities: ["Parking", "Lift", "Security", "Water Supply", "Maintenance Staff"],
-    fields: ["bedrooms", "bathrooms", "area"]
+    amenities: ["Parking", "Lift", "Security", "Water Supply", "Maintenance Staff", "Power Backup"],
+    fields: ["bedrooms", "bathrooms", "area"],
+    hasTargetAudience: true as const
   },
   commercial: { 
-    amenities: ["Parking", "Security", "Water Supply", "Power Backup"],
-    fields: ["area"]
+    amenities: ["Parking", "Security", "Water Supply", "Power Backup", "Loading Area", "Washrooms"],
+    fields: ["area"],
+    hasTargetAudience: false as const
   },
   office: { 
-    amenities: ["Parking", "Cafeteria", "Conference Room", "High-Speed Internet", "Security"],
-    fields: ["area"]
+    amenities: ["Parking", "Cafeteria", "Conference Room", "High-Speed Internet", "Security", "AC", "Power Backup"],
+    fields: ["area"],
+    hasTargetAudience: false as const
   },
   farmland: { 
-    amenities: ["Water Supply", "Power Backup"],
-    fields: ["area"]
+    amenities: ["Water Supply", "Power Backup", "Bore Well", "Fencing", "Irrigation System"],
+    fields: ["area"],
+    hasTargetAudience: false as const
   },
   pg: { 
-    amenities: ["Parking", "Gym", "Security", "Lift", "Power Backup", "Water Supply", "Maintenance Staff"],
-    fields: ["bedrooms", "bathrooms"]
+    amenities: ["WiFi", "Parking", "Security", "Laundry", "Meals", "AC", "Water Supply", "Power Backup", "Housekeeping"],
+    fields: ["bedrooms", "bathrooms"],
+    hasPGType: true as const,
+    hasTargetAudience: false as const
   },
-  hostel: { 
-    amenities: ["Cafeteria", "Gym", "Security", "Lift", "Power Backup", "Water Supply", "Maintenance Staff"],
-    fields: ["bedrooms", "bathrooms"]
+  hotels: { 
+    amenities: ["Parking", "Gym", "Swimming Pool", "Security", "Lift", "Power Backup", "Restaurant", "Conference Room", "Room Service", "WiFi"],
+    fields: ["rooms", "area"],
+    hasTargetAudience: false as const
   },
   restaurant: { 
-    amenities: ["Parking", "Security", "Water Supply", "Power Backup"],
-    fields: ["area", "seatingCapacity"]
+    amenities: ["Parking", "Kitchen Equipment", "Dining Area", "AC", "Water Supply", "Power Backup", "Washrooms"],
+    fields: ["area", "seatingCapacity"],
+    hasTargetAudience: false as const
   },
   cafe: { 
-    amenities: ["Parking", "Security", "Water Supply", "Power Backup"],
-    fields: ["area", "seatingCapacity"]
+    amenities: ["WiFi", "Parking", "AC", "Outdoor Seating", "Coffee Machine", "Water Supply", "Power Backup"],
+    fields: ["area", "seatingCapacity"],
+    hasTargetAudience: false as const
   },
   farmhouse: { 
-    amenities: ["Garden", "Parking", "Security", "Power Backup", "Water Supply"],
-    fields: ["bedrooms", "bathrooms", "area"]
+    amenities: ["Garden", "Parking", "Swimming Pool", "Security", "Power Backup", "Water Supply", "BBQ Area", "Lawn"],
+    fields: ["bedrooms", "bathrooms", "area"],
+    hasTargetAudience: false as const
   },
   warehouse: { 
-    amenities: ["Parking", "Security", "Power Backup"],
-    fields: ["area"]
+    amenities: ["Loading Dock", "Security", "Power Backup", "Fire Safety", "Parking", "Storage Racks"],
+    fields: ["area"],
+    hasTargetAudience: false as const
   },
   cars: { 
     amenities: [],
-    fields: ["brand", "model", "year", "fuelType", "transmission"]
+    fields: ["brand", "model", "year", "fuelType", "transmission", "kmDriven", "owners"],
+    hasTargetAudience: false as const
   },
   bikes: { 
     amenities: [],
-    fields: ["brand", "model", "year", "fuelType"]
-  },
-  hotels: { 
-    amenities: ["Parking", "Gym", "Swimming Pool", "Security", "Lift", "Power Backup", "Cafeteria", "Conference Room", "Water Supply"],
-    fields: ["rooms", "area"]
-  },
-  business: { 
-    amenities: [],
-    fields: ["businessType", "revenue", "employees"]
-  },
-  roommate: {
-    amenities: ["WiFi", "Parking", "AC", "Laundry", "Kitchen", "Furnished", "TV", "Fridge", "Washing Machine"],
-    fields: ["bedrooms", "bathrooms"]
+    fields: ["brand", "model", "year", "fuelType", "kmDriven", "owners"],
+    hasTargetAudience: false as const
   },
   electronics: {
     amenities: [],
-    fields: ["brand", "model", "condition", "warranty", "electronicsType"]
+    fields: ["brand", "model", "condition", "warranty", "electronicsType", "yearOfPurchase"],
+    hasTargetAudience: false as const
   },
 };
 
@@ -206,8 +210,11 @@ const AddProperty = () => {
   const [formData, setFormData] = useState({
     title: "",
     type: "",
-    listingType: "", // 'sale' or 'rent'
+    listingType: "", // 'sale', 'rent', or 'daily_rent'
+    targetAudience: "", // 'bachelors', 'families', 'boys', 'girls', 'coliving', 'students', 'professionals'
+    pgType: "", // for PG category
     price: "",
+    priceType: "monthly", // 'monthly', 'yearly', 'daily', 'fixed'
     city: "",
     area: "",
     pinCode: "",
@@ -227,10 +234,13 @@ const AddProperty = () => {
     year: "",
     fuelType: "",
     transmission: "",
+    kmDriven: "",
+    owners: "",
     // Electronics fields
     electronicsType: "",
     condition: "",
     warranty: "",
+    yearOfPurchase: "",
     // Hotels/Restaurant fields
     rooms: "",
     seatingCapacity: "",
@@ -298,7 +308,10 @@ const AddProperty = () => {
             title: data.title || "",
             type: data.property_type || "",
             listingType: data.price_type || "",
+            targetAudience: "",
+            pgType: "",
             price: data.price?.toString() || "",
+            priceType: data.price_type || "monthly",
             city: data.city || "",
             area: data.area || "",
             pinCode: data.pin_code || "",
@@ -317,9 +330,12 @@ const AddProperty = () => {
             year: "",
             fuelType: "",
             transmission: "",
+            kmDriven: "",
+            owners: "",
             electronicsType: "",
             condition: "",
             warranty: "",
+            yearOfPurchase: "",
             rooms: "",
             seatingCapacity: "",
             businessType: "",
@@ -647,14 +663,22 @@ const AddProperty = () => {
       // Clean phone number - remove all non-digit characters
       const cleanedPhone = formData.ownerPhone.replace(/\D/g, '').slice(-10);
       
-      // Determine price_type for validation
-      let validationPriceType: 'monthly' | 'yearly' | 'fixed' = 'monthly';
-      if (formData.type === 'business' || formData.type === 'roommate') {
-        validationPriceType = 'fixed';
+      // Determine price_type based on listing type
+      let validationPriceType: 'monthly' | 'yearly' | 'fixed' | undefined = undefined;
+      let dbPriceType = 'monthly';
+      
+      if (formData.type === 'roommate') {
+        validationPriceType = undefined;
+        dbPriceType = 'monthly';
       } else if (formData.listingType === 'sale') {
         validationPriceType = 'fixed';
+        dbPriceType = 'fixed';
       } else if (formData.listingType === 'rent') {
         validationPriceType = 'monthly';
+        dbPriceType = 'monthly';
+      } else if (formData.listingType === 'daily_rent') {
+        validationPriceType = 'fixed';
+        dbPriceType = 'daily';
       }
       
       // Validate form data using zod
@@ -740,12 +764,25 @@ const AddProperty = () => {
       
       // For cars/bikes, append vehicle details to description
       if ((formData.type === 'cars' || formData.type === 'bikes') && formData.brand) {
+        const vehicleMetadata = {
+          brand: formData.brand,
+          model: formData.model,
+          year: formData.year,
+          fuelType: formData.fuelType,
+          transmission: formData.transmission,
+          kmDriven: formData.kmDriven,
+          owners: formData.owners,
+        };
+        businessMetadata = vehicleMetadata;
+        
         const vehicleDetails = [
           `Brand: ${formData.brand}`,
           `Model: ${formData.model}`,
           `Year: ${formData.year}`,
           `Fuel Type: ${formData.fuelType}`,
-          formData.type === 'cars' && formData.transmission ? `Transmission: ${formData.transmission}` : ''
+          formData.type === 'cars' && formData.transmission ? `Transmission: ${formData.transmission}` : '',
+          `KM Driven: ${formData.kmDriven}`,
+          `Owners: ${formData.owners}`,
         ].filter(Boolean).join(' | ');
         
         finalDescription = finalDescription 
@@ -781,12 +818,14 @@ const AddProperty = () => {
       
       // Determine price_type based on category and listing type
       let priceType = 'monthly'; // default
-      if (formData.type === 'business' || formData.type === 'roommate') {
-        priceType = 'fixed'; // Business/Roommate are special categories
+      if (formData.type === 'roommate') {
+        priceType = 'monthly';
       } else if (formData.listingType === 'sale') {
-        priceType = 'fixed'; // Sale price is one-time
+        priceType = 'fixed';
       } else if (formData.listingType === 'rent') {
-        priceType = 'monthly'; // Rent is monthly
+        priceType = 'monthly';
+      } else if (formData.listingType === 'daily_rent') {
+        priceType = 'daily';
       }
       
       const propertyData = {
@@ -794,8 +833,8 @@ const AddProperty = () => {
         title: formData.title,
         description: finalDescription,
         property_type: formData.type,
-        price: (formData.type === 'business' || formData.type === 'roommate') ? 0 : parseFloat(formData.price),
-        price_type: (formData.type === 'business' || formData.type === 'roommate') ? null : priceType,
+        price: formData.type === 'roommate' ? 0 : parseFloat(formData.price),
+        price_type: dbPriceType,
         city: formData.city,
         area: formData.area,
         pin_code: formData.pinCode,
@@ -811,6 +850,10 @@ const AddProperty = () => {
         contact_phone: cleanedPhone,
         contact_email: null,
         is_agent: false,
+        business_metadata: businessMetadata || electronicsMetadata || (formData.type === 'roommate' ? roommateData : null),
+        created_by_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Anonymous',
+        created_by_email: user.email || null,
+      };
         status: 'active',
         available: true,
         verified: true,
@@ -859,20 +902,24 @@ const AddProperty = () => {
   
   // Step 2 validation: Basic fields + category-specific required fields
   const isStep2Valid = (() => {
-    if (!formData.title || !formData.type || !formData.price) return false;
+    if (!formData.title || !formData.type) return false;
     
-    // Listing type is required for all non-business properties
-    if (formData.type !== 'business' && !formData.listingType) return false;
+    // Listing type is required for all properties except roommate
+    if (formData.type !== 'roommate' && !formData.listingType) return false;
+    
+    // Price is required for all properties except roommate
+    if (formData.type !== 'roommate' && !formData.price) return false;
+    
+    // Target audience validation
+    if (categoryConfigs[formData.type as keyof typeof categoryConfigs]?.hasTargetAudience && !formData.targetAudience) return false;
+    
+    // PG Type validation
+    if (formData.type === 'pg' && !formData.pgType) return false;
     
     // Additional validation for cars/bikes
     if (formData.type === 'cars' || formData.type === 'bikes') {
-      if (!formData.brand || !formData.model || !formData.year || !formData.fuelType) return false;
+      if (!formData.brand || !formData.model || !formData.year || !formData.fuelType || !formData.kmDriven || !formData.owners) return false;
       if (formData.type === 'cars' && !formData.transmission) return false;
-    }
-    
-    // Additional validation for business
-    if (formData.type === 'business') {
-      if (!formData.businessCategory) return false;
     }
     
     // Additional validation for roommate
@@ -1032,10 +1079,10 @@ const AddProperty = () => {
                 </Select>
               </div>
 
-              {/* Listing Type - Only show for properties that can be rented/sold, not for business or roommate */}
-              {formData.type && formData.type !== "business" && formData.type !== "roommate" && (
+              {/* Listing Type - Dynamic based on property type */}
+              {formData.type && formData.type !== "roommate" && propertyTypes.find(pt => pt.type === formData.type) && (
                 <div className="space-y-2">
-                  <Label htmlFor="listingType">Listing Type *</Label>
+                  <Label htmlFor="listingType">Available For *</Label>
                   <Select
                     value={formData.listingType}
                     onValueChange={(value) =>
@@ -1046,23 +1093,82 @@ const AddProperty = () => {
                       <SelectValue placeholder="Select listing type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="rent">For Rent</SelectItem>
-                      <SelectItem value="sale">For Sale</SelectItem>
+                      {propertyTypes.find(pt => pt.type === formData.type)?.availableFor.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type === 'rent' && 'For Rent'}
+                          {type === 'sale' && 'For Sale'}
+                          {type === 'daily_rent' && 'For Daily Rent'}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
               )}
 
-              {formData.type !== "business" && formData.type !== "roommate" && (
+              {/* Target Audience - For residential properties */}
+              {formData.type && categoryConfigs[formData.type as keyof typeof categoryConfigs]?.hasTargetAudience && (
+                <div className="space-y-2">
+                  <Label htmlFor="targetAudience">Suitable For *</Label>
+                  <Select
+                    value={formData.targetAudience}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, targetAudience: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select target audience" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {propertyTypes.find(pt => pt.type === formData.type)?.targetAudience?.map((audience) => (
+                        <SelectItem key={audience} value={audience}>
+                          {audience === 'bachelors' && 'Bachelors'}
+                          {audience === 'families' && 'Families'}
+                          {audience === 'both' && 'Both Bachelors & Families'}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* PG Type - For PG category */}
+              {formData.type === 'pg' && (
+                <div className="space-y-2">
+                  <Label htmlFor="pgType">PG Type *</Label>
+                  <Select
+                    value={formData.pgType}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, pgType: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select PG type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="boys">Boys PG</SelectItem>
+                      <SelectItem value="girls">Girls PG</SelectItem>
+                      <SelectItem value="coliving">Co-living Space</SelectItem>
+                      <SelectItem value="students">Student Hostel</SelectItem>
+                      <SelectItem value="professionals">Working Professional Hostel</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {formData.type !== "roommate" && formData.listingType && (
                 <div className="space-y-2">
                   <Label htmlFor="price">
                     {formData.listingType === "sale" ? "Sale Price" : 
+                     formData.listingType === "daily_rent" ? "Daily Rent" :
                      formData.listingType === "rent" ? "Monthly Rent" : "Price"} *
                   </Label>
                   <Input
                     id="price"
+                    type="number"
                     placeholder={
-                      formData.listingType === "sale" ? "₹75,00,000" : "₹25,000"
+                      formData.listingType === "sale" ? "₹75,00,000" : 
+                      formData.listingType === "daily_rent" ? "₹2,000" :
+                      "₹25,000"
                     }
                     value={formData.price}
                     onChange={(e) =>
@@ -1071,6 +1177,9 @@ const AddProperty = () => {
                   />
                   {formData.listingType === "rent" && (
                     <p className="text-xs text-muted-foreground">Enter monthly rent amount</p>
+                  )}
+                  {formData.listingType === "daily_rent" && (
+                    <p className="text-xs text-muted-foreground">Enter daily rent amount</p>
                   )}
                 </div>
               )}
@@ -1205,6 +1314,39 @@ const AddProperty = () => {
                           </Select>
                         </div>
                       )}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="kmDriven">KM Driven *</Label>
+                          <Input
+                            id="kmDriven"
+                            type="number"
+                            placeholder="50000"
+                            value={formData.kmDriven}
+                            onChange={(e) =>
+                              setFormData({ ...formData, kmDriven: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="owners">Number of Owners *</Label>
+                          <Select
+                            value={formData.owners}
+                            onValueChange={(value) =>
+                              setFormData({ ...formData, owners: value })
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">1st Owner</SelectItem>
+                              <SelectItem value="2">2nd Owner</SelectItem>
+                              <SelectItem value="3">3rd Owner</SelectItem>
+                              <SelectItem value="4+">4+ Owners</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
                     </>
                   )}
 
