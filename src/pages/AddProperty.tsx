@@ -850,14 +850,12 @@ const AddProperty = () => {
         contact_phone: cleanedPhone,
         contact_email: null,
         is_agent: false,
-        business_metadata: businessMetadata || electronicsMetadata || (formData.type === 'roommate' ? roommateData : null),
-        created_by_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Anonymous',
-        created_by_email: user.email || null,
-      };
         status: 'active',
         available: true,
         verified: true,
-        business_metadata: formData.type === 'business' ? businessMetadata : formData.type === 'roommate' ? roommateData : formData.type === 'electronics' ? electronicsMetadata : null,
+        business_metadata: businessMetadata || electronicsMetadata || (formData.type === 'roommate' ? roommateData : null),
+        created_by_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Anonymous',
+        created_by_email: user.email || null,
       };
 
       if (editPropertyId) {
