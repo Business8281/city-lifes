@@ -114,10 +114,9 @@ export function useMessages(userId: string | undefined) {
 
     if (!userId) return;
 
-    // Throttled real-time subscription for live messages
-    let updateTimeout: NodeJS.Timeout;
+    // Real-time subscription for instant message updates
     const channel = supabase
-      .channel('messages-channel')
+      .channel('messages-realtime')
       .on(
         'postgres_changes',
         {
@@ -127,14 +126,13 @@ export function useMessages(userId: string | undefined) {
           filter: `or(sender_id.eq.${userId},receiver_id.eq.${userId})`
         },
         () => {
-          clearTimeout(updateTimeout);
-          updateTimeout = setTimeout(() => fetchConversations(), 500);
+          // Instant updates without throttling
+          fetchConversations();
         }
       )
       .subscribe();
 
     return () => {
-      clearTimeout(updateTimeout);
       supabase.removeChannel(channel);
     };
   }, [userId, fetchConversations]);
@@ -171,8 +169,7 @@ export function useMessages(userId: string | undefined) {
 
       if (error) throw error;
       
-      toast.success('Message sent');
-      fetchConversations();
+      // Real-time subscription will handle the update automatically
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast.error(error.errors[0].message);
