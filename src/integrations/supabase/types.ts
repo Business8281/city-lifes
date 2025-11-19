@@ -1258,6 +1258,7 @@ export type Database = {
         Args: { property_id: string }
         Returns: undefined
       }
+      is_management_role: { Args: { user_id: string }; Returns: boolean }
       longtransactionsenabled: { Args: never; Returns: boolean }
       populate_geometry_columns:
         | { Args: { use_typmod?: boolean }; Returns: string }
@@ -1942,7 +1943,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "manager" | "tech_team"
     }
     CompositeTypes: {
       geometry_dump: {
@@ -2078,7 +2079,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "manager", "tech_team"],
     },
   },
 } as const
