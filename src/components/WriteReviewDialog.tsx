@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,7 +25,6 @@ export function WriteReviewDialog({
   const { user } = useAuth();
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
-  const [reviewText, setReviewText] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
@@ -49,14 +47,13 @@ export function WriteReviewDialog({
           reviewed_user_id: reviewedUserId,
           reviewer_id: user.id,
           rating,
-          review_text: reviewText.trim() || null,
+          review_text: null,
         } as any);
 
       if (error) throw error;
 
       toast.success('Review submitted successfully');
       setRating(0);
-      setReviewText('');
       onOpenChange(false);
       onSuccess?.();
     } catch (error: any) {
@@ -105,24 +102,6 @@ export function WriteReviewDialog({
             </div>
           </div>
 
-          {/* Review Text */}
-          <div className="space-y-2">
-            <label htmlFor="review-text" className="text-xs sm:text-sm font-medium">
-              Review (Optional)
-            </label>
-            <Textarea
-              id="review-text"
-              placeholder="Share your experience with this user..."
-              value={reviewText}
-              onChange={(e) => setReviewText(e.target.value)}
-              rows={4}
-              maxLength={500}
-              className="text-sm resize-none"
-            />
-            <p className="text-xs text-muted-foreground text-right">
-              {reviewText.length}/500
-            </p>
-          </div>
         </div>
 
         <DialogFooter className="flex-col sm:flex-row gap-2">
