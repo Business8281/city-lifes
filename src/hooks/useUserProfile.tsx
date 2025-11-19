@@ -87,17 +87,20 @@ export function useUserProfile(userId: string | undefined) {
       if (reviewsError) throw reviewsError;
       setReviews(reviewsData || []);
 
-      // Fetch user properties
+      // Fetch user properties - RLS handles visibility
       const { data: propertiesData, error: propertiesError } = await supabase
         .from('properties')
         .select('*')
         .eq('user_id', userId)
-        .eq('status', 'active')
         .order('created_at', { ascending: false })
         .limit(6);
 
-      if (propertiesError) throw propertiesError;
-      setProperties(propertiesData || []);
+      if (propertiesError) {
+        console.error('Properties fetch error:', propertiesError);
+      } else {
+        console.log('Fetched properties:', propertiesData);
+        setProperties(propertiesData || []);
+      }
 
     } catch (error: any) {
       console.error('Error fetching user profile:', error);
