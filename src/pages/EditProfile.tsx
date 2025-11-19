@@ -15,7 +15,7 @@ import { profileSchema } from "@/schemas/validationSchemas";
 
 const EditProfile = () => {
   const navigate = useNavigate();
-  const { user, changeEmail, updatePhone } = useAuth();
+  const { user, changeEmail, verifyEmailChangeOTP, updatePhone } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   
@@ -28,6 +28,8 @@ const EditProfile = () => {
   const [showEmailChange, setShowEmailChange] = useState(false);
   const [newEmail, setNewEmail] = useState("");
   const [emailChanging, setEmailChanging] = useState(false);
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
+  const [emailOtp, setEmailOtp] = useState("");
 
   const [showPhoneChange, setShowPhoneChange] = useState(false);
   const [newPhone, setNewPhone] = useState("");
@@ -117,20 +119,66 @@ const EditProfile = () => {
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
     setEmailChanging(true);
     const { error } = await changeEmail(newEmail);
     setEmailChanging(false);
 
     if (error) {
-      const errorMsg = (error as { message?: string })?.message || "Failed to change email";
+      const errorMsg = (error as { message?: string })?.message || "Failed to send verification code";
       setError(errorMsg);
-      toast.error("Failed to change email");
+      toast.error("Failed to send verification code");
       return;
     }
 
-    toast.success("Verification email sent! Check both email addresses.");
-    setShowEmailChange(false);
+    setEmailOtpSent(true);
+    toast.success("Verification code sent to your current email. Please check your inbox.");
+  };
+
+  const handleEmailOtpVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!emailOtp || emailOtp.length !== 6) {
+      setError("Please enter the 6-digit verification code");
+      return;
+    }
+
+    setEmailChanging(true);
+    const { error } = await verifyEmailChangeOTP(emailOtp);
+    setEmailChanging(false);
+
+    if (error) {
+      const errorMsg = (error as { message?: string })?.message || "Invalid verification code";
+      setError(errorMsg);
+      toast.error("Invalid verification code");
+      return;
+    }
+
+    toast.success("Email changed successfully!");
     setNewEmail("");
+    setEmailOtp("");
+    setEmailOtpSent(false);
+    setShowEmailChange(false);
+    
+    // Reload profile data
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user?.id)
+      .single();
+    
+    if (data) {
+      setFormData(prev => ({
+        ...prev,
+        email: data.email || user?.email || ""
+      }));
+    }
   };
 
   const handlePhoneChange = async (e: React.FormEvent) => {
@@ -283,14 +331,15 @@ const EditProfile = () => {
                 </Button>
               </div>
 
-              {showEmailChange && (
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              {showEmailChange && !emailOtpSent && (
                 <form onSubmit={handleEmailChange} className="space-y-4">
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
                   <div className="space-y-2">
                     <Label htmlFor="newEmail">New Email Address</Label>
                     <Input
@@ -302,7 +351,7 @@ const EditProfile = () => {
                       required
                     />
                     <p className="text-xs text-muted-foreground">
-                      You'll receive verification emails to both addresses
+                      A verification code will be sent to your current email
                     </p>
                   </div>
                   <Button
@@ -310,8 +359,57 @@ const EditProfile = () => {
                     className="w-full"
                     disabled={emailChanging}
                   >
-                    {emailChanging ? "Sending Verification..." : "Send Verification Email"}
+                    {emailChanging ? "Sending..." : "Send Verification Code"}
                   </Button>
+                </form>
+              )}
+
+              {emailOtpSent && (
+                <form onSubmit={handleEmailOtpVerify} className="space-y-4">
+                  <Alert>
+                    <Mail className="h-4 w-4" />
+                    <AlertDescription>
+                      We've sent a 6-digit verification code to your current email address ({formData.email}). Please enter it below.
+                    </AlertDescription>
+                  </Alert>
+                  <div className="space-y-2">
+                    <Label htmlFor="emailOtp">Verification Code</Label>
+                    <Input
+                      id="emailOtp"
+                      type="text"
+                      value={emailOtp}
+                      onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="000000"
+                      maxLength={6}
+                      className="text-center text-2xl tracking-widest"
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Enter the 6-digit code from your email
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      type="submit"
+                      className="flex-1"
+                      disabled={emailChanging || emailOtp.length !== 6}
+                    >
+                      {emailChanging ? "Verifying..." : "Verify & Change Email"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setEmailOtpSent(false);
+                        setEmailOtp("");
+                        setNewEmail("");
+                        setShowEmailChange(false);
+                        setError("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </form>
               )}
             </div>
