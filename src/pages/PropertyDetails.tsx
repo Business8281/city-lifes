@@ -14,6 +14,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { propertyTypes } from "@/data/propertyTypes";
+import { Share } from '@capacitor/share';
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -96,16 +97,61 @@ const PropertyDetails = () => {
     );
   }
 
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: property.title,
-        text: `Check out this property: ${property.title}`,
-        url: window.location.href,
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+    const shareTitle = property.title;
+    const shareText = `Check out this ${property.property_type}: ${property.title} - ₹${property.price.toLocaleString()}`;
+
+    try {
+      // Try Capacitor Share first (native mobile apps)
+      await Share.share({
+        title: shareTitle,
+        text: shareText,
+        url: shareUrl,
+        dialogTitle: 'Share Property'
       });
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      toast.success("Link copied to clipboard");
+      toast.success("Shared successfully!");
+    } catch (capacitorError: any) {
+      // Fallback to Web Share API (PWA/browsers)
+      try {
+        const shareData = {
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        };
+
+        if (navigator.share && navigator.canShare?.(shareData)) {
+          await navigator.share(shareData);
+          toast.success("Shared successfully!");
+        } else {
+          // Final fallback to clipboard (desktop browsers)
+          await navigator.clipboard.writeText(shareUrl);
+          toast.success("Link copied to clipboard!");
+        }
+      } catch (webShareError: any) {
+        // User cancelled or error occurred
+        if (webShareError.name !== 'AbortError') {
+          console.error('Share failed:', webShareError);
+          // Last resort - try clipboard again
+          try {
+            await navigator.clipboard.writeText(shareUrl);
+            toast.success("Link copied to clipboard!");
+          } catch {
+            toast.error("Failed to share. Please try again.");
+          }
+        }
+      }
+    }
+  };
+
+  const handleFavoriteToggle = async () => {
+    if (!user) {
+      toast.error("Please login to save favorites");
+      navigate("/auth");
+      return;
+    }
+    if (id) {
+      await toggleFavorite(id);
     }
   };
 
@@ -127,18 +173,25 @@ const PropertyDetails = () => {
               variant="ghost"
               size="icon"
               onClick={handleShare}
+              className="hover:bg-accent active:scale-95 transition-transform"
+              aria-label="Share property"
             >
               <Share2 className="h-5 w-5" />
             </Button>
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => id && toggleFavorite(id)}
+              onClick={handleFavoriteToggle}
+              className={cn(
+                "hover:bg-accent active:scale-95 transition-all",
+                isFavorite && "bg-destructive/10"
+              )}
+              aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
             >
               <Heart
                 className={cn(
-                  "h-5 w-5",
-                  isFavorite && "fill-destructive text-destructive"
+                  "h-5 w-5 transition-all",
+                  isFavorite && "fill-destructive text-destructive scale-110"
                 )}
               />
             </Button>
