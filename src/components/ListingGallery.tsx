@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { OptimizedImage } from './OptimizedImage';
 
 interface ListingGalleryProps {
   images: string[];
@@ -56,19 +57,15 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
         {validImages.map((src, i) => (
           <div
             key={i}
-            className="aspect-square bg-muted rounded-none md:rounded-lg overflow-hidden cursor-pointer group relative"
+            className="rounded-none md:rounded-lg overflow-hidden cursor-pointer group relative"
             onClick={() => openLightbox(i)}
           >
-            <img
+            <OptimizedImage
               src={src}
               alt={`${title} - Image ${i + 1}`}
-              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-              draggable={false}
-              loading="lazy"
-              onError={(e) => {
-                console.error('Image failed to load:', src);
-                e.currentTarget.style.display = 'none';
-              }}
+              aspectRatio="square"
+              priority={i < 4}
+              onError={() => console.error('Image failed to load:', src)}
             />
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
           </div>

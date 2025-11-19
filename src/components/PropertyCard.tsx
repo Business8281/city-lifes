@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useAuth } from "@/contexts/AuthContext";
+import { OptimizedImage } from "./OptimizedImage";
 
 interface PropertyCardProps {
   id: string;
@@ -63,11 +64,11 @@ const PropertyCard = ({
       {sponsored && (
         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-orange-500/5 pointer-events-none z-0" />
       )}
-      <div className="relative aspect-square">
-        <img
+      <div className="relative">
+        <OptimizedImage
           src={image}
           alt={title}
-          className="w-full h-full object-cover"
+          aspectRatio="square"
         />
         {/* Sponsored Ribbon - Top Corner */}
         {sponsored && (
