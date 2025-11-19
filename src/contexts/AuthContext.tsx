@@ -92,16 +92,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     const isNative = Capacitor.isNativePlatform?.() === true;
-    const redirectTo = isNative
-      ? 'citylife://auth-callback'
-      : `${window.location.origin}/auth/callback`;
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo,
-      },
-    });
-    return { error };
+    
+    if (isNative) {
+      // For mobile apps, use custom URL scheme for deep linking
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'citylife://auth-callback',
+          skipBrowserRedirect: false, // Let browser open for OAuth
+        },
+      });
+      return { error };
+    } else {
+      // For web, use standard callback URL
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      return { error };
+    }
   };
 
   const signOut = async () => {
