@@ -14,11 +14,6 @@ export function Layout() {
 
         {/* Main Content */}
   <SidebarInset className="flex-1 flex flex-col overflow-hidden">
-          {/* Header with sidebar trigger for desktop */}
-          <header className="flex-shrink-0 hidden md:flex h-14 items-center gap-4 border-b bg-background px-4">
-            <SidebarTrigger />
-          </header>
-          
           {/* Page Content - scrollable */}
           <div
             className="flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain touch-pan-y px-safe-edge pt-safe-edge mobile-page"
