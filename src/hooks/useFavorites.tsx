@@ -24,7 +24,26 @@ export function useFavorites(userId: string | undefined) {
           id,
           property_id,
           user_id,
-          created_at
+          created_at,
+          properties:property_id (
+            id,
+            title,
+            price,
+            price_type,
+            property_type,
+            city,
+            area,
+            pin_code,
+            address,
+            images,
+            amenities,
+            bedrooms,
+            bathrooms,
+            area_sqft,
+            status,
+            available,
+            verified
+          )
         `)
         .eq('user_id', userId);
 
