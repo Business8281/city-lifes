@@ -49,9 +49,18 @@ export function useFavorites(userId: string | undefined) {
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('online', onOnline);
 
-    const appHandle = CapacitorApp.addListener?.('appStateChange', ({ isActive }) => {
-      if (isActive) fetchFavorites();
-    }) as unknown as PluginListenerHandle | undefined;
+    let appStateHandle: PluginListenerHandle | undefined;
+    
+    // Setup Capacitor app state listener if available
+    if (CapacitorApp?.addListener) {
+      CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+        if (isActive) fetchFavorites();
+      }).then((handle) => {
+        appStateHandle = handle;
+      }).catch((err) => {
+        console.log('Capacitor App listener not available:', err);
+      });
+    }
 
     // Live updates when favorites table changes for this user
     const channel = userId
@@ -68,8 +77,8 @@ export function useFavorites(userId: string | undefined) {
     return () => {
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('online', onOnline);
-      if (appHandle && typeof appHandle.remove === 'function') {
-        appHandle.remove();
+      if (appStateHandle?.remove) {
+        appStateHandle.remove();
       }
       if (channel) supabase.removeChannel(channel);
     };
