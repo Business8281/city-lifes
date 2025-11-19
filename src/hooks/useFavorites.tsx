@@ -21,8 +21,10 @@ export function useFavorites(userId: string | undefined) {
       const { data, error } = await supabase
         .from('favorites')
         .select(`
-          *,
-          properties:property_id (*)
+          id,
+          property_id,
+          user_id,
+          created_at
         `)
         .eq('user_id', userId);
 
