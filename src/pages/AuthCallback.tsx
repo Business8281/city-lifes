@@ -23,23 +23,9 @@ const AuthCallback = () => {
           const user = data.session.user;
           const meta = (user.user_metadata as Record<string, any>) || {};
 
-          // Ensure a profile exists and is populated with name/email
-          try {
-            const fullName = meta.full_name || meta.name || '';
-            const email = user.email || '';
-            await supabase.from('profiles').upsert({
-              id: user.id,
-              email,
-              full_name: fullName,
-              phone: null, // Set phone to null to avoid constraint issues
-              updated_at: new Date().toISOString(),
-            }, {
-              onConflict: 'id'
-            });
-          } catch (e) {
-            console.error('Profile upsert error:', e);
-            // non-blocking
-          }
+          // Profile is automatically created by database trigger
+          // Wait a moment for the trigger to complete
+          await new Promise(resolve => setTimeout(resolve, 100));
 
           // Check if this is first login (profile_completed not set)
           const isFirstLogin = meta?.profile_completed !== true;
