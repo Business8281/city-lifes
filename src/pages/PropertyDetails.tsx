@@ -414,13 +414,17 @@ const PropertyDetails = () => {
           </>
         )}
 
-        {/* Description */}
-        <div>
-          <h3 className="font-semibold text-sm md:text-base mb-2">About this property</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">{property.description}</p>
-        </div>
+        {/* Description - Hide for business and electronics as they show details in dedicated sections */}
+        {property.property_type !== 'business' && property.property_type !== 'electronics' && (
+          <>
+            <div>
+              <h3 className="font-semibold text-sm md:text-base mb-2">About this property</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{property.description}</p>
+            </div>
 
-        <Separator />
+            <Separator />
+          </>
+        )}
 
         {/* Amenities */}
         {property.amenities && property.amenities.length > 0 && (
