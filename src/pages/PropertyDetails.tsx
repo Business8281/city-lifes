@@ -468,8 +468,8 @@ const PropertyDetails = () => {
           </>
         )}
 
-        {/* Description - Hide for business and electronics as they show details in dedicated sections */}
-        {property.property_type !== 'business' && property.property_type !== 'electronics' && (
+        {/* Description - Hide for business, electronics, cars, and bikes as they show details in dedicated sections */}
+        {property.property_type !== 'business' && property.property_type !== 'electronics' && property.property_type !== 'cars' && property.property_type !== 'bikes' && (
           <>
             <div>
               <h3 className="font-semibold text-sm md:text-base mb-2">About this property</h3>
