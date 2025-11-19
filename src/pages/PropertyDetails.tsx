@@ -99,47 +99,48 @@ const PropertyDetails = () => {
 
   const handleShare = async () => {
     const shareUrl = window.location.href;
-    const shareTitle = property.title;
-    const shareText = `Check out this ${property.property_type}: ${property.title} - ₹${property.price.toLocaleString()}`;
+    const shareTitle = property?.title || 'Property';
+    const shareText = `Check out this ${property?.property_type || 'property'}: ${property?.title || 'listing'} - ₹${property?.price?.toLocaleString() || 'Price on request'}`;
 
     try {
-      // Try Capacitor Share first (native mobile apps)
-      await Share.share({
-        title: shareTitle,
-        text: shareText,
-        url: shareUrl,
-        dialogTitle: 'Share Property'
-      });
-      toast.success("Shared successfully!");
-    } catch (capacitorError: any) {
-      // Fallback to Web Share API (PWA/browsers)
-      try {
-        const shareData = {
+      // Check if we're in a mobile app context (Capacitor)
+      const isCapacitorAvailable = typeof Share !== 'undefined' && Share.share;
+      
+      if (isCapacitorAvailable) {
+        // Try Capacitor Share (native mobile apps)
+        await Share.share({
           title: shareTitle,
           text: shareText,
           url: shareUrl,
-        };
-
-        if (navigator.share && navigator.canShare?.(shareData)) {
-          await navigator.share(shareData);
-          toast.success("Shared successfully!");
-        } else {
-          // Final fallback to clipboard (desktop browsers)
-          await navigator.clipboard.writeText(shareUrl);
-          toast.success("Link copied to clipboard!");
-        }
-      } catch (webShareError: any) {
-        // User cancelled or error occurred
-        if (webShareError.name !== 'AbortError') {
-          console.error('Share failed:', webShareError);
-          // Last resort - try clipboard again
-          try {
-            await navigator.clipboard.writeText(shareUrl);
-            toast.success("Link copied to clipboard!");
-          } catch {
-            toast.error("Failed to share. Please try again.");
-          }
-        }
+          dialogTitle: 'Share Property'
+        });
+        toast.success("Shared successfully!");
+      } else if (navigator.share && navigator.canShare?.({ title: shareTitle, text: shareText, url: shareUrl })) {
+        // Use Web Share API (PWA/browsers that support it)
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        toast.success("Shared successfully!");
+      } else {
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Link copied to clipboard!");
+      }
+    } catch (error: any) {
+      // User cancelled share or error occurred
+      if (error.name === 'AbortError') {
+        // User cancelled - don't show error
+        return;
+      }
+      
+      // Try clipboard as final fallback
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Link copied to clipboard!");
+      } catch {
+        toast.error("Unable to share. Please try copying the URL manually.");
       }
     }
   };
