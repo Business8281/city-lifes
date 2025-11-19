@@ -20,6 +20,10 @@ const config: CapacitorConfig = {
       // iOS requires location permissions
       permissions: ['location']
     },
+    Share: {
+      // Share plugin configuration
+      dialogTitle: 'Share Property'
+    },
     StatusBar: {
       style: 'DARK',
       overlays: true,

@@ -4,6 +4,7 @@ import { Badge } from "./ui/badge";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useAuth } from "@/contexts/AuthContext";
 import { OptimizedImage } from "./OptimizedImage";
+import { toast } from "sonner";
 
 interface PropertyCardProps {
   id: string;
@@ -44,9 +45,13 @@ const PropertyCard = ({
   const { favoriteIds, toggleFavorite: toggleFavoriteInDb } = useFavorites(user?.id);
   const isFavorite = favoriteIds.has(id);
 
-  const handleToggleFavorite = (e: React.MouseEvent) => {
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    toggleFavoriteInDb(id);
+    if (!user) {
+      toast.error("Please login to save favorites");
+      return;
+    }
+    await toggleFavoriteInDb(id);
   };
 
   return (
@@ -80,12 +85,20 @@ const PropertyCard = ({
         )}
         <button
           onClick={handleToggleFavorite}
-          className="absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors z-10"
+          className={cn(
+            "absolute top-3 right-3 p-2 rounded-full backdrop-blur-sm transition-all active:scale-90 z-10",
+            isFavorite 
+              ? "bg-destructive/20 hover:bg-destructive/30" 
+              : "bg-background/80 hover:bg-background"
+          )}
+          aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
         >
           <Heart
             className={cn(
-              "h-5 w-5",
-              isFavorite ? "fill-destructive text-destructive" : "text-foreground"
+              "h-5 w-5 transition-transform",
+              isFavorite 
+                ? "fill-destructive text-destructive scale-110" 
+                : "text-foreground"
             )}
           />
         </button>
