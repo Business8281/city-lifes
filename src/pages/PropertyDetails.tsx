@@ -15,6 +15,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { propertyTypes } from "@/data/propertyTypes";
 import { Share } from '@capacitor/share';
+import { LeadCaptureDialog } from '@/components/LeadCaptureDialog';
+import { PropertySchema, BreadcrumbSchema } from '@/components/SEOSchema';
 
 const PropertyDetails = () => {
   const { id } = useParams();
@@ -23,6 +25,7 @@ const PropertyDetails = () => {
   const { property, loading } = useProperty(id);
   const { favoriteIds, toggleFavorite } = useFavorites(user?.id);
   const [currentImage, setCurrentImage] = useState(0);
+  const [leadDialogOpen, setLeadDialogOpen] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
@@ -606,7 +609,7 @@ const PropertyDetails = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 mb-2">
               <Button size="sm" className="gap-1.5 text-xs md:text-sm" onClick={() => property.contact_phone && (window.location.href = `tel:${property.contact_phone}`)}>
                 <Phone className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 Call
@@ -628,6 +631,11 @@ const PropertyDetails = () => {
                 Chat
               </Button>
             </div>
+            {user?.id !== property.user_id && (
+              <Button size="sm" className="w-full" onClick={() => setLeadDialogOpen(true)}>
+                Contact Owner
+              </Button>
+            )}
           </Card>
         )}
 
