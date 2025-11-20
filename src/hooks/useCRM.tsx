@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import type { Database } from '@/integrations/supabase/dbTypes';
 
 export interface CRMClient {
   id: string;
@@ -100,7 +101,7 @@ export const useCRM = () => {
     try {
       const { error } = await supabase
         .from('crm_clients')
-        .update({ stage } as Record<string, any>)
+        .update({ stage } as Database['public']['Tables']['crm_clients']['Update'])
         .eq('id', clientId);
 
       if (error) throw error;
@@ -112,11 +113,11 @@ export const useCRM = () => {
     }
   };
 
-  const updateClient = async (clientId: string, updates: any) => {
+  const updateClient = async (clientId: string, updates: Database['public']['Tables']['crm_clients']['Update']) => {
     try {
       const { error } = await supabase
         .from('crm_clients')
-        .update(updates as Record<string, any>)
+        .update(updates)
         .eq('id', clientId);
 
       if (error) throw error;
@@ -210,11 +211,11 @@ export const useCRMTasks = (clientId?: string) => {
     }
   };
 
-  const updateTask = async (taskId: string, updates: any) => {
+  const updateTask = async (taskId: string, updates: Database['public']['Tables']['crm_tasks']['Update']) => {
     try {
       const { error } = await supabase
         .from('crm_tasks')
-        .update(updates as Record<string, any>)
+        .update(updates)
         .eq('id', taskId);
 
       if (error) throw error;
