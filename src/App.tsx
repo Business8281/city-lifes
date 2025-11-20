@@ -31,6 +31,8 @@ const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const ProfileSetup = lazy(() => import("./pages/ProfileSetup"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
+const Leads = lazy(() => import("./pages/Leads"));
+const CRM = lazy(() => import("./pages/CRM"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -68,6 +70,8 @@ const App = () => {
                   <Route path="privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="terms-of-service" element={<TermsOfService />} />
                     <Route path="ad-campaign" element={<RequireAuth><AdCampaign /></RequireAuth>} />
+                    <Route path="leads" element={<RequireAuth><Leads /></RequireAuth>} />
+                    <Route path="crm" element={<RequireAuth><CRM /></RequireAuth>} />
                     <Route path="admin-dashboard" element={<RequireAuth><AdminDashboard /></RequireAuth>} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
