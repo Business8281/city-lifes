@@ -14,6 +14,11 @@ export interface Lead {
   message: string | null;
   status: 'new' | 'contacted' | 'interested' | 'not_interested' | 'closed';
   source: 'listing' | 'chat' | 'whatsapp' | 'call';
+  lead_type?: 'organic' | 'paid';
+  category?: string | null;
+  subcategory?: string | null;
+  source_page?: 'listing_page' | 'category_page' | 'internal_ad';
+  campaign_id?: string | null;
   created_at: string;
   updated_at: string;
   properties?: any;
