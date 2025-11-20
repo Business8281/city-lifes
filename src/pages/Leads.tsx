@@ -19,15 +19,17 @@ import { formatDistanceToNow } from 'date-fns';
 const Leads = () => {
   const { leads, loading, updateLeadStatus, deleteLead } = useLeads();
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [leadTypeFilter, setLeadTypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredLeads = leads.filter(lead => {
     const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
+    const matchesLeadType = leadTypeFilter === 'all' || lead.lead_type === leadTypeFilter;
     const matchesSearch = 
       lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       lead.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       lead.phone.includes(searchQuery);
-    return matchesStatus && matchesSearch;
+    return matchesStatus && matchesLeadType && matchesSearch;
   });
 
   const getStatusBadge = (status: Lead['status']) => {
@@ -176,9 +178,15 @@ const Leads = () => {
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span>{formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {getSourceBadge(lead.source)}
-                    </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline">
+                          {lead.lead_type === 'paid' ? '💰 Paid Lead' : '🌱 Organic Lead'}
+                        </Badge>
+                        {lead.category && (
+                          <Badge variant="secondary">{lead.category}</Badge>
+                        )}
+                        {getSourceBadge(lead.source)}
+                      </div>
                   </div>
                   
                   {lead.message && (
