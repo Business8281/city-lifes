@@ -1,4 +1,4 @@
-import { Home, Map, MessageCircle, Heart, User, Plus, FileText } from "lucide-react";
+import { Home, Map, MessageCircle, Heart, User, Plus, FileText, Target, Users, ClipboardList } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -28,6 +28,9 @@ const menuItems = [
 const actionItems = [
   { title: "Add Property", url: "/add-property", icon: Plus },
   { title: "My Listings", url: "/my-listings", icon: FileText },
+  { title: "Ad Campaign", url: "/ad-campaign", icon: Target },
+  { title: "CRM", url: "/crm", icon: Users },
+  { title: "Lead Management", url: "/leads", icon: ClipboardList },
 ];
 
 export function AppSidebar() {
