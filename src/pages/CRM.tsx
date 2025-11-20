@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Layout } from '@/components/Layout';
 import { useCRM, useCRMTasks, CRMClient } from '@/hooks/useCRM';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -47,14 +46,13 @@ const CRM = () => {
   const pendingTasks = tasks.filter(t => t.status === 'pending');
 
   return (
-    <Layout>
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">CRM Dashboard</h1>
-            <p className="text-muted-foreground">Manage your client relationships</p>
-          </div>
-          <Dialog open={newClientDialog} onOpenChange={setNewClientDialog}>
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">CRM Dashboard</h1>
+          <p className="text-muted-foreground">Manage your client relationships</p>
+        </div>
+        <Dialog open={newClientDialog} onOpenChange={setNewClientDialog}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -92,9 +90,9 @@ const CRM = () => {
                 </div>
                 <Button type="submit" className="w-full">Create Client</Button>
               </form>
-            </DialogContent>
-          </Dialog>
-        </div>
+          </DialogContent>
+        </Dialog>
+      </div>
 
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Pipeline Kanban */}
@@ -267,7 +265,7 @@ const CRM = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 

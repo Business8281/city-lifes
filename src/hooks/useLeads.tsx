@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import type { Database } from '@/integrations/supabase/dbTypes';
 
 export interface Lead {
   id: string;
@@ -95,7 +96,7 @@ export const useLeads = () => {
     try {
       const { error } = await supabase
         .from('leads')
-        .update({ status } as Record<string, any>)
+        .update({ status } as Database['public']['Tables']['leads']['Update'])
         .eq('id', leadId);
 
       if (error) throw error;

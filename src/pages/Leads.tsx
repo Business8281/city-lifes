@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Layout } from '@/components/Layout';
 import { useLeads, Lead } from '@/hooks/useLeads';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -62,15 +61,14 @@ const Leads = () => {
   };
 
   return (
-    <Layout>
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Lead Management</h1>
-          <p className="text-muted-foreground">Manage and track your property inquiries</p>
-        </div>
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Lead Management</h1>
+        <p className="text-muted-foreground">Manage and track your property inquiries</p>
+      </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <Card>
             <CardContent className="pt-6">
               <div className="text-2xl font-bold">{leadStats.total}</div>
@@ -101,10 +99,10 @@ const Leads = () => {
               <p className="text-sm text-muted-foreground">Closed</p>
             </CardContent>
           </Card>
-        </div>
+      </div>
 
-        {/* Filters */}
-        <Card className="mb-6">
+      {/* Filters */}
+      <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
@@ -132,10 +130,10 @@ const Leads = () => {
               </Select>
             </div>
           </CardContent>
-        </Card>
+      </Card>
 
-        {/* Leads List */}
-        <div className="space-y-4">
+      {/* Leads List */}
+      <div className="space-y-4">
           {loading ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
@@ -222,7 +220,7 @@ const Leads = () => {
           )}
         </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 
