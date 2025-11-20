@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -112,101 +111,97 @@ export default function CampaignAnalytics() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
-          <div>
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/ad-campaign')}
-              className="mb-4"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Campaigns
-            </Button>
-            <h1 className="text-3xl font-bold">{campaign.title}</h1>
-            <p className="text-muted-foreground mt-2">Campaign Analytics</p>
-          </div>
-          <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>
-            {campaign.status}
-          </Badge>
+        <div>
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/ad-campaign')}
+            className="mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Campaigns
+          </Button>
+          <h1 className="text-3xl font-bold">{campaign.title}</h1>
+          <p className="text-muted-foreground mt-2">Campaign Analytics</p>
         </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {stats.map((stat, index) => (
-            <Card key={index}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-1">{stat.title}</p>
-                    <p className="text-3xl font-bold">{stat.value}</p>
-                  </div>
-                  <div className={`p-3 rounded-full ${stat.bgColor}`}>
-                    <stat.icon className={`w-6 h-6 ${stat.color}`} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Recent Leads */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Leads from this Campaign</CardTitle>
-            <CardDescription>
-              Showing {campaignLeads.length} leads generated from this campaign
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {leadsLoading ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map(i => (
-                  <Skeleton key={i} className="h-20" />
-                ))}
-              </div>
-            ) : campaignLeads.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No leads generated yet</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {campaignLeads.slice(0, 10).map(lead => (
-                  <div 
-                    key={lead.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
-                  >
-                    <div>
-                      <p className="font-semibold">{lead.name}</p>
-                      <p className="text-sm text-muted-foreground">{lead.phone} • {lead.email}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="outline" className="text-xs">
-                          {lead.lead_type === 'paid' ? 'Paid Lead' : 'Organic Lead'}
-                        </Badge>
-                        <Badge variant={
-                          lead.status === 'new' ? 'default' :
-                          lead.status === 'interested' ? 'default' :
-                          lead.status === 'closed' ? 'default' :
-                          'secondary'
-                        }>
-                          {lead.status}
-                        </Badge>
-                      </div>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => navigate(`/leads`)}
-                    >
-                      View Details
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <Badge variant={campaign.status === 'active' ? 'default' : 'secondary'}>
+          {campaign.status}
+        </Badge>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {stats.map((stat, index) => (
+          <Card key={index}>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">{stat.title}</p>
+                  <p className="text-3xl font-bold">{stat.value}</p>
+                </div>
+                <div className={`p-3 rounded-full ${stat.bgColor}`}>
+                  <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Leads from this Campaign</CardTitle>
+          <CardDescription>
+            Showing {campaignLeads.length} leads generated from this campaign
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {leadsLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map(i => (
+                <Skeleton key={i} className="h-20" />
+              ))}
+            </div>
+          ) : campaignLeads.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>No leads generated yet</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {campaignLeads.slice(0, 10).map(lead => (
+                <div 
+                  key={lead.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
+                >
+                  <div>
+                    <p className="font-semibold">{lead.name}</p>
+                    <p className="text-sm text-muted-foreground">{lead.phone} • {lead.email}</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <Badge variant="outline" className="text-xs">
+                        {lead.lead_type === 'paid' ? 'Paid Lead' : 'Organic Lead'}
+                      </Badge>
+                      <Badge variant={
+                        lead.status === 'new' ? 'default' :
+                        lead.status === 'interested' ? 'default' :
+                        lead.status === 'closed' ? 'default' :
+                        'secondary'
+                      }>
+                        {lead.status}
+                      </Badge>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate(`/leads`)}
+                  >
+                    View Details
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

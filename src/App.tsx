@@ -33,6 +33,7 @@ const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
 const UserProfile = lazy(() => import("./pages/UserProfile"));
 const Leads = lazy(() => import("./pages/Leads"));
 const CRM = lazy(() => import("./pages/CRM"));
+const CampaignAnalytics = lazy(() => import("./pages/CampaignAnalytics"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -69,8 +70,9 @@ const App = () => {
                     <Route path="settings" element={<RequireAuth><Settings /></RequireAuth>} />
                   <Route path="privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="terms-of-service" element={<TermsOfService />} />
-                    <Route path="ad-campaign" element={<RequireAuth><AdCampaign /></RequireAuth>} />
-                    <Route path="leads" element={<RequireAuth><Leads /></RequireAuth>} />
+                  <Route path="ad-campaign" element={<RequireAuth><AdCampaign /></RequireAuth>} />
+                  <Route path="ad-campaign/:campaignId" element={<RequireAuth><CampaignAnalytics /></RequireAuth>} />
+                  <Route path="leads" element={<RequireAuth><Leads /></RequireAuth>} />
                     <Route path="crm" element={<RequireAuth><CRM /></RequireAuth>} />
                     <Route path="admin-dashboard" element={<RequireAuth><AdminDashboard /></RequireAuth>} />
                 </Route>
