@@ -17,6 +17,7 @@ export type Database = {
       ad_campaigns: {
         Row: {
           budget: number
+          category: string | null
           clicks: number
           created_at: string
           created_by_email: string | null
@@ -24,16 +25,19 @@ export type Database = {
           end_date: string
           id: string
           impressions: number
+          leads_generated: number | null
           property_id: string
           spent: number
           start_date: string
           status: string
+          subcategory: string | null
           title: string
           updated_at: string
           user_id: string
         }
         Insert: {
           budget?: number
+          category?: string | null
           clicks?: number
           created_at?: string
           created_by_email?: string | null
@@ -41,16 +45,19 @@ export type Database = {
           end_date: string
           id?: string
           impressions?: number
+          leads_generated?: number | null
           property_id: string
           spent?: number
           start_date?: string
           status?: string
+          subcategory?: string | null
           title: string
           updated_at?: string
           user_id: string
         }
         Update: {
           budget?: number
+          category?: string | null
           clicks?: number
           created_at?: string
           created_by_email?: string | null
@@ -58,10 +65,12 @@ export type Database = {
           end_date?: string
           id?: string
           impressions?: number
+          leads_generated?: number | null
           property_id?: string
           spent?: number
           start_date?: string
           status?: string
+          subcategory?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -360,48 +369,70 @@ export type Database = {
       }
       leads: {
         Row: {
+          campaign_id: string | null
+          category: string | null
           created_at: string
           email: string
           id: string
+          lead_type: string | null
           listing_id: string | null
           message: string | null
           name: string
           owner_id: string
           phone: string
           source: string
+          source_page: string | null
           status: string
+          subcategory: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          campaign_id?: string | null
+          category?: string | null
           created_at?: string
           email: string
           id?: string
+          lead_type?: string | null
           listing_id?: string | null
           message?: string | null
           name: string
           owner_id: string
           phone: string
           source?: string
+          source_page?: string | null
           status?: string
+          subcategory?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          campaign_id?: string | null
+          category?: string | null
           created_at?: string
           email?: string
           id?: string
+          lead_type?: string | null
           listing_id?: string | null
           message?: string | null
           name?: string
           owner_id?: string
           phone?: string
           source?: string
+          source_page?: string | null
           status?: string
+          subcategory?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "leads_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "ad_campaigns"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "leads_listing_id_fkey"
             columns: ["listing_id"]
@@ -1233,6 +1264,16 @@ export type Database = {
           last_active: string
           messages_sent: number
           properties_count: number
+        }[]
+      }
+      get_campaign_analytics: {
+        Args: { p_campaign_id: string }
+        Returns: {
+          conversion_rate: number
+          cpl: number
+          organic_leads: number
+          paid_leads: number
+          total_leads: number
         }[]
       }
       get_nearby_properties: {

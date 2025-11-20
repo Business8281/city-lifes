@@ -13,6 +13,11 @@ interface LeadCaptureDialogProps {
   listingId: string;
   ownerId: string;
   listingTitle: string;
+  leadType?: 'organic' | 'paid';
+  sourcePage?: 'listing_page' | 'category_page' | 'internal_ad';
+  campaignId?: string;
+  category?: string;
+  subcategory?: string;
 }
 
 export const LeadCaptureDialog = ({ 
@@ -20,7 +25,12 @@ export const LeadCaptureDialog = ({
   onOpenChange, 
   listingId, 
   ownerId,
-  listingTitle 
+  listingTitle,
+  leadType = 'organic',
+  sourcePage = 'listing_page',
+  campaignId,
+  category,
+  subcategory
 }: LeadCaptureDialogProps) => {
   const { createLead } = useLeads();
   const [loading, setLoading] = useState(false);
@@ -45,7 +55,12 @@ export const LeadCaptureDialog = ({
         email: formData.email,
         message: formData.message || null,
         status: 'new',
-        source: 'listing'
+        source: sourcePage,
+        lead_type: leadType,
+        source_page: sourcePage,
+        campaign_id: campaignId || null,
+        category: category || null,
+        subcategory: subcategory || null
       });
       
       setFormData({ name: '', phone: '', email: '', message: '' });
