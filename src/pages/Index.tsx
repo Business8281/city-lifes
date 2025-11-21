@@ -6,6 +6,13 @@ import { propertyTypes } from "@/data/propertyTypes";
 import heroImage from "@/assets/hero-cityscape.jpg";
 import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useProperties } from "@/hooks/useProperties";
 import { useLocation } from "@/contexts/LocationContext";
 import LocationSelector from "@/components/LocationSelector";
@@ -20,6 +27,7 @@ const Index = () => {
   const [nearMeCoords, setNearMeCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [nearMeRadius, setNearMeRadius] = useState<DistanceRadius | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState("recent");
   const navigate = useNavigate();
   const { properties } = useProperties();
   const { location } = useLocation();
@@ -89,14 +97,25 @@ const Index = () => {
     return true;
   });
 
-  const displayedProperties = filteredProperties.slice(0, displayedCount);
+  // Sort properties
+  const sortedProperties = [...filteredProperties].sort((a, b) => {
+    if (sortBy === "price-low") {
+      return a.price - b.price;
+    }
+    if (sortBy === "price-high") {
+      return b.price - a.price;
+    }
+    return 0; // recent (default order from DB)
+  });
+
+  const displayedProperties = sortedProperties.slice(0, displayedCount);
 
   // Infinite scroll observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && displayedCount < filteredProperties.length) {
-          setDisplayedCount(prev => Math.min(prev + 12, filteredProperties.length));
+        if (entries[0].isIntersecting && displayedCount < sortedProperties.length) {
+          setDisplayedCount(prev => Math.min(prev + 12, sortedProperties.length));
         }
       },
       { threshold: 0.1 }
@@ -107,7 +126,7 @@ const Index = () => {
     }
 
     return () => observer.disconnect();
-  }, [displayedCount, filteredProperties.length]);
+  }, [displayedCount, sortedProperties.length]);
 
   return (
     <div className="min-h-screen bg-background mobile-page overflow-x-hidden max-w-full">
@@ -141,41 +160,32 @@ const Index = () => {
       </div>
 
       <div className="max-w-7xl mx-auto mobile-container md:px-4 py-6 space-y-8 overflow-x-hidden">
-        {/* Location & Near Me Filter */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-muted-foreground">
+        {/* Location & Sort */}
+        <div className="flex items-center justify-between gap-3">
+          <Button 
+            variant="ghost" 
+            className="flex items-center gap-2 px-3 h-auto py-2 hover:bg-accent"
+            onClick={() => setLocationSelectorOpen(true)}
+          >
             <MapPin className="h-5 w-5 text-primary" />
-            <span className="text-sm">
-              {nearMeCoords ? (
-                <>
-                  Showing properties within{" "}
-                  <strong className="text-foreground">{nearMeRadius}km</strong>
-                </>
-              ) : (
-                <>
-                  Showing properties in{" "}
-                  <strong className="text-foreground">
-                    {location.value || "All Cities"}
-                  </strong>
-                </>
-              )}
+            <span className="font-semibold text-base">
+              {location.method === 'live' && location.coordinates 
+                ? 'Live Location' 
+                : location.value 
+                ? location.value 
+                : 'All cities'}
             </span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <NearMeFilter
-              onDistanceSelect={handleNearMeSelect}
-              onClear={handleClearNearMe}
-              activeRadius={nearMeRadius}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setLocationSelectorOpen(true)}
-            >
-              Change Location
-            </Button>
-          </div>
+          </Button>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-[160px] h-9">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Most Recent</SelectItem>
+              <SelectItem value="price-low">Price: Low to High</SelectItem>
+              <SelectItem value="price-high">Price: High to Low</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         <LocationSelector 
@@ -229,7 +239,7 @@ const Index = () => {
               {nearMeCoords ? "Nearby Properties" : "All Properties"}
             </h2>
             <span className="text-sm text-muted-foreground">
-              Showing {displayedProperties.length} of {filteredProperties.length}
+              Showing {displayedProperties.length} of {sortedProperties.length}
             </span>
           </div>
 
@@ -269,7 +279,7 @@ const Index = () => {
               </div>
               
               {/* Load More Trigger */}
-              {displayedCount < filteredProperties.length && (
+              {displayedCount < sortedProperties.length && (
                 <div ref={loadMoreRef} className="py-8 text-center">
                   <div className="text-muted-foreground">Loading more properties...</div>
                 </div>
