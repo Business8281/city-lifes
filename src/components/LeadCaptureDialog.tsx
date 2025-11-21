@@ -6,7 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useLeads } from '@/hooks/useLeads';
 import { Loader2 } from 'lucide-react';
-
 interface LeadCaptureDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -19,11 +18,10 @@ interface LeadCaptureDialogProps {
   category?: string;
   subcategory?: string;
 }
-
-export const LeadCaptureDialog = ({ 
-  open, 
-  onOpenChange, 
-  listingId, 
+export const LeadCaptureDialog = ({
+  open,
+  onOpenChange,
+  listingId,
   ownerId,
   listingTitle,
   leadType = 'organic',
@@ -32,7 +30,9 @@ export const LeadCaptureDialog = ({
   category,
   subcategory
 }: LeadCaptureDialogProps) => {
-  const { createLead } = useLeads();
+  const {
+    createLead
+  } = useLeads();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -40,11 +40,9 @@ export const LeadCaptureDialog = ({
     email: '',
     message: ''
   });
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       await createLead({
         listing_id: listingId,
@@ -62,8 +60,12 @@ export const LeadCaptureDialog = ({
         category: category || null,
         subcategory: subcategory || null
       });
-      
-      setFormData({ name: '', phone: '', email: '', message: '' });
+      setFormData({
+        name: '',
+        phone: '',
+        email: '',
+        message: ''
+      });
       onOpenChange(false);
     } catch (error) {
       console.error('Error submitting lead:', error);
@@ -71,9 +73,7 @@ export const LeadCaptureDialog = ({
       setLoading(false);
     }
   };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+  return <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Contact Owner</DialogTitle>
@@ -84,68 +84,38 @@ export const LeadCaptureDialog = ({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full Name *</Label>
-            <Input
-              id="name"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Enter your name"
-            />
+            <Input id="name" required value={formData.name} onChange={e => setFormData({
+            ...formData,
+            name: e.target.value
+          })} placeholder="Enter your name" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">Phone Number *</Label>
-            <Input
-              id="phone"
-              type="tel"
-              required
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="Enter your phone number"
-            />
+            <Input id="phone" type="tel" required value={formData.phone} onChange={e => setFormData({
+            ...formData,
+            phone: e.target.value
+          })} placeholder="Enter your phone number" />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email Address *</Label>
-            <Input
-              id="email"
-              type="email"
-              required
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="Enter your email"
-            />
-          </div>
+          
           <div className="space-y-2">
             <Label htmlFor="message">Message (Optional)</Label>
-            <Textarea
-              id="message"
-              value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              placeholder="Tell the owner about your requirements..."
-              rows={4}
-            />
+            <Textarea id="message" value={formData.message} onChange={e => setFormData({
+            ...formData,
+            message: e.target.value
+          })} placeholder="Tell the owner about your requirements..." rows={4} />
           </div>
           <div className="flex gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="flex-1"
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancel
             </Button>
             <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? (
-                <>
+              {loading ? <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Submitting...
-                </>
-              ) : (
-                'Submit Inquiry'
-              )}
+                </> : 'Submit Inquiry'}
             </Button>
           </div>
         </form>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
