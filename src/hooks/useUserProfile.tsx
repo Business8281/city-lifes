@@ -20,7 +20,9 @@ interface UserStats {
 interface UserReview {
   id: string;
   rating: number;
-  review_text: string | null;
+  title: string | null;
+  comment: string | null;
+  verified: boolean;
   created_at: string;
   reviewer: {
     id: string;
@@ -63,29 +65,35 @@ export function useUserProfile(userId: string | undefined) {
 
       // Fetch rating stats
       const { data: statsData } = await supabase
-        .rpc('get_user_rating_stats' as any, { _user_id: userId });
+        .rpc('get_owner_rating_stats' as any, { owner_user_id: userId });
 
       setStats((statsData as any)?.[0] || { properties_count: 0, average_rating: null, total_reviews: 0 });
 
       // Fetch reviews
       const { data: reviewsData, error: reviewsError } = await supabase
-        .from('user_reviews')
+        .from('reviews')
         .select(`
           id,
           rating,
-          review_text,
+          title,
+          comment,
+          verified,
           created_at,
-          reviewer:reviewer_id (
+          reviewer:profiles!reviews_reviewer_id_fkey(
             id,
             full_name,
             avatar_url
           )
         `)
-        .eq('reviewed_user_id', userId)
+        .eq('owner_id', userId)
         .order('created_at', { ascending: false });
 
-      if (reviewsError) throw reviewsError;
-      setReviews(reviewsData || []);
+      if (reviewsError) {
+        console.error('Reviews fetch error:', reviewsError);
+        setReviews([]);
+      } else {
+        setReviews((reviewsData as any) || []);
+      }
 
       // Fetch user properties - RLS handles visibility
       const { data: propertiesData, error: propertiesError } = await supabase
