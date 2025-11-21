@@ -36,6 +36,8 @@ const CRM = lazy(() => import("./pages/CRM"));
 const CampaignAnalytics = lazy(() => import("./pages/CampaignAnalytics"));
 const UserReports = lazy(() => import("./pages/UserReports"));
 const AdminReports = lazy(() => import("./pages/AdminReports"));
+const MyReviews = lazy(() => import("./pages/MyReviews"));
+const ReviewModeration = lazy(() => import("./pages/ReviewModeration"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -78,6 +80,8 @@ const App = () => {
                     <Route path="crm" element={<RequireAuth><CRM /></RequireAuth>} />
                     <Route path="my-reports" element={<RequireAuth><UserReports /></RequireAuth>} />
                     <Route path="admin/reports" element={<RequireAuth><AdminReports /></RequireAuth>} />
+                    <Route path="my-reviews" element={<RequireAuth><MyReviews /></RequireAuth>} />
+                    <Route path="admin/reviews" element={<RequireAuth><ReviewModeration /></RequireAuth>} />
                     <Route path="admin-dashboard" element={<RequireAuth><AdminDashboard /></RequireAuth>} />
                 </Route>
                 <Route path="*" element={<NotFound />} />
