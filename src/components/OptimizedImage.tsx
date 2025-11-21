@@ -56,31 +56,8 @@ export const OptimizedImage = ({
   onError,
 }: OptimizedImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(priority);
   const [error, setError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
-
-  useEffect(() => {
-    if (priority) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          observer.disconnect();
-        }
-      },
-      {
-        rootMargin: '100px',
-      }
-    );
-
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [priority]);
 
   const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     setIsLoaded(true);
@@ -128,7 +105,7 @@ export const OptimizedImage = ({
         </div>
       )}
       
-      {isInView && !error && (
+      {!error && (
         <img
           ref={imgRef}
           src={optimizedSrc}
@@ -136,7 +113,7 @@ export const OptimizedImage = ({
           width={width}
           height={height}
           className={cn(
-            'w-full h-full object-cover transition-opacity duration-500',
+            'w-full h-full object-cover transition-opacity duration-300',
             isLoaded ? 'opacity-100' : 'opacity-0'
           )}
           loading={priority ? 'eager' : 'lazy'}
