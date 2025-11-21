@@ -116,7 +116,7 @@ const Index = () => {
       {/* Hero Section */}
       <div className="relative h-[280px] md:h-[400px] overflow-hidden">
         <img src={heroImage} alt="City skyline" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/70 my-[50px]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/70 my-0" />
         
         <div className="absolute inset-0 flex flex-col items-center justify-center mobile-container text-center py-0 px-0 my-[100px]">
           <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
