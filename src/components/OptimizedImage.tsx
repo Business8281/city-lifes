@@ -20,33 +20,25 @@ interface OptimizedImageProps {
 const getOptimizedUrl = (src: string, width?: number, quality: number = 70): string => {
   if (!src) return '';
   
-  // If already a data URL or external URL, return as-is
-  if (src.startsWith('data:') || src.startsWith('http://') || src.startsWith('https://')) {
+  // If already a data URL, return as-is
+  if (src.startsWith('data:')) {
     return src;
   }
   
-  // For Supabase Storage URLs, add transformations
-  if (src.includes('supabase')) {
-    const url = new URL(src);
-    const params = new URLSearchParams();
-    
-    if (width) params.append('width', width.toString());
-    params.append('quality', quality.toString());
-    params.append('format', 'webp');
-    
-    url.search = params.toString();
-    return url.toString();
+  // For Supabase Storage URLs, return as-is (transformations can be added later if needed)
+  // Supabase automatically serves images, no need to modify URLs
+  if (src.startsWith('http://') || src.startsWith('https://')) {
+    return src;
   }
   
+  // If it's a relative path, return as-is
   return src;
 };
 
-// Generate srcset for responsive images
+// Generate srcset for responsive images - disabled for now to simplify
 const generateSrcSet = (src: string, quality: number): string => {
-  const widths = [300, 600, 900, 1200];
-  return widths
-    .map(w => `${getOptimizedUrl(src, w, quality)} ${w}w`)
-    .join(', ');
+  // Return empty string to avoid srcset issues
+  return '';
 };
 
 export const OptimizedImage = ({
@@ -140,8 +132,6 @@ export const OptimizedImage = ({
         <img
           ref={imgRef}
           src={optimizedSrc}
-          srcSet={srcSet}
-          sizes={sizes}
           alt={alt}
           width={width}
           height={height}
