@@ -1,25 +1,27 @@
-import { Heart, MapPin, Bed, Bath, Square } from "lucide-react";
+import { Heart, MapPin, Bed, Bath, Square, Navigation } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useAuth } from "@/contexts/AuthContext";
 import { OptimizedImage } from "./OptimizedImage";
 import { toast } from "sonner";
+import { formatDistance } from "@/utils/geocoding";
 
 interface PropertyCardProps {
   id: string;
   image: string;
   title: string;
   type: string;
-  propertyType?: string; // Actual property type string
+  propertyType?: string;
   price: string;
-  priceType?: string; // 'monthly', 'fixed', 'yearly'
+  priceType?: string;
   location: string;
   bedrooms?: number;
   bathrooms?: number;
   area?: string;
   verified?: boolean;
   sponsored?: boolean;
+  distance?: number; // Distance in km for "Near Me" results
   onClick?: () => void;
   className?: string;
 }
@@ -38,6 +40,7 @@ const PropertyCard = ({
   area,
   verified = false,
   sponsored = false,
+  distance,
   onClick,
   className,
 }: PropertyCardProps) => {
@@ -124,7 +127,13 @@ const PropertyCard = ({
           <MapPin className="h-4 w-4 shrink-0" />
           <span className="line-clamp-1 min-w-0 flex-1">{location}</span>
         </div>
-        
+
+        {distance !== undefined && (
+          <div className="flex items-center gap-1 text-sm text-primary min-w-0">
+            <Navigation className="h-4 w-4 shrink-0" />
+            <span className="font-medium">{formatDistance(distance)}</span>
+          </div>
+        )}
         {(bedrooms || bathrooms || area) && (
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             {bedrooms && (

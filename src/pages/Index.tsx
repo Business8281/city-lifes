@@ -9,35 +9,78 @@ import { Button } from "@/components/ui/button";
 import { useProperties } from "@/hooks/useProperties";
 import { useLocation } from "@/contexts/LocationContext";
 import LocationSelector from "@/components/LocationSelector";
+import { NearMeFilter, DistanceRadius } from "@/components/NearMeFilter";
+import { useNearbyProperties } from "@/hooks/useNearbyProperties";
+import { formatDistance } from "@/utils/geocoding";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [locationSelectorOpen, setLocationSelectorOpen] = useState(false);
   const [displayedCount, setDisplayedCount] = useState(12);
+  const [nearMeCoords, setNearMeCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [nearMeRadius, setNearMeRadius] = useState<DistanceRadius | null>(null);
   const navigate = useNavigate();
   const { properties } = useProperties();
   const { location } = useLocation();
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
-  // Filter properties based on location
-  const filteredProperties = properties.filter((property) => {
-    if (!location.method || !location.value) return true;
-    
-    const searchValue = location.value.toLowerCase();
-    
-    switch (location.method) {
-      case 'city':
-        return property.city?.toLowerCase().includes(searchValue);
-      case 'area':
-        return property.area?.toLowerCase().includes(searchValue);
-      case 'pincode':
-        return property.pin_code?.includes(location.value);
-      case 'live':
-        // For live location, show all for now (can add proximity logic later)
-        return true;
-      default:
-        return true;
+  // Fetch nearby properties when Near Me is active
+  const { data: nearbyProperties, isLoading: nearbyLoading } = useNearbyProperties(
+    nearMeCoords?.lat || null,
+    nearMeCoords?.lng || null,
+    nearMeRadius || 5,
+    !!nearMeCoords
+  );
+
+  const handleNearMeSelect = (coords: { lat: number; lng: number }, radius: DistanceRadius) => {
+    setNearMeCoords(coords);
+    setNearMeRadius(radius);
+  };
+
+  const handleClearNearMe = () => {
+    setNearMeCoords(null);
+    setNearMeRadius(null);
+  };
+
+  // Determine which properties to show
+  const displayProperties = nearMeCoords && nearbyProperties 
+    ? nearbyProperties 
+    : properties;
+
+  // Filter properties based on location and search
+  const filteredProperties = displayProperties.filter((property) => {
+    // Search query filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesSearch = 
+        property.title?.toLowerCase().includes(query) ||
+        property.city?.toLowerCase().includes(query) ||
+        property.area?.toLowerCase().includes(query) ||
+        property.property_type?.toLowerCase().includes(query) ||
+        property.pin_code?.includes(query);
+      
+      if (!matchesSearch) return false;
     }
+
+    // Location filter (only if Near Me is not active)
+    if (!nearMeCoords && location.method && location.value) {
+      const searchValue = location.value.toLowerCase();
+      
+      switch (location.method) {
+        case 'city':
+          return property.city?.toLowerCase().includes(searchValue);
+        case 'area':
+          return property.area?.toLowerCase().includes(searchValue);
+        case 'pincode':
+          return property.pin_code?.includes(location.value);
+        case 'live':
+          return true;
+        default:
+          return true;
+      }
+    }
+    
+    return true;
   });
 
   const displayedProperties = filteredProperties.slice(0, displayedCount);
@@ -90,22 +133,41 @@ const Index = () => {
       </div>
 
       <div className="max-w-7xl mx-auto mobile-container md:px-4 py-6 space-y-8 overflow-x-hidden">
-        {/* Location */}
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <MapPin className="h-5 w-5 text-primary" />
-          <span className="text-sm">
-            Showing properties in{" "}
-            <strong className="text-foreground">
-              {location.value || "All Cities"}
-            </strong>
-          </span>
-          <Button 
-            variant="link" 
-            className="text-primary p-0 h-auto"
-            onClick={() => setLocationSelectorOpen(true)}
-          >
-            Change
-          </Button>
+        {/* Location & Near Me Filter */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <MapPin className="h-5 w-5 text-primary" />
+            <span className="text-sm">
+              {nearMeCoords ? (
+                <>
+                  Showing properties within{" "}
+                  <strong className="text-foreground">{nearMeRadius}km</strong>
+                </>
+              ) : (
+                <>
+                  Showing properties in{" "}
+                  <strong className="text-foreground">
+                    {location.value || "All Cities"}
+                  </strong>
+                </>
+              )}
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <NearMeFilter
+              onDistanceSelect={handleNearMeSelect}
+              onClear={handleClearNearMe}
+              activeRadius={nearMeRadius}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setLocationSelectorOpen(true)}
+            >
+              Change Location
+            </Button>
+          </div>
         </div>
 
         <LocationSelector 
@@ -142,46 +204,59 @@ const Index = () => {
           </div>
         </section>
 
-        {/* All Properties with Infinite Scroll */}
+        {/* Property Listings */}
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-foreground">All Properties</h2>
+            <h2 className="text-xl font-bold text-foreground">
+              {nearMeCoords ? "Nearby Properties" : "All Properties"}
+            </h2>
             <span className="text-sm text-muted-foreground">
               Showing {displayedProperties.length} of {filteredProperties.length}
             </span>
           </div>
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 max-w-full">
-            {displayedProperties.map((property) => (
-              <PropertyCard
-                key={property.id}
-                id={property.id}
-                image={property.images[0] || '/placeholder.svg'}
-                title={property.title}
-                type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
-                propertyType={property.property_type}
-                price={`₹${property.price.toLocaleString()}`}
-                priceType={property.price_type}
-                location={`${property.area}, ${property.city}`}
-                bedrooms={property.bedrooms || undefined}
-                bathrooms={property.bathrooms || undefined}
-                area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
-                verified={property.verified}
-                onClick={() => navigate(`/property/${property.id}`)}
-              />
-            ))}
-          </div>
-          
-          {/* Load More Trigger */}
-          {displayedCount < filteredProperties.length && (
-            <div ref={loadMoreRef} className="py-8 text-center">
-              <div className="text-muted-foreground">Loading more properties...</div>
+
+          {nearbyLoading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+              <p className="mt-4 text-muted-foreground">Finding nearby properties...</p>
             </div>
-          )}
-          
-          {displayedProperties.length === 0 && (
+          ) : displayedProperties.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              No properties found in this location
+              {nearMeCoords 
+                ? "No properties found nearby. Try increasing the radius."
+                : "No properties found in this location"}
             </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 max-w-full">
+                {displayedProperties.map((property) => (
+                  <PropertyCard
+                    key={property.id}
+                    id={property.id}
+                    image={property.images[0] || '/placeholder.svg'}
+                    title={property.title}
+                    type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
+                    propertyType={property.property_type}
+                    price={`₹${property.price.toLocaleString()}`}
+                    priceType={property.price_type}
+                    location={`${property.area}, ${property.city}`}
+                    bedrooms={property.bedrooms || undefined}
+                    bathrooms={property.bathrooms || undefined}
+                    area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
+                    verified={property.verified}
+                    distance={'distance_km' in property ? (property as any).distance_km : undefined}
+                    onClick={() => navigate(`/property/${property.id}`)}
+                  />
+                ))}
+              </div>
+              
+              {/* Load More Trigger */}
+              {displayedCount < filteredProperties.length && (
+                <div ref={loadMoreRef} className="py-8 text-center">
+                  <div className="text-muted-foreground">Loading more properties...</div>
+                </div>
+              )}
+            </>
           )}
         </section>
 

@@ -1789,6 +1789,38 @@ export type Database = {
           verified: boolean
         }[]
       }
+      search_properties_nearby: {
+        Args: {
+          limit_count?: number
+          radius_km?: number
+          user_lat: number
+          user_lng: number
+        }
+        Returns: {
+          amenities: string[]
+          area: string
+          area_sqft: number
+          available: boolean
+          bathrooms: number
+          bedrooms: number
+          city: string
+          created_at: string
+          description: string
+          distance_km: number
+          id: string
+          images: string[]
+          latitude: number
+          longitude: number
+          pin_code: string
+          price: number
+          price_type: string
+          property_type: string
+          status: string
+          title: string
+          user_id: string
+          verified: boolean
+        }[]
+      }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
         Returns: unknown
