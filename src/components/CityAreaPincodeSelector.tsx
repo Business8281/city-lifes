@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/select";
 import { useCities, useAreas, usePincodes, useResolveLocation } from "@/hooks/useLocationData";
 import { toast } from "sonner";
-import { Geolocation } from "@capacitor/geolocation";
+import { LiveLocationButton } from "@/components/LiveLocationButton";
+import { reverseGeocode } from "@/utils/geocoding";
 
 interface CityAreaPincodeSelectorProps {
   onLocationChange: (location: {
@@ -67,33 +68,49 @@ export const CityAreaPincodeSelector = ({
     }
   }, [selectedCityId, selectedAreaId, selectedPincode, cities, areas, onLocationChange]);
 
-  const handleUseCurrentLocation = async () => {
-    setIsGettingLocation(true);
-    try {
-      const position = await Geolocation.getCurrentPosition({
-        enableHighAccuracy: true,
-        timeout: 10000,
-      });
+  const handleLocationDetected = async (location: {
+    latitude: number;
+    longitude: number;
+    city: string;
+    area: string;
+    pincode: string;
+  }) => {
+    // Try to resolve using database function first
+    const resolved = await resolveLocation(location.latitude, location.longitude);
 
-      const resolved = await resolveLocation(
-        position.coords.latitude,
-        position.coords.longitude
+    if (resolved && Array.isArray(resolved) && resolved.length > 0) {
+      const dbLocation = resolved[0] as any;
+      setSelectedCityId(dbLocation.city_id);
+      setSelectedAreaId(dbLocation.area_id);
+      setSelectedPincode(dbLocation.pincode);
+    } else {
+      // Fallback: try to match city/area/pincode from geocoding result
+      const matchedCity = cities?.find(
+        (c) => c.name.toLowerCase() === location.city.toLowerCase()
       );
 
-      if (resolved && Array.isArray(resolved) && resolved.length > 0) {
-        const location = resolved[0] as any;
-        setSelectedCityId(location.city_id);
-        setSelectedAreaId(location.area_id);
-        setSelectedPincode(location.pincode);
-        toast.success("Location detected successfully");
+      if (matchedCity) {
+        setSelectedCityId(matchedCity.id);
+        
+        // Try to match area
+        const cityAreas = await useAreas(matchedCity.id).data;
+        const matchedArea = cityAreas?.find(
+          (a) => a.name.toLowerCase() === location.area.toLowerCase()
+        );
+
+        if (matchedArea) {
+          setSelectedAreaId(matchedArea.id);
+          
+          // Try to match pincode
+          if (location.pincode) {
+            setSelectedPincode(location.pincode);
+          }
+        }
       } else {
-        toast.error("Could not resolve location. Please select manually.");
+        toast.warning(
+          `Could not find "${location.city}" in database. Please select manually.`
+        );
       }
-    } catch (error) {
-      console.error("Error getting location:", error);
-      toast.error("Could not get your location. Please select manually.");
-    } finally {
-      setIsGettingLocation(false);
     }
   };
 
@@ -101,20 +118,11 @@ export const CityAreaPincodeSelector = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Label className="text-sm font-medium">Location</Label>
-        <Button
-          type="button"
+        <LiveLocationButton
+          onLocationDetected={handleLocationDetected}
           variant="outline"
           size="sm"
-          onClick={handleUseCurrentLocation}
-          disabled={isGettingLocation}
-        >
-          {isGettingLocation ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          ) : (
-            <MapPin className="h-4 w-4 mr-2" />
-          )}
-          Use Current Location
-        </Button>
+        />
       </div>
 
       <div className="space-y-3">
