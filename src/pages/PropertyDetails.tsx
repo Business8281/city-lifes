@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Heart, Share2, MapPin, Phone, MessageCircle, Calendar, Tag, Home } from "lucide-react";
+import { ArrowLeft, Heart, Share2, MapPin, Phone, MessageCircle, Calendar, Tag, Home, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import { format } from "date-fns";
 import { propertyTypes } from "@/data/propertyTypes";
 import { Share } from '@capacitor/share';
 import { LeadCaptureDialog } from '@/components/LeadCaptureDialog';
+import { ReportUserDialog } from '@/components/ReportUserDialog';
 import { PropertySchema, BreadcrumbSchema } from '@/components/SEOSchema';
 
 const PropertyDetails = () => {
@@ -26,6 +27,7 @@ const PropertyDetails = () => {
   const { favoriteIds, toggleFavorite } = useFavorites(user?.id);
   const [currentImage, setCurrentImage] = useState(0);
   const [leadDialogOpen, setLeadDialogOpen] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
 
@@ -182,6 +184,17 @@ const PropertyDetails = () => {
             >
               <Share2 className="h-5 w-5" />
             </Button>
+            {user?.id !== property.user_id && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setReportDialogOpen(true)}
+                className="hover:bg-accent active:scale-95 transition-transform"
+                aria-label="Report user"
+              >
+                <AlertCircle className="h-5 w-5" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -645,6 +658,25 @@ const PropertyDetails = () => {
           <span>Posted {format(new Date(property.created_at), 'PPP')}</span>
         </div>
       </div>
+
+      <LeadCaptureDialog 
+        open={leadDialogOpen}
+        onOpenChange={setLeadDialogOpen}
+        listingId={id || ''}
+        ownerId={property.user_id}
+        listingTitle={property.title}
+        leadType="organic"
+        sourcePage="listing_page"
+        category={property.property_type}
+      />
+
+      <ReportUserDialog
+        open={reportDialogOpen}
+        onOpenChange={setReportDialogOpen}
+        reportedUserId={property.user_id}
+        reportedUserName={property.contact_name || property.profiles?.full_name}
+        listingId={id}
+      />
 
       <BottomNav />
     </div>
