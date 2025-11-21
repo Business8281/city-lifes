@@ -228,9 +228,14 @@ export default function UserProfile() {
                             ))}
                           </div>
                         </div>
-                        {review.review_text && (
+                        {review.title && (
+                          <p className="text-xs sm:text-sm font-medium mb-1">
+                            {review.title}
+                          </p>
+                        )}
+                        {review.comment && (
                           <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2 break-words">
-                            {review.review_text}
+                            {review.comment}
                           </p>
                         )}
                         <p className="text-xs text-muted-foreground">
