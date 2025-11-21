@@ -978,6 +978,63 @@ export type Database = {
           },
         ]
       }
+      search_suggestions: {
+        Row: {
+          area_id: string | null
+          city_id: string | null
+          created_at: string | null
+          id: string
+          label: string
+          latitude: number | null
+          longitude: number | null
+          pincode: string | null
+          search_count: number | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          area_id?: string | null
+          city_id?: string | null
+          created_at?: string | null
+          id?: string
+          label: string
+          latitude?: number | null
+          longitude?: number | null
+          pincode?: string | null
+          search_count?: number | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          area_id?: string | null
+          city_id?: string | null
+          created_at?: string | null
+          id?: string
+          label?: string
+          latitude?: number | null
+          longitude?: number | null
+          pincode?: string | null
+          search_count?: number | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "search_suggestions_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "search_suggestions_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       spatial_ref_sys: {
         Row: {
           auth_name: string | null
@@ -1341,6 +1398,19 @@ export type Database = {
         Returns: undefined
       }
       approve_property: { Args: { property_id: string }; Returns: undefined }
+      autocomplete_search: {
+        Args: { limit_count?: number; query_text: string }
+        Returns: {
+          area_id: string
+          city_id: string
+          label: string
+          latitude: number
+          longitude: number
+          pincode: string
+          relevance: number
+          type: string
+        }[]
+      }
       check_campaign_budgets: { Args: never; Returns: undefined }
       complete_expired_campaigns: { Args: never; Returns: undefined }
       disablelongtransactions: { Args: never; Returns: string }
@@ -1496,6 +1566,23 @@ export type Database = {
           organic_leads: number
           paid_leads: number
           total_leads: number
+        }[]
+      }
+      get_map_clusters: {
+        Args: {
+          category_filter?: string
+          max_lat: number
+          max_lng: number
+          min_lat: number
+          min_lng: number
+          zoom_level?: number
+        }
+        Returns: {
+          avg_price: number
+          cluster_lat: number
+          cluster_lng: number
+          property_count: number
+          property_ids: string[]
         }[]
       }
       get_nearby_properties: {
@@ -1757,6 +1844,48 @@ export type Database = {
         Args: { p_property_id: string }
         Returns: Json
       }
+      search_properties: {
+        Args: {
+          area_filter?: string
+          category_filter?: string
+          city_filter?: string
+          max_lat?: number
+          max_lng?: number
+          max_price?: number
+          min_lat?: number
+          min_lng?: number
+          min_price?: number
+          page_number?: number
+          page_size?: number
+          pincode_filter?: string
+          query_text?: string
+          radius_km?: number
+          user_lat?: number
+          user_lng?: number
+        }
+        Returns: {
+          area: string
+          area_sqft: number
+          available: boolean
+          bathrooms: number
+          bedrooms: number
+          city: string
+          description: string
+          distance_km: number
+          id: string
+          images: string[]
+          latitude: number
+          longitude: number
+          pin_code: string
+          price: number
+          price_type: string
+          property_type: string
+          relevance_score: number
+          title: string
+          total_count: number
+          verified: boolean
+        }[]
+      }
       search_properties_by_location: {
         Args: {
           property_type_filter?: string
@@ -1821,6 +1950,8 @@ export type Database = {
           verified: boolean
         }[]
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
         Returns: unknown
