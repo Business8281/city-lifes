@@ -53,6 +53,9 @@ export const PromotedListingCard = ({
               src={property.images?.[0] || '/placeholder-property.jpg'}
               alt={property.title}
               className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+              width={900}
+              quality={80}
+              priority={true}
             />
             {property.verified && (
               <Badge className="absolute top-3 right-3 bg-green-500">

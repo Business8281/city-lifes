@@ -91,6 +91,16 @@ All colors MUST be HSL.
   img {
     content-visibility: auto;
   }
+
+  /* Shimmer animation for image loading */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
 }
 
 @layer base {
@@ -249,5 +259,29 @@ All colors MUST be HSL.
   /* Prevent inputs from causing overflow */
   input, textarea, select {
     max-width: 100%;
+  }
+
+  /* Performance optimizations */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Lazy load optimization */
+  .lazy-load {
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .lazy-load.loaded {
+    opacity: 1;
   }
 }

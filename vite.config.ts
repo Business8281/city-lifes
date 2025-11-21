@@ -23,14 +23,15 @@ export default defineConfig(({ mode }) => ({
     terserOptions: {
       compress: {
         drop_console: true,
-        drop_debugger: true
+        drop_debugger: true,
+        passes: 2,
       }
     },
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-router')) return 'react-vendor';
+            if (id.includes('react') || id.includes('react-router') || id.includes('react-dom')) return 'react-vendor';
             if (id.includes('@tanstack/react-query')) return 'react-query';
             if (id.includes('@supabase/supabase-js')) return 'supabase';
             if (id.includes('@radix-ui')) return 'radix';
@@ -38,6 +39,11 @@ export default defineConfig(({ mode }) => ({
           }
         }
       }
-    }
-  }
+    },
+    cssCodeSplit: true,
+    sourcemap: false,
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom'],
+  },
 }));
