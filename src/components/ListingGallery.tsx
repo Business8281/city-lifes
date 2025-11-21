@@ -57,17 +57,17 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
         {validImages.map((src, i) => (
           <div
             key={i}
-            className="rounded-none md:rounded-lg overflow-hidden cursor-pointer group relative"
+            className="aspect-square rounded-none md:rounded-lg overflow-hidden cursor-pointer group relative"
             onClick={() => openLightbox(i)}
           >
             <OptimizedImage
               src={src}
               alt={`${title} - Image ${i + 1}`}
               aspectRatio="square"
-              width={i === 0 ? 1200 : 600}
-              quality={i === 0 ? 80 : 75}
-              sizes={i === 0 ? "50vw" : "25vw"}
-              priority={i < 4}
+              width={600}
+              quality={80}
+              sizes="(max-width: 768px) 50vw, 25vw"
+              priority={i < 6}
               onError={() => console.error('Image failed to load:', src)}
             />
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
