@@ -45,6 +45,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<!-- Location permissions -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Citylifes needs your location to show nearby properties and help you search for listings in your area.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Citylifes needs your location to show nearby properties and help you search for listings in your area.</string>
 	<!-- URL Types for deep linking (OAuth callback) -->
 	<key>CFBundleURLTypes</key>
 	<array>
