@@ -19,6 +19,7 @@ const Index = () => {
   const [displayedCount, setDisplayedCount] = useState(12);
   const [nearMeCoords, setNearMeCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [nearMeRadius, setNearMeRadius] = useState<DistanceRadius | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const navigate = useNavigate();
   const { properties } = useProperties();
   const { location } = useLocation();
@@ -47,17 +48,22 @@ const Index = () => {
     ? nearbyProperties 
     : properties;
 
-  // Filter properties based on location and search
+  // Filter properties based on location, search, and category
   const filteredProperties = displayProperties.filter((property) => {
-    // Search query filter
-    if (searchQuery) {
+    // Category filter
+    if (selectedCategory && property.property_type !== selectedCategory) {
+      return false;
+    }
+
+    // Search query filter (only for business when business is selected)
+    if (selectedCategory === 'business' && searchQuery) {
       const query = searchQuery.toLowerCase();
       const matchesSearch = 
         property.title?.toLowerCase().includes(query) ||
         property.city?.toLowerCase().includes(query) ||
         property.area?.toLowerCase().includes(query) ||
-        property.property_type?.toLowerCase().includes(query) ||
-        property.pin_code?.includes(query);
+        property.pin_code?.includes(query) ||
+        (property.business_metadata as any)?.businessName?.toLowerCase().includes(query);
       
       if (!matchesSearch) return false;
     }
@@ -122,13 +128,15 @@ const Index = () => {
             Rent properties, vehicles, and businesses across India
           </p>
           
-          <div className="w-full max-w-2xl">
-            <SearchBar
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Search by city, locality, or property type..."
-            />
-          </div>
+          {selectedCategory === 'business' && (
+            <div className="w-full max-w-2xl">
+              <SearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search businesses by name, city, area, or PIN code..."
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -192,9 +200,19 @@ const Index = () => {
             {propertyTypes.map((type) => (
               <Button
                 key={type.type}
-                variant="outline"
+                variant={selectedCategory === type.type ? "default" : "outline"}
                 size="sm"
-                onClick={() => navigate(`/listings?type=${type.type}`)}
+                onClick={() => {
+                  if (selectedCategory === type.type) {
+                    setSelectedCategory(null);
+                    setSearchQuery("");
+                  } else {
+                    setSelectedCategory(type.type);
+                    if (type.type !== 'business') {
+                      setSearchQuery("");
+                    }
+                  }
+                }}
                 className="shrink-0"
               >
                 <span className="mr-1">{type.icon}</span>

@@ -73,11 +73,14 @@ const Listings = () => {
   }, []);
 
   const filteredProperties = properties.filter((property) => {
+    // Business-specific search
     const matchesSearch =
       searchQuery === "" ||
       property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       property.area.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      property.city.toLowerCase().includes(searchQuery.toLowerCase());
+      property.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      property.pin_code?.includes(searchQuery) ||
+      (selectedType === 'business' && (property.business_metadata as any)?.businessName?.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const matchesType = selectedType === "all" || property.property_type === selectedType;
 
@@ -154,13 +157,15 @@ const Listings = () => {
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <div className="flex-1">
-              <SearchBar
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search properties..."
-              />
-            </div>
+            {selectedType === 'business' && (
+              <div className="flex-1">
+                <SearchBar
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  placeholder="Search businesses by name, city, area, or PIN code..."
+                />
+              </div>
+            )}
           </div>
 
           {/* Location Selector Button - Hidden */}
