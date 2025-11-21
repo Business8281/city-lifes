@@ -3,11 +3,11 @@ import { useState, useEffect } from "react";
 import BottomNav from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { User, Home, TrendingUp, Settings, Shield, ChevronRight, LogOut, Users, ClipboardList } from "lucide-react";
+import { User, Home, TrendingUp, Settings, Shield, ChevronRight, LogOut, Users, ClipboardList, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { useMyListings } from "@/hooks/useProperties";
 import { useMessages } from "@/hooks/useMessages";
-import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,8 +16,8 @@ const Profile = () => {
   const navigate = useNavigate();
   const { properties } = useMyListings(user?.id);
   const { conversations } = useMessages(user?.id);
-  const { isAdmin } = useAdminCheck();
   const [profile, setProfile] = useState<{ full_name: string | null; phone: string | null } | null>(null);
+  const { isAdmin } = useAdminCheck();
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -59,13 +59,15 @@ const Profile = () => {
       };
     }
   }, [user]);
-
+  
   const menuItems = [
     { icon: User, label: "Edit Profile", path: "/profile/edit" },
     { icon: Home, label: "My Listings", path: "/my-listings" },
     { icon: TrendingUp, label: "Ad Campaign", path: "/ad-campaign" },
     { icon: Users, label: "CRM", path: "/crm" },
     { icon: ClipboardList, label: "Lead Management", path: "/leads" },
+    { icon: AlertCircle, label: "My Reports", path: "/my-reports" },
+    { icon: Shield, label: "Safety & Reports (Admin)", path: "/admin/reports", adminOnly: true },
     { icon: Settings, label: "Settings", path: "/settings" },
     { icon: Shield, label: "Admin Dashboard", path: "/admin-dashboard" },
   ];
@@ -108,7 +110,7 @@ const Profile = () => {
 
         {/* Menu Items */}
         <div className="space-y-3">
-          {menuItems.map((item) => {
+          {menuItems.filter(item => !item.adminOnly || isAdmin).map((item) => {
             // Hide Admin Dashboard for non-admin users
             if (item.path === '/admin-dashboard' && !isAdmin) {
               return null;

@@ -553,7 +553,10 @@ export type Database = {
           email: string
           full_name: string | null
           id: string
+          is_banned: boolean | null
           phone: string | null
+          safety_score: number | null
+          suspended_until: string | null
           updated_at: string
         }
         Insert: {
@@ -562,7 +565,10 @@ export type Database = {
           email: string
           full_name?: string | null
           id: string
+          is_banned?: boolean | null
           phone?: string | null
+          safety_score?: number | null
+          suspended_until?: string | null
           updated_at?: string
         }
         Update: {
@@ -571,7 +577,10 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+          is_banned?: boolean | null
           phone?: string | null
+          safety_score?: number | null
+          suspended_until?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -735,6 +744,62 @@ export type Database = {
         }
         Relationships: []
       }
+      reports: {
+        Row: {
+          admin_action: Database["public"]["Enums"]["admin_action_type"] | null
+          admin_id: string | null
+          admin_notes: string | null
+          created_at: string
+          description: string
+          evidence_urls: string[] | null
+          id: string
+          listing_id: string | null
+          reason_type: Database["public"]["Enums"]["report_reason_type"]
+          reported_user_id: string
+          reporter_id: string
+          status: Database["public"]["Enums"]["report_status"]
+          updated_at: string
+        }
+        Insert: {
+          admin_action?: Database["public"]["Enums"]["admin_action_type"] | null
+          admin_id?: string | null
+          admin_notes?: string | null
+          created_at?: string
+          description: string
+          evidence_urls?: string[] | null
+          id?: string
+          listing_id?: string | null
+          reason_type: Database["public"]["Enums"]["report_reason_type"]
+          reported_user_id: string
+          reporter_id: string
+          status?: Database["public"]["Enums"]["report_status"]
+          updated_at?: string
+        }
+        Update: {
+          admin_action?: Database["public"]["Enums"]["admin_action_type"] | null
+          admin_id?: string | null
+          admin_notes?: string | null
+          created_at?: string
+          description?: string
+          evidence_urls?: string[] | null
+          id?: string
+          listing_id?: string | null
+          reason_type?: Database["public"]["Enums"]["report_reason_type"]
+          reported_user_id?: string
+          reporter_id?: string
+          status?: Database["public"]["Enums"]["report_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           created_at: string | null
@@ -890,6 +955,44 @@ export type Database = {
             columns: ["property_id"]
             isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_actions: {
+        Row: {
+          action_reason: string
+          action_type: Database["public"]["Enums"]["admin_action_type"]
+          admin_id: string
+          created_at: string
+          id: string
+          report_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action_reason: string
+          action_type: Database["public"]["Enums"]["admin_action_type"]
+          admin_id: string
+          created_at?: string
+          id?: string
+          report_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action_reason?: string
+          action_type?: Database["public"]["Enums"]["admin_action_type"]
+          admin_id?: string
+          created_at?: string
+          id?: string
+          report_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_actions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
             referencedColumns: ["id"]
           },
         ]
@@ -1118,6 +1221,15 @@ export type Database = {
             }
             Returns: string
           }
+      apply_admin_action: {
+        Args: {
+          p_action_type: Database["public"]["Enums"]["admin_action_type"]
+          p_admin_id: string
+          p_admin_notes: string
+          p_report_id: string
+        }
+        Returns: undefined
+      }
       approve_property: { Args: { property_id: string }; Returns: undefined }
       check_campaign_budgets: { Args: never; Returns: undefined }
       complete_expired_campaigns: { Args: never; Returns: undefined }
@@ -1363,6 +1475,7 @@ export type Database = {
           id: string
         }[]
       }
+      get_report_stats: { Args: never; Returns: Json }
       get_sponsored_properties: {
         Args: {
           filter_area?: string
@@ -2160,7 +2273,24 @@ export type Database = {
       }
     }
     Enums: {
+      admin_action_type:
+        | "warning"
+        | "suspend_7d"
+        | "suspend_30d"
+        | "suspend_permanent"
+        | "ban"
+        | "listing_removed"
+        | "dismissed"
       app_role: "admin" | "moderator" | "user" | "manager" | "tech_team"
+      report_reason_type:
+        | "fraud"
+        | "cheating"
+        | "misleading"
+        | "inactive_owner"
+        | "spam"
+        | "abuse"
+        | "other"
+      report_status: "new" | "in_review" | "action_taken" | "dismissed"
     }
     CompositeTypes: {
       geometry_dump: {
@@ -2296,7 +2426,26 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      admin_action_type: [
+        "warning",
+        "suspend_7d",
+        "suspend_30d",
+        "suspend_permanent",
+        "ban",
+        "listing_removed",
+        "dismissed",
+      ],
       app_role: ["admin", "moderator", "user", "manager", "tech_team"],
+      report_reason_type: [
+        "fraud",
+        "cheating",
+        "misleading",
+        "inactive_owner",
+        "spam",
+        "abuse",
+        "other",
+      ],
+      report_status: ["new", "in_review", "action_taken", "dismissed"],
     },
   },
 } as const
