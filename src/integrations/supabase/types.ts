@@ -85,6 +85,41 @@ export type Database = {
           },
         ]
       }
+      areas: {
+        Row: {
+          city_id: string
+          created_at: string | null
+          id: string
+          name: string
+          pincode_list: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          city_id: string
+          created_at?: string | null
+          id?: string
+          name: string
+          pincode_list?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          city_id?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          pincode_list?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "areas_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -121,6 +156,33 @@ export type Database = {
           table_name?: string | null
           user_agent?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      cities: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          state: string
+          tier: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          state: string
+          tier: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          state?: string
+          tier?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -545,6 +607,48 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      pincodes: {
+        Row: {
+          area_id: string
+          city_id: string
+          created_at: string | null
+          id: string
+          pincode: string
+          updated_at: string | null
+        }
+        Insert: {
+          area_id: string
+          city_id: string
+          created_at?: string | null
+          id?: string
+          pincode: string
+          updated_at?: string | null
+        }
+        Update: {
+          area_id?: string
+          city_id?: string
+          created_at?: string | null
+          id?: string
+          pincode?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pincodes_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pincodes_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
