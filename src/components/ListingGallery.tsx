@@ -77,11 +77,11 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
 
       {/* Lightbox */}
       <Dialog open={lightbox} onOpenChange={setLightbox}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black/95 border-none">
-          <div className="relative w-full h-full flex items-center justify-center">
+        <DialogContent className="max-w-[100vw] max-h-[100vh] w-screen h-screen p-0 bg-black border-none">
+          <div className="relative w-full h-full flex items-center justify-center p-4">
             <button
               onClick={() => setLightbox(false)}
-              className="absolute top-4 right-4 z-50 bg-black/40 hover:bg-black/60 text-white rounded-full w-10 h-10 flex items-center justify-center backdrop-blur-sm"
+              className="absolute top-4 right-4 z-50 bg-black/40 hover:bg-black/60 text-white rounded-full w-10 h-10 flex items-center justify-center backdrop-blur-sm transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -90,13 +90,13 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
               <>
                 <button
                   onClick={prevImage}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-50 bg-black/40 hover:bg-black/60 text-white rounded-full w-12 h-12 flex items-center justify-center backdrop-blur-sm"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 z-50 bg-black/40 hover:bg-black/60 text-white rounded-full w-12 h-12 flex items-center justify-center backdrop-blur-sm transition-colors"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button
                   onClick={nextImage}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-50 bg-black/40 hover:bg-black/60 text-white rounded-full w-12 h-12 flex items-center justify-center backdrop-blur-sm"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 z-50 bg-black/40 hover:bg-black/60 text-white rounded-full w-12 h-12 flex items-center justify-center backdrop-blur-sm transition-colors"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
@@ -115,15 +115,18 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
               ))}
             </div>
 
-            <div className="absolute top-4 left-4 bg-black/55 text-white text-sm px-3 py-1.5 rounded z-50">
+            <div className="absolute top-4 left-4 bg-black/55 text-white text-sm px-3 py-1.5 rounded z-50 backdrop-blur-sm">
               {lightboxIndex + 1} / {validImages.length}
             </div>
 
-            <img
+            <OptimizedImage
               src={validImages[lightboxIndex]}
               alt={`${title} - Image ${lightboxIndex + 1}`}
-              className="max-w-full max-h-full object-contain"
-              draggable={false}
+              className="w-full h-full"
+              aspectRatio="auto"
+              width={1920}
+              quality={90}
+              priority
             />
           </div>
         </DialogContent>
