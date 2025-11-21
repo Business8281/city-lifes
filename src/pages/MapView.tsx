@@ -5,7 +5,7 @@ import EnhancedSearchBar from "@/components/EnhancedSearchBar";
 import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from "@vis.gl/react-google-maps";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Home, Navigation, List } from "lucide-react";
+import { MapPin, Navigation, List, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "@/contexts/LocationContext";
 import { useAdvancedSearch, type SearchFilters } from "@/hooks/useAdvancedSearch";
@@ -13,6 +13,9 @@ import { useMapClusters, type MapBounds } from "@/hooks/useMapClusters";
 import type { AutocompleteResult } from "@/hooks/useAutocomplete";
 import { propertyTypes } from "@/data/propertyTypes";
 import PropertyCard from "@/components/PropertyCard";
+import PriceMarker from "@/components/PriceMarker";
+import MapFilters from "@/components/MapFilters";
+import { OptimizedImage } from "@/components/OptimizedImage";
 
 const MapView = () => {
   const navigate = useNavigate();
@@ -22,6 +25,7 @@ const MapView = () => {
   const [mapCenter, setMapCenter] = useState({ lat: 20.5937, lng: 78.9629 }); // India center
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
   const [showList, setShowList] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({});
   
   const { data: searchResults = [], isLoading } = useAdvancedSearch(searchFilters, true);
@@ -132,7 +136,7 @@ const MapView = () => {
 
   return (
     <div className="relative h-screen w-full pb-16 md:pb-0">
-      {/* Search Bar */}
+      {/* Search Bar & Controls */}
       <div className="absolute top-4 left-4 right-4 z-20 flex gap-2">
         <div className="flex-1">
           <EnhancedSearchBar
@@ -145,11 +149,40 @@ const MapView = () => {
           size="icon"
           variant="secondary"
           className="shrink-0 h-12 w-12 bg-background shadow-lg"
+          onClick={() => setShowFilters(!showFilters)}
+        >
+          <SlidersHorizontal className="h-5 w-5" />
+        </Button>
+        <Button
+          size="icon"
+          variant="secondary"
+          className="shrink-0 h-12 w-12 bg-background shadow-lg"
           onClick={() => setShowList(!showList)}
         >
           <List className="h-5 w-5" />
         </Button>
       </div>
+
+      {/* Filters Panel */}
+      {showFilters && (
+        <div className="absolute top-20 left-4 z-20 w-80 max-sm:w-[calc(100%-2rem)]">
+          <MapFilters
+            category={searchFilters.category}
+            minPrice={searchFilters.minPrice}
+            maxPrice={searchFilters.maxPrice}
+            onCategoryChange={(value) => setSearchFilters(prev => ({ ...prev, category: value || undefined }))}
+            onMinPriceChange={(value) => setSearchFilters(prev => ({ ...prev, minPrice: value }))}
+            onMaxPriceChange={(value) => setSearchFilters(prev => ({ ...prev, maxPrice: value }))}
+            onPriceTypeChange={(value) => setSearchFilters(prev => ({ ...prev, priceType: value || undefined }))}
+            onClear={() => setSearchFilters(prev => ({ 
+              ...prev, 
+              category: undefined, 
+              minPrice: undefined, 
+              maxPrice: undefined 
+            }))}
+          />
+        </div>
+      )}
 
       {/* Map */}
       <APIProvider apiKey={apiKey}>
@@ -193,7 +226,7 @@ const MapView = () => {
             </AdvancedMarker>
           ))}
 
-          {/* Individual property markers for zoomed in view */}
+          {/* Individual property markers with prices for zoomed in view */}
           {searchResults.length > 0 && searchResults.slice(0, 100).map((property) => (
             property.latitude && property.longitude && (
               <AdvancedMarker
@@ -201,9 +234,11 @@ const MapView = () => {
                 position={{ lat: property.latitude, lng: property.longitude }}
                 onClick={() => setSelectedProperty(property)}
               >
-                <div className="bg-card rounded-full p-2 shadow-lg border-2 border-primary hover:scale-110 transition-transform cursor-pointer">
-                  <Home className="h-4 w-4 text-primary" />
-                </div>
+                <PriceMarker
+                  price={property.price}
+                  priceType={property.price_type || undefined}
+                  isSelected={selectedProperty?.id === property.id}
+                />
               </AdvancedMarker>
             )
           ))}
@@ -220,11 +255,15 @@ const MapView = () => {
               <Card className="border-0 shadow-none max-w-xs">
                 <CardContent className="p-3">
                   {selectedProperty.images?.[0] && (
-                    <img
-                      src={selectedProperty.images[0]}
-                      alt={selectedProperty.title}
-                      className="w-full h-32 object-cover rounded-lg mb-2"
-                    />
+                    <div className="w-full h-32 rounded-lg mb-2 overflow-hidden">
+                      <OptimizedImage
+                        src={selectedProperty.images[0]}
+                        alt={selectedProperty.title}
+                        aspectRatio="video"
+                        width={400}
+                        quality={75}
+                      />
+                    </div>
                   )}
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <h3 className="font-semibold text-sm line-clamp-2">

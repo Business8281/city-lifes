@@ -22,7 +22,7 @@ export interface SearchFilters {
 }
 
 export interface SearchProperty extends Property {
-  distance_km?: number;
+  distance_km?: number | null;
   relevance_score: number;
   total_count: number;
 }
