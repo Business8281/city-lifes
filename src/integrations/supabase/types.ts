@@ -800,38 +800,74 @@ export type Database = {
           },
         ]
       }
-      reviews: {
+      review_interaction: {
         Row: {
           created_at: string | null
           id: string
-          property_id: string
-          rating: number
-          review_text: string | null
-          updated_at: string | null
-          user_id: string
+          interaction_type: string
+          listing_id: string
+          owner_id: string
+          reviewer_id: string
         }
         Insert: {
           created_at?: string | null
           id?: string
-          property_id: string
-          rating: number
-          review_text?: string | null
-          updated_at?: string | null
-          user_id: string
+          interaction_type: string
+          listing_id: string
+          owner_id: string
+          reviewer_id: string
         }
         Update: {
           created_at?: string | null
           id?: string
-          property_id?: string
-          rating?: number
-          review_text?: string | null
+          interaction_type?: string
+          listing_id?: string
+          owner_id?: string
+          reviewer_id?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          listing_id: string
+          owner_id: string
+          rating: number
+          reviewer_id: string
+          title: string | null
+          updated_at: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          listing_id: string
+          owner_id: string
+          rating: number
+          reviewer_id: string
+          title?: string | null
           updated_at?: string | null
-          user_id?: string
+          verified?: boolean | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          listing_id?: string
+          owner_id?: string
+          rating?: number
+          reviewer_id?: string
+          title?: string | null
+          updated_at?: string | null
+          verified?: boolean | null
         }
         Relationships: [
           {
-            foreignKeyName: "reviews_property_id_fkey"
-            columns: ["property_id"]
+            foreignKeyName: "reviews_listing_id_fkey"
+            columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
@@ -996,36 +1032,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      user_reviews: {
-        Row: {
-          created_at: string | null
-          id: string
-          rating: number
-          review_text: string | null
-          reviewed_user_id: string
-          reviewer_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          rating: number
-          review_text?: string | null
-          reviewed_user_id: string
-          reviewer_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          rating?: number
-          review_text?: string | null
-          reviewed_user_id?: string
-          reviewer_id?: string
-          updated_at?: string | null
-        }
-        Relationships: []
       }
       user_roles: {
         Row: {
@@ -1425,6 +1431,14 @@ export type Database = {
           updated_at: string
           user_id: string
           views: number
+        }[]
+      }
+      get_owner_rating_stats: {
+        Args: { owner_user_id: string }
+        Returns: {
+          average_rating: number
+          total_reviews: number
+          verified_reviews: number
         }[]
       }
       get_properties_paginated: {

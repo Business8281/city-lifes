@@ -1,0 +1,318 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
+
+export interface Review {
+  id: string;
+  reviewer_id: string;
+  owner_id: string;
+  listing_id: string;
+  rating: number;
+  title: string | null;
+  comment: string | null;
+  verified: boolean;
+  created_at: string;
+  updated_at: string;
+  reviewer?: {
+    full_name: string | null;
+    avatar_url: string | null;
+  };
+}
+
+export interface ReviewStats {
+  average_rating: number;
+  total_reviews: number;
+  verified_reviews: number;
+}
+
+export function useReviews(ownerId?: string, listingId?: string) {
+  const { user } = useAuth();
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [userReview, setUserReview] = useState<Review | null>(null);
+  const [stats, setStats] = useState<ReviewStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [canReview, setCanReview] = useState(false);
+
+  const fetchReviews = async () => {
+    if (!ownerId && !listingId) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      let query = supabase
+        .from('reviews')
+        .select(`
+          *,
+          reviewer:profiles(full_name, avatar_url)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (listingId) {
+        query = query.eq('listing_id', listingId);
+      } else if (ownerId) {
+        query = query.eq('owner_id', ownerId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setReviews((data as any) || []);
+
+      // Check if user has already reviewed this owner
+      if (user && ownerId) {
+        const existingReview = (data as any)?.find((r: any) => r.reviewer_id === user.id && r.owner_id === ownerId);
+        setUserReview(existingReview || null);
+      }
+    } catch (error: any) {
+      console.error('Error fetching reviews:', error);
+      toast.error('Failed to load reviews');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    if (!ownerId) return;
+
+    try {
+      // @ts-ignore - Types not yet generated
+      const { data, error } = await supabase.rpc('get_owner_rating_stats', {
+        owner_user_id: ownerId
+      });
+
+      if (error) throw error;
+      if (data && Array.isArray(data) && data.length > 0) {
+        const statsData = data[0] as any;
+        setStats({
+          average_rating: Number(statsData.average_rating) || 0,
+          total_reviews: Number(statsData.total_reviews) || 0,
+          verified_reviews: Number(statsData.verified_reviews) || 0,
+        });
+      }
+    } catch (error: any) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
+  const checkCanReview = async () => {
+    if (!user || !ownerId) {
+      setCanReview(false);
+      return;
+    }
+
+    // Don't allow self-review
+    if (user.id === ownerId) {
+      setCanReview(false);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('review_interaction')
+        .select('id')
+        .eq('reviewer_id', user.id)
+        .eq('owner_id', ownerId)
+        .limit(1);
+
+      if (error) throw error;
+      setCanReview((data?.length || 0) > 0);
+    } catch (error: any) {
+      console.error('Error checking review eligibility:', error);
+      setCanReview(false);
+    }
+  };
+
+  const createReview = async (input: {
+    owner_id: string;
+    listing_id: string;
+    rating: number;
+    title?: string;
+    comment?: string;
+  }): Promise<any> => {
+    if (!user) {
+      toast.error('You must be logged in to leave a review');
+      return null;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .insert({
+          reviewer_id: user.id,
+          owner_id: input.owner_id,
+          listing_id: input.listing_id,
+          rating: input.rating,
+          title: input.title || null,
+          comment: input.comment || null,
+        } as any)
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === '23505') {
+          toast.error('You have already reviewed this owner. Edit your existing review instead.');
+        } else if (error.message.includes('violates row-level security')) {
+          toast.error('You must interact with this owner before leaving a review (e.g., send a message or lead)');
+        } else {
+          throw error;
+        }
+        return null;
+      }
+
+      toast.success('Review submitted successfully');
+      fetchReviews();
+      fetchStats();
+      return data;
+    } catch (error: any) {
+      console.error('Error creating review:', error);
+      toast.error('Failed to submit review');
+      return null;
+    }
+  };
+
+  const updateReview = async (reviewId: string, input: {
+    rating: number;
+    title?: string;
+    comment?: string;
+  }): Promise<any> => {
+    if (!user) {
+      toast.error('You must be logged in');
+      return null;
+    }
+
+    try {
+      // @ts-ignore - Types not yet generated for reviews table
+      const { data, error } = await supabase
+        .from('reviews')
+        // @ts-ignore
+        .update({
+          rating: input.rating,
+          title: input.title || null,
+          comment: input.comment || null,
+        })
+        .eq('id', reviewId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast.success('Review updated successfully');
+      fetchReviews();
+      fetchStats();
+      return data;
+    } catch (error: any) {
+      console.error('Error updating review:', error);
+      toast.error('Failed to update review');
+      return null;
+    }
+  };
+
+  const deleteReview = async (reviewId: string): Promise<boolean> => {
+    if (!user) {
+      toast.error('You must be logged in');
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('reviews')
+        .delete()
+        .eq('id', reviewId);
+
+      if (error) throw error;
+
+      toast.success('Review deleted successfully');
+      fetchReviews();
+      fetchStats();
+      return true;
+    } catch (error: any) {
+      console.error('Error deleting review:', error);
+      toast.error('Failed to delete review');
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+    fetchStats();
+    checkCanReview();
+
+    const channel = supabase
+      .channel('reviews-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'reviews',
+        filter: ownerId ? `owner_id=eq.${ownerId}` : undefined,
+      }, () => {
+        fetchReviews();
+        fetchStats();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, ownerId, listingId]);
+
+  return {
+    reviews,
+    userReview,
+    stats,
+    loading,
+    canReview,
+    createReview,
+    updateReview,
+    deleteReview,
+    refetch: () => {
+      fetchReviews();
+      fetchStats();
+      checkCanReview();
+    },
+  };
+}
+
+export function useMyReviews() {
+  const { user } = useAuth();
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchMyReviews = async () => {
+    if (!user) {
+      setReviews([]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // @ts-ignore - Types not yet generated for reviews table
+      const { data, error } = await supabase
+        .from('reviews')
+        .select(`
+          *,
+          listing:properties(title, property_type),
+          owner:profiles!reviews_owner_id_fkey(full_name, avatar_url)
+        `)
+        .eq('reviewer_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setReviews(data || []);
+    } catch (error: any) {
+      console.error('Error fetching my reviews:', error);
+      toast.error('Failed to load your reviews');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMyReviews();
+  }, [user]);
+
+  return { reviews, loading, refetch: fetchMyReviews };
+}
