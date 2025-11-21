@@ -64,6 +64,9 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
               src={src}
               alt={`${title} - Image ${i + 1}`}
               aspectRatio="square"
+              width={i === 0 ? 1200 : 600}
+              quality={i === 0 ? 80 : 75}
+              sizes={i === 0 ? "50vw" : "25vw"}
               priority={i < 4}
               onError={() => console.error('Image failed to load:', src)}
             />
