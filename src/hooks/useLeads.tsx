@@ -80,35 +80,74 @@ export const useLeads = () => {
 
   const createLead = async (leadData: any) => {
     try {
-      console.log('Creating lead in database:', leadData);
+      console.log('[useLeads] Starting lead creation');
+      console.log('[useLeads] Raw lead data:', leadData);
+      console.log('[useLeads] Current user:', user?.id || 'Anonymous');
       
-      // Ensure all required fields are present
+      // Validate required fields
+      if (!leadData.owner_id) {
+        throw new Error('Owner ID is required');
+      }
+      if (!leadData.name?.trim()) {
+        throw new Error('Name is required');
+      }
+      if (!leadData.phone?.trim()) {
+        throw new Error('Phone is required');
+      }
+      
+      // Ensure all required fields are present and properly formatted
       const sanitizedData = {
-        ...leadData,
-        name: leadData.name?.trim() || '',
-        phone: leadData.phone?.trim() || '',
-        email: leadData.email || null,
-        message: leadData.message || null,
+        listing_id: leadData.listing_id || null,
+        owner_id: leadData.owner_id,
         user_id: user?.id || null, // Use current user if authenticated, null if not
+        name: leadData.name.trim(),
+        phone: leadData.phone.trim(),
+        email: leadData.email?.trim() || null,
+        message: leadData.message?.trim() || null,
+        status: leadData.status || 'new',
+        source: leadData.source || 'listing',
+        lead_type: leadData.lead_type || 'organic',
+        category: leadData.category || null,
+        subcategory: leadData.subcategory || null,
+        source_page: leadData.source_page || 'listing_page',
+        campaign_id: leadData.campaign_id || null,
       };
+      
+      console.log('[useLeads] Sanitized data for insert:', sanitizedData);
       
       const { data, error } = await supabase
         .from('leads')
-        .insert(sanitizedData)
+        .insert([sanitizedData] as any)
         .select()
         .single();
 
       if (error) {
-        console.error('Supabase error creating lead:', error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
-        throw new Error(error.message || 'Failed to submit lead');
+        console.error('[useLeads] Supabase error:', error);
+        console.error('[useLeads] Error code:', error.code);
+        console.error('[useLeads] Error message:', error.message);
+        console.error('[useLeads] Error details:', error.details);
+        console.error('[useLeads] Error hint:', error.hint);
+        throw new Error(error.message || 'Failed to submit inquiry');
       }
       
-      console.log('Lead successfully inserted:', data);
+      if (!data) {
+        console.error('[useLeads] No data returned from insert');
+        throw new Error('No data returned from database');
+      }
+      
+      console.log('[useLeads] Lead successfully created:', data);
+      
+      // Trigger refetch for owner's leads
+      if (user?.id === leadData.owner_id) {
+        fetchLeads();
+      }
+      
       return data;
     } catch (error: any) {
-      console.error('Error creating lead:', error);
-      console.error('Full error:', JSON.stringify(error, null, 2));
+      console.error('[useLeads] Catch block error:', error);
+      console.error('[useLeads] Error type:', typeof error);
+      console.error('[useLeads] Error message:', error?.message);
+      console.error('[useLeads] Full error object:', error);
       throw error;
     }
   };
