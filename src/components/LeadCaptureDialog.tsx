@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useLeads } from '@/hooks/useLeads';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 interface LeadCaptureDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -60,6 +61,7 @@ export const LeadCaptureDialog = ({
         category: category || null,
         subcategory: subcategory || null
       });
+      toast.success('Your inquiry has been sent to the owner!');
       setFormData({
         name: '',
         phone: '',
@@ -95,6 +97,14 @@ export const LeadCaptureDialog = ({
             ...formData,
             phone: e.target.value
           })} placeholder="Enter your phone number" />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="email">Email *</Label>
+            <Input id="email" type="email" required value={formData.email} onChange={e => setFormData({
+            ...formData,
+            email: e.target.value
+          })} placeholder="Enter your email" />
           </div>
           
           <div className="space-y-2">
