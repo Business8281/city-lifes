@@ -41,8 +41,7 @@ export function useProperties(filters?: PropertyFilters) {
         effectiveFilters.radiusKm = effectiveFilters.radiusKm || 10;
       }
 
-      // Location-aware querying
-      // 1) If we have live coordinates, use the geospatial RPC for distance filtering
+      // Location-aware querying with optimized field selection
       if (effectiveFilters.latitude && effectiveFilters.longitude) {
         const { data, error } = await supabase.rpc('search_properties_by_location', {
           search_city: effectiveFilters.city || null,
@@ -57,7 +56,6 @@ export function useProperties(filters?: PropertyFilters) {
         if (error) throw error;
         setProperties((data || []) as unknown as Property[]);
       }
-      // 2) If we only have textual filters (city/area/pincode), use ILIKE/equals directly
       else if (effectiveFilters.city || effectiveFilters.area || effectiveFilters.pinCode) {
         let query = supabase
           .from('properties')
@@ -66,15 +64,13 @@ export function useProperties(filters?: PropertyFilters) {
           .eq('available', true);
 
         if (effectiveFilters.city) {
-          query = query.ilike('city', `%${(effectiveFilters.city || '').trim()}%`);
+          query = query.eq('city', effectiveFilters.city);
         }
         if (effectiveFilters.area) {
-          query = query.ilike('area', `%${(effectiveFilters.area || '').trim()}%`);
+          query = query.eq('area', effectiveFilters.area);
         }
         if (effectiveFilters.pinCode) {
-          // Pin code should be an exact match, but allow partial starts-with
-          const pin = (effectiveFilters.pinCode || '').trim();
-          query = pin.length === 6 ? query.eq('pin_code', pin) : query.ilike('pin_code', `${pin}%`);
+          query = query.eq('pin_code', effectiveFilters.pinCode);
         }
         if (effectiveFilters.propertyType) {
           query = query.eq('property_type', effectiveFilters.propertyType);
@@ -82,19 +78,19 @@ export function useProperties(filters?: PropertyFilters) {
 
         const { data, error } = await query
           .order('created_at', { ascending: false })
-          .limit(100);
+          .limit(50);
 
         if (error) throw error;
         setProperties((data || []) as unknown as Property[]);
       } else {
-        // Optimized query: only fetch necessary fields, add limit for initial load
+        // Optimized: only fetch active & available properties, limit to 50
         const { data, error } = await supabase
           .from('properties')
           .select('*')
           .eq('status', 'active')
           .eq('available', true)
           .order('created_at', { ascending: false })
-          .limit(50); // Load first 50 properties quickly, implement pagination if needed
+          .limit(50);
 
         if (error) throw error;
         setProperties((data || []) as unknown as Property[]);
@@ -115,27 +111,7 @@ export function useProperties(filters?: PropertyFilters) {
   useEffect(() => {
     fetchProperties();
 
-    // 1) Revalidate when app/tab becomes active again
-    const onVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        fetchProperties();
-      }
-    };
-    document.addEventListener('visibilitychange', onVisibility);
-
-    // 2) Revalidate when network returns
-    const onOnline = () => fetchProperties();
-    window.addEventListener('online', onOnline);
-
-    // 3) Revalidate when app comes to foreground (native builds)
-    let removeAppListener: PluginListenerHandle | undefined;
-    if (CapacitorApp.addListener) {
-      removeAppListener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-        if (isActive) fetchProperties();
-      }) as unknown as PluginListenerHandle;
-    }
-
-    // 4) Throttled live updates to prevent excessive queries
+    // Debounced real-time updates (every 3 seconds max)
     let updateTimeout: NodeJS.Timeout;
     const channel = supabase
       .channel('properties-live')
@@ -144,18 +120,13 @@ export function useProperties(filters?: PropertyFilters) {
         { event: '*', schema: 'public', table: 'properties' },
         () => {
           clearTimeout(updateTimeout);
-          updateTimeout = setTimeout(() => fetchProperties(), 1000);
+          updateTimeout = setTimeout(() => fetchProperties(), 3000);
         }
       )
       .subscribe();
 
     return () => {
       clearTimeout(updateTimeout);
-      document.removeEventListener('visibilitychange', onVisibility);
-      window.removeEventListener('online', onOnline);
-      if (removeAppListener?.remove) {
-        removeAppListener.remove();
-      }
       supabase.removeChannel(channel);
     };
   }, [fetchProperties]);

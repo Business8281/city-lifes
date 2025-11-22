@@ -284,4 +284,30 @@ All colors MUST be HSL.
   .lazy-load.loaded {
     opacity: 1;
   }
+
+  /* Shimmer animation for image loading */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Hardware acceleration hints */
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-opacity {
+    will-change: opacity;
+  }
+
+  /* Optimize animations */
+  .animate-smooth {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
 }
