@@ -644,7 +644,7 @@ const PropertyDetails = () => {
                 Chat
               </Button>
             </div>
-            {user?.id !== property.user_id && (
+            {(!user || user?.id !== property.user_id) && (
               <Button size="sm" className="w-full" onClick={() => setLeadDialogOpen(true)}>
                 Contact Owner
               </Button>
