@@ -610,47 +610,57 @@ const PropertyDetails = () => {
         )}
 
         {/* Owner Details */}
-        {(property.contact_name || property.contact_phone || property.contact_email) && (
-          <Card className="p-3 md:p-4">
-            <div className="flex items-center gap-2.5 mb-3 cursor-pointer" onClick={() => navigate(`/user/${property.user_id}`)}>
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-base md:text-lg">
-                {property.contact_name?.charAt(0) || 'U'}
+        <Card className="p-3 md:p-4">
+          {(property.contact_name || property.contact_phone || property.contact_email) && (
+            <>
+              <div className="flex items-center gap-2.5 mb-3 cursor-pointer" onClick={() => navigate(`/user/${property.user_id}`)}>
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-base md:text-lg">
+                  {property.contact_name?.charAt(0) || 'U'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-sm md:text-base truncate hover:text-primary transition-colors">{property.contact_name || 'Property Owner'}</h4>
+                  <p className="text-xs md:text-sm text-muted-foreground truncate">{property.contact_phone || property.contact_email}</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-sm md:text-base truncate hover:text-primary transition-colors">{property.contact_name || 'Property Owner'}</h4>
-                <p className="text-xs md:text-sm text-muted-foreground truncate">{property.contact_phone || property.contact_email}</p>
+              
+              <div className="grid grid-cols-2 gap-2 mb-2">
+                {property.contact_phone && (
+                  <Button size="sm" className="gap-1.5 text-xs md:text-sm" onClick={() => window.location.href = `tel:${property.contact_phone}`}>
+                    <Phone className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                    Call
+                  </Button>
+                )}
+                <Button 
+                  size="sm"
+                  variant="outline" 
+                  className="gap-1.5 text-xs md:text-sm" 
+                  onClick={() => {
+                    if (!user) {
+                      toast.error("Please login to start a conversation");
+                      navigate("/auth");
+                      return;
+                    }
+                    navigate(`/messages?user=${property.user_id}&property=${id}`);
+                  }}
+                >
+                  <MessageCircle className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                  Chat
+                </Button>
               </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-2 mb-2">
-              <Button size="sm" className="gap-1.5 text-xs md:text-sm" onClick={() => property.contact_phone && (window.location.href = `tel:${property.contact_phone}`)}>
-                <Phone className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                Call
-              </Button>
-              <Button 
-                size="sm"
-                variant="outline" 
-                className="gap-1.5 text-xs md:text-sm" 
-                onClick={() => {
-                  if (!user) {
-                    toast.error("Please login to start a conversation");
-                    navigate("/auth");
-                    return;
-                  }
-                  navigate(`/messages?user=${property.user_id}&property=${id}`);
-                }}
-              >
-                <MessageCircle className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                Chat
-              </Button>
-            </div>
-            {(!user || user?.id !== property.user_id) && (
-              <Button size="sm" className="w-full" onClick={() => setLeadDialogOpen(true)}>
-                Contact Owner
-              </Button>
-            )}
-          </Card>
-        )}
+            </>
+          )}
+          
+          {/* Contact Owner button always visible for non-owners */}
+          {user?.id !== property.user_id && (
+            <Button 
+              size="sm" 
+              className="w-full" 
+              onClick={() => setLeadDialogOpen(true)}
+            >
+              Contact Owner
+            </Button>
+          )}
+        </Card>
 
         {/* Posted Date */}
         <div className="flex items-center gap-1.5 text-xs md:text-sm text-muted-foreground">
