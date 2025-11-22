@@ -22,7 +22,6 @@ const Index = () => {
     lng: number;
   } | null>(null);
   const [nearMeRadius, setNearMeRadius] = useState<DistanceRadius | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState("recent");
   const navigate = useNavigate();
   const {
@@ -53,20 +52,8 @@ const Index = () => {
   // Determine which properties to show
   const displayProperties = nearMeCoords && nearbyProperties ? nearbyProperties : properties;
 
-  // Filter properties based on location, search, and category
+  // Filter properties based on location
   const filteredProperties = displayProperties.filter(property => {
-    // Category filter
-    if (selectedCategory && property.property_type !== selectedCategory) {
-      return false;
-    }
-
-    // Search query filter (only for business when business is selected)
-    if (selectedCategory === 'business' && searchQuery) {
-      const query = searchQuery.toLowerCase();
-      const matchesSearch = property.title?.toLowerCase().includes(query) || property.city?.toLowerCase().includes(query) || property.area?.toLowerCase().includes(query) || property.pin_code?.includes(query) || (property.business_metadata as any)?.businessName?.toLowerCase().includes(query);
-      if (!matchesSearch) return false;
-    }
-
     // Location filter (only if Near Me is not active)
     if (!nearMeCoords && location.method && location.value) {
       const searchValue = location.value.toLowerCase();
@@ -125,10 +112,6 @@ const Index = () => {
           <p className="text-white/90 text-sm md:text-base mb-6">
             Rent properties, vehicles, and businesses across India
           </p>
-          
-          {selectedCategory === 'business' && <div className="w-full max-w-2xl">
-              <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search businesses by name, city, area, or PIN code..." />
-            </div>}
         </div>
       </div>
 
@@ -165,17 +148,7 @@ const Index = () => {
           </div>
           
           <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-            {propertyTypes.map(type => <Button key={type.type} variant={selectedCategory === type.type ? "default" : "outline"} size="sm" onClick={() => {
-            if (selectedCategory === type.type) {
-              setSelectedCategory(null);
-              setSearchQuery("");
-            } else {
-              setSelectedCategory(type.type);
-              if (type.type !== 'business') {
-                setSearchQuery("");
-              }
-            }
-          }} className="shrink-0">
+            {propertyTypes.map(type => <Button key={type.type} variant="outline" size="sm" onClick={() => navigate(`/listings?type=${type.type}`)} className="shrink-0">
                 <span className="mr-1">{type.icon}</span>
                 {type.label}
               </Button>)}
