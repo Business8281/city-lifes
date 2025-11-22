@@ -14,6 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { useProperties } from "@/hooks/useProperties";
 import { useLocation } from "@/contexts/LocationContext";
 import { useSponsoredProperties } from "@/hooks/useSponsoredProperties";
@@ -251,7 +258,7 @@ const Listings = () => {
 
       {/* Properties Grid */}
       <div className="max-w-7xl mx-auto px-4 py-6 overflow-x-hidden space-y-6">
-        {/* Sponsored Ads Section - Shows at TOP with location filters */}
+        {/* Sponsored Ads Section - Carousel */}
         {selectedType === "business" && !sponsoredLoading && sponsoredProperties.length > 0 && (
           <div className="space-y-3 bg-amber-50/50 dark:bg-amber-950/10 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
             <div className="flex items-center justify-between">
@@ -268,40 +275,49 @@ const Listings = () => {
                 {location.method === 'live' && 'Near You'}
               </span>
             </div>
-            <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
-              <div className="flex gap-4 pb-2">
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
                 {sponsoredProperties.map((property) => (
-                  <div 
-                    key={property.id} 
-                    ref={(el) => property.campaign_id && setSponsoredRef(el, property.campaign_id)}
-                    data-campaign-id={property.campaign_id}
-                    className="w-[280px] sm:w-[300px] shrink-0 bg-white dark:bg-gray-900 rounded-lg"
-                  >
-                    <PropertyCard
-                      id={property.id}
-                      image={property.images[0] || '/placeholder.svg'}
-                      title={property.title}
-                      type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
-                      propertyType={property.property_type}
-                      price={`₹${property.price.toLocaleString()}`}
-                      priceType={property.price_type}
-                      location={`${property.area}, ${property.city}`}
-                      bedrooms={property.bedrooms || undefined}
-                      bathrooms={property.bathrooms || undefined}
-                      area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
-                      verified={property.verified}
-                      sponsored={true}
-                      onClick={() => {
-                        if (property.campaign_id) {
-                          incrementClicks(property.campaign_id);
-                        }
-                        navigate(`/property/${property.id}`);
-                      }}
-                    />
-                  </div>
+                  <CarouselItem key={property.id} className="pl-2 md:pl-4 basis-[280px] sm:basis-[300px] md:basis-1/3 lg:basis-1/4">
+                    <div 
+                      ref={(el) => property.campaign_id && setSponsoredRef(el, property.campaign_id)}
+                      data-campaign-id={property.campaign_id}
+                      className="bg-white dark:bg-gray-900 rounded-lg h-full"
+                    >
+                      <PropertyCard
+                        id={property.id}
+                        image={property.images[0] || '/placeholder.svg'}
+                        title={property.title}
+                        type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
+                        propertyType={property.property_type}
+                        price={`₹${property.price.toLocaleString()}`}
+                        priceType={property.price_type}
+                        location={`${property.area}, ${property.city}`}
+                        bedrooms={property.bedrooms || undefined}
+                        bathrooms={property.bathrooms || undefined}
+                        area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
+                        verified={property.verified}
+                        sponsored={true}
+                        onClick={() => {
+                          if (property.campaign_id) {
+                            incrementClicks(property.campaign_id);
+                          }
+                          navigate(`/property/${property.id}`);
+                        }}
+                      />
+                    </div>
+                  </CarouselItem>
                 ))}
-              </div>
-            </div>
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex -left-4" />
+              <CarouselNext className="hidden md:flex -right-4" />
+            </Carousel>
           </div>
         )}
 
