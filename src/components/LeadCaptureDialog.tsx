@@ -45,7 +45,7 @@ export const LeadCaptureDialog = ({
     e.preventDefault();
     setLoading(true);
     try {
-      await createLead({
+      const result = await createLead({
         listing_id: listingId,
         owner_id: ownerId,
         user_id: null,
@@ -61,16 +61,20 @@ export const LeadCaptureDialog = ({
         category: category || null,
         subcategory: subcategory || null
       });
-      toast.success('Your inquiry has been sent to the owner!');
-      setFormData({
-        name: '',
-        phone: '',
-        email: '',
-        message: ''
-      });
-      onOpenChange(false);
-    } catch (error) {
+      
+      if (result) {
+        toast.success('Your inquiry has been sent to the owner!');
+        setFormData({
+          name: '',
+          phone: '',
+          email: '',
+          message: ''
+        });
+        onOpenChange(false);
+      }
+    } catch (error: any) {
       console.error('Error submitting lead:', error);
+      toast.error(error.message || 'Failed to submit inquiry. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -100,7 +104,20 @@ export const LeadCaptureDialog = ({
           })} placeholder="Enter your phone number" />
           </div>
           
-          
+          <div className="space-y-2">
+            <Label htmlFor="email">Email *</Label>
+            <Input 
+              id="email" 
+              type="email" 
+              required 
+              value={formData.email} 
+              onChange={e => setFormData({
+                ...formData,
+                email: e.target.value
+              })} 
+              placeholder="Enter your email address" 
+            />
+          </div>
           
           <div className="space-y-2">
             <Label htmlFor="message">Message (Optional)</Label>

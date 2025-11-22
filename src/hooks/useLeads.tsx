@@ -86,12 +86,14 @@ export const useLeads = () => {
         .select()
         .single();
 
-      if (error) throw error;
-      toast.success('Lead submitted successfully!');
+      if (error) {
+        console.error('Supabase error creating lead:', error);
+        throw new Error(error.message || 'Failed to submit lead');
+      }
+      
       return data;
     } catch (error: any) {
       console.error('Error creating lead:', error);
-      toast.error('Failed to submit lead');
       throw error;
     }
   };
