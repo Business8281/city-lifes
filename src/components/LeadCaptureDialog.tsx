@@ -43,16 +43,23 @@ export const LeadCaptureDialog = ({
     e.preventDefault();
     e.stopPropagation();
     
+    console.log('=== CONTACT OWNER FORM SUBMIT STARTED ===');
+    console.log('Form data:', { name: formData.name, phone: formData.phone });
+    console.log('Listing ID:', listingId);
+    console.log('Owner ID:', ownerId);
+    
     // Validate form data
     const trimmedName = formData.name.trim();
     const trimmedPhone = formData.phone.trim();
     
     if (!trimmedName) {
+      console.error('Validation failed: Name is empty');
       toast.error('Please enter your name');
       return;
     }
     
     if (!trimmedPhone) {
+      console.error('Validation failed: Phone is empty');
       toast.error('Please enter your phone number');
       return;
     }
@@ -60,10 +67,12 @@ export const LeadCaptureDialog = ({
     // Basic phone validation (at least 10 digits)
     const phoneDigits = trimmedPhone.replace(/\D/g, '');
     if (phoneDigits.length < 10) {
+      console.error('Validation failed: Phone too short', phoneDigits.length);
       toast.error('Please enter a valid phone number (minimum 10 digits)');
       return;
     }
     
+    console.log('Validation passed, setting loading state');
     setLoading(true);
     
     try {
@@ -83,9 +92,12 @@ export const LeadCaptureDialog = ({
         subcategory: subcategory || null
       };
 
+      console.log('Calling createLead with payload:', { ...leadPayload, phone: '***' });
       const result = await createLead(leadPayload);
+      console.log('createLead returned:', result ? 'success' : 'null/undefined');
       
       if (result) {
+        console.log('Lead created successfully, showing success message');
         toast.success('Inquiry sent successfully!', {
           description: 'The owner will contact you soon.',
           duration: 3000,
@@ -99,18 +111,28 @@ export const LeadCaptureDialog = ({
         
         // Close dialog after short delay for better UX
         setTimeout(() => {
+          console.log('Closing dialog');
           onOpenChange(false);
         }, 500);
       } else {
+        console.error('createLead returned null/undefined');
         throw new Error('Failed to create lead');
       }
     } catch (error: any) {
+      console.error('=== LEAD SUBMISSION ERROR ===');
+      console.error('Error type:', error?.constructor?.name);
+      console.error('Error message:', error?.message);
+      console.error('Error code:', error?.code);
+      console.error('Full error:', error);
+      
       toast.error('Failed to submit inquiry', {
         description: error?.message || 'Please check your connection and try again.',
         duration: 5000,
       });
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
+      console.log('=== CONTACT OWNER FORM SUBMIT ENDED ===');
     }
   };
   return <Dialog open={open} onOpenChange={onOpenChange}>
