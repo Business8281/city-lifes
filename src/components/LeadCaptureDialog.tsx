@@ -79,8 +79,9 @@ export const LeadCaptureDialog = ({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Contact Owner</DialogTitle>
-          <DialogDescription>
-            Send your inquiry about "{listingTitle}"
+          <DialogDescription className="space-y-2">
+            <span className="block text-sm text-muted-foreground">Send your inquiry about:</span>
+            <span className="block font-semibold text-foreground text-base">{listingTitle}</span>
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
