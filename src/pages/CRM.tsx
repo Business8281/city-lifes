@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   User, 
   Phone, 
@@ -15,16 +16,19 @@ import {
   Calendar,
   Plus,
   CheckCircle2,
-  Circle
+  Circle,
+  Tag,
+  Trash2
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 const CRM = () => {
-  const { clients, loading, updateClientStage, createClient } = useCRM();
-  const { tasks, createTask, updateTask } = useCRMTasks();
+  const { clients, loading, updateClientStage, createClient, deleteClient } = useCRM();
+  const { tasks, createTask, updateTask, deleteTask } = useCRMTasks();
   const [selectedClient, setSelectedClient] = useState<CRMClient | null>(null);
   const [newClientDialog, setNewClientDialog] = useState(false);
   const [newTaskDialog, setNewTaskDialog] = useState(false);
+  const [selectedTaskClientId, setSelectedTaskClientId] = useState<string>('');
 
   const stages: CRMClient['stage'][] = ['prospect', 'hot', 'warm', 'cold', 'closed'];
 
@@ -123,6 +127,14 @@ const CRM = () => {
                                 <div className="flex-1 min-w-0">
                                   <p className="font-medium text-sm truncate">{client.name}</p>
                                   <p className="text-xs text-muted-foreground truncate">{client.email}</p>
+                                  {client.leads && (
+                                    <div className="flex items-center gap-1 mt-1">
+                                      <Tag className="h-3 w-3 text-muted-foreground" />
+                                      <span className="text-xs text-muted-foreground capitalize">
+                                        {client.leads.category || 'General'}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                               <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -159,17 +171,38 @@ const CRM = () => {
                   <form onSubmit={async (e) => {
                     e.preventDefault();
                     const formData = new FormData(e.currentTarget);
-                    if (selectedClient) {
+                    const clientId = selectedTaskClientId || selectedClient?.id;
+                    if (clientId) {
                       await createTask({
-                        client_id: selectedClient.id,
+                        client_id: clientId,
                         title: formData.get('title') as string,
                         description: formData.get('description') as string || null,
                         due_date: formData.get('due_date') as string || null,
                         status: 'pending'
                       });
                       setNewTaskDialog(false);
+                      setSelectedTaskClientId('');
                     }
                   }} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="client">Select Client *</Label>
+                      <Select 
+                        value={selectedTaskClientId || selectedClient?.id || ''} 
+                        onValueChange={setSelectedTaskClientId}
+                        required
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose a client" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {clients.map((client) => (
+                            <SelectItem key={client.id} value={client.id}>
+                              {client.name} - {client.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div className="space-y-2">
                       <Label htmlFor="title">Task Title</Label>
                       <Input id="title" name="title" required />
@@ -198,18 +231,31 @@ const CRM = () => {
                     pendingTasks.map((task) => (
                       <div
                         key={task.id}
-                        className="flex items-start gap-2 p-3 border rounded-lg hover:bg-accent cursor-pointer"
-                        onClick={() => updateTask(task.id, { status: 'completed' })}
+                        className="flex items-start gap-2 p-3 border rounded-lg hover:bg-accent group"
                       >
-                        <Circle className="h-4 w-4 text-muted-foreground mt-0.5" />
-                        <div className="flex-1">
+                        <button
+                          onClick={() => updateTask(task.id, { status: 'completed' })}
+                          className="mt-0.5"
+                        >
+                          <Circle className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                        </button>
+                        <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium">{task.title}</p>
+                          {task.description && (
+                            <p className="text-xs text-muted-foreground truncate">{task.description}</p>
+                          )}
                           {task.due_date && (
                             <p className="text-xs text-muted-foreground">
                               Due {formatDistanceToNow(new Date(task.due_date), { addSuffix: true })}
                             </p>
                           )}
                         </div>
+                        <button
+                          onClick={() => deleteTask(task.id)}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </button>
                       </div>
                     ))
                   )}
@@ -227,7 +273,14 @@ const CRM = () => {
               <CardContent className="space-y-4">
                 <div>
                   <p className="font-semibold text-lg">{selectedClient.name}</p>
-                  {getStageBadge(selectedClient.stage)}
+                  <div className="flex items-center gap-2 mt-1">
+                    {getStageBadge(selectedClient.stage)}
+                    {selectedClient.leads && selectedClient.leads.category && (
+                      <Badge variant="outline" className="capitalize">
+                        {selectedClient.leads.category}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
@@ -259,6 +312,20 @@ const CRM = () => {
                     ))}
                   </div>
                 </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    if (confirm('Are you sure you want to delete this client?')) {
+                      deleteClient(selectedClient.id);
+                      setSelectedClient(null);
+                    }
+                  }}
+                  className="w-full"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Client
+                </Button>
               </CardContent>
             </Card>
           )}

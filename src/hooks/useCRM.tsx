@@ -191,6 +191,23 @@ export const useCRMTasks = (clientId?: string) => {
 
   useEffect(() => {
     fetchTasks();
+
+    // Realtime subscription for tasks
+    const channel = supabase
+      .channel('crm-tasks-changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'crm_tasks',
+        filter: `owner_id=eq.${user?.id}`
+      }, () => {
+        fetchTasks();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user, clientId]);
 
   const createTask = async (taskData: any) => {
