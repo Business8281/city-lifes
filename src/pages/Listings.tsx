@@ -327,7 +327,7 @@ const Listings = () => {
             <div className="text-muted-foreground">Loading properties...</div>
           </div>
         ) : displayedProperties.length > 0 ? (
-          <div>
+            <div>
             <h2 className="text-lg font-semibold mb-3">All Properties</h2>
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 max-w-full">
               {displayedProperties.map((property) => (
@@ -345,12 +345,7 @@ const Listings = () => {
                   bathrooms={property.bathrooms || undefined}
                   area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
                   verified={property.verified}
-                  sponsored={sponsoredCampaignByProperty.has(property.id)}
-                  onClick={() => {
-                    const cid = sponsoredCampaignByProperty.get(property.id);
-                    if (cid) incrementClicks(cid);
-                    navigate(`/property/${property.id}`);
-                  }}
+                  onClick={() => navigate(`/property/${property.id}`)}
                 />
               ))}
             </div>
