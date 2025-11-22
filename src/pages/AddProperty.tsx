@@ -1123,6 +1123,7 @@ const AddProperty = () => {
                     position="popper"
                     sideOffset={4}
                     align="start"
+                    className="max-h-[min(400px,80vh)]"
                   >
                     {propertyTypes.map((type) => (
                       <SelectItem 
