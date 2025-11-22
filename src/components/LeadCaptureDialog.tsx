@@ -43,13 +43,23 @@ export const LeadCaptureDialog = ({
     e.preventDefault();
     
     // Validate form data
-    if (!formData.name.trim()) {
+    const trimmedName = formData.name.trim();
+    const trimmedPhone = formData.phone.trim();
+    
+    if (!trimmedName) {
       toast.error('Please enter your name');
       return;
     }
     
-    if (!formData.phone.trim()) {
+    if (!trimmedPhone) {
       toast.error('Please enter your phone number');
+      return;
+    }
+    
+    // Basic phone validation (at least 10 digits)
+    const phoneDigits = trimmedPhone.replace(/\D/g, '');
+    if (phoneDigits.length < 10) {
+      toast.error('Please enter a valid phone number');
       return;
     }
     
@@ -58,16 +68,15 @@ export const LeadCaptureDialog = ({
       console.log('Submitting lead with data:', {
         listing_id: listingId,
         owner_id: ownerId,
-        name: formData.name,
-        phone: formData.phone
+        name: trimmedName,
+        phone: trimmedPhone
       });
 
       const result = await createLead({
         listing_id: listingId,
         owner_id: ownerId,
-        user_id: null,
-        name: formData.name.trim(),
-        phone: formData.phone.trim(),
+        name: trimmedName,
+        phone: trimmedPhone,
         email: null,
         message: null,
         status: 'new',
@@ -82,16 +91,22 @@ export const LeadCaptureDialog = ({
       console.log('Lead created successfully:', result);
       
       if (result) {
-        toast.success('Your inquiry has been sent successfully!');
+        toast.success('Your inquiry has been sent successfully!', {
+          description: 'The owner will contact you soon.'
+        });
         setFormData({
           name: '',
           phone: ''
         });
         onOpenChange(false);
+      } else {
+        throw new Error('Failed to create lead');
       }
     } catch (error: any) {
       console.error('Error submitting lead:', error);
-      toast.error(error.message || 'Failed to submit inquiry. Please try again.');
+      toast.error('Failed to submit inquiry', {
+        description: error.message || 'Please check your connection and try again.'
+      });
     } finally {
       setLoading(false);
     }
@@ -115,10 +130,19 @@ export const LeadCaptureDialog = ({
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">Phone Number *</Label>
-            <Input id="phone" type="tel" required value={formData.phone} onChange={e => setFormData({
-            ...formData,
-            phone: e.target.value
-          })} placeholder="Enter your phone number" />
+            <Input 
+              id="phone" 
+              type="tel" 
+              required 
+              value={formData.phone} 
+              onChange={e => setFormData({
+                ...formData,
+                phone: e.target.value
+              })} 
+              placeholder="Enter your phone number"
+              pattern="[0-9+\-\s()]*"
+              minLength={10}
+            />
           </div>
           <div className="flex gap-3">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">

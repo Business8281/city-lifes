@@ -82,9 +82,19 @@ export const useLeads = () => {
     try {
       console.log('Creating lead in database:', leadData);
       
+      // Ensure all required fields are present
+      const sanitizedData = {
+        ...leadData,
+        name: leadData.name?.trim() || '',
+        phone: leadData.phone?.trim() || '',
+        email: leadData.email || null,
+        message: leadData.message || null,
+        user_id: user?.id || null, // Use current user if authenticated, null if not
+      };
+      
       const { data, error } = await supabase
         .from('leads')
-        .insert(leadData)
+        .insert(sanitizedData)
         .select()
         .single();
 
