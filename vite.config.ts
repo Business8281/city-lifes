@@ -9,7 +9,10 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [
+    react(), 
+    mode === "development" && componentTagger()
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -24,26 +27,39 @@ export default defineConfig(({ mode }) => ({
       compress: {
         drop_console: true,
         drop_debugger: true,
-        passes: 2,
-      }
+        passes: 3,
+        pure_funcs: ['console.log', 'console.info'],
+      },
+      mangle: {
+        safari10: true,
+      },
     },
     rollupOptions: {
       output: {
         manualChunks(id) {
+          // Core dependencies - split for better caching
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-router') || id.includes('react-dom')) return 'react-vendor';
+            if (id.includes('react') || id.includes('react-router') || id.includes('react-dom')) {
+              return 'react-vendor';
+            }
             if (id.includes('@tanstack/react-query')) return 'react-query';
             if (id.includes('@supabase/supabase-js')) return 'supabase';
             if (id.includes('@radix-ui')) return 'radix';
             if (id.includes('lucide-react')) return 'icons';
+            if (id.includes('recharts')) return 'charts';
+            return 'vendor';
           }
-        }
+        },
+        // Performance: reduce chunk overhead
+        compact: true,
       }
     },
     cssCodeSplit: true,
     sourcemap: false,
+    reportCompressedSize: false, // Faster builds
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
+    include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js'],
+    exclude: ['@capacitor/core', '@capacitor/app'],
   },
 }));
