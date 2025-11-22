@@ -43,16 +43,23 @@ export const LeadCaptureDialog = ({
     e.preventDefault();
     e.stopPropagation();
     
+    console.log('[Lead Form] Submit button clicked');
+    console.log('[Lead Form] Form data:', formData);
+    
     // Validate form data
     const trimmedName = formData.name.trim();
     const trimmedPhone = formData.phone.trim();
     
+    console.log('[Lead Form] Trimmed values:', { name: trimmedName, phone: trimmedPhone });
+    
     if (!trimmedName) {
+      console.warn('[Lead Form] Validation failed: Name is empty');
       toast.error('Please enter your name');
       return;
     }
     
     if (!trimmedPhone) {
+      console.warn('[Lead Form] Validation failed: Phone is empty');
       toast.error('Please enter your phone number');
       return;
     }
@@ -60,62 +67,72 @@ export const LeadCaptureDialog = ({
     // Basic phone validation (at least 10 digits)
     const phoneDigits = trimmedPhone.replace(/\D/g, '');
     if (phoneDigits.length < 10) {
+      console.warn('[Lead Form] Validation failed: Phone too short');
       toast.error('Please enter a valid phone number (minimum 10 digits)');
       return;
     }
     
+    console.log('[Lead Form] Validation passed, starting submission');
     setLoading(true);
     
     try {
-      console.log('[Lead Form] Submitting inquiry:', {
-        listing_id: listingId,
-        owner_id: ownerId,
-        name: trimmedName,
-        phone: trimmedPhone
-      });
-
-      const result = await createLead({
+      const leadPayload = {
         listing_id: listingId,
         owner_id: ownerId,
         name: trimmedName,
         phone: trimmedPhone,
         email: null,
         message: null,
-        status: 'new',
-        source: 'listing',
+        status: 'new' as const,
+        source: 'listing' as const,
         lead_type: leadType,
         source_page: sourcePage,
         campaign_id: campaignId || null,
         category: category || null,
         subcategory: subcategory || null
-      });
+      };
+      
+      console.log('[Lead Form] Submitting inquiry with payload:', leadPayload);
+
+      const result = await createLead(leadPayload);
 
       console.log('[Lead Form] Inquiry submitted successfully:', result);
       
       if (result) {
+        console.log('[Lead Form] Showing success toast');
         toast.success('Inquiry sent successfully!', {
-          description: 'The owner will contact you soon.'
+          description: 'The owner will contact you soon.',
+          duration: 3000,
         });
         
         // Reset form
+        console.log('[Lead Form] Resetting form');
         setFormData({
           name: '',
           phone: ''
         });
         
         // Close dialog after short delay for better UX
+        console.log('[Lead Form] Closing dialog in 500ms');
         setTimeout(() => {
           onOpenChange(false);
         }, 500);
       } else {
-        throw new Error('Failed to create lead');
+        console.error('[Lead Form] No result returned from createLead');
+        throw new Error('Failed to create lead - no result returned');
       }
     } catch (error: any) {
-      console.error('[Lead Form] Submission error:', error);
+      console.error('[Lead Form] Submission error caught:', error);
+      console.error('[Lead Form] Error type:', typeof error);
+      console.error('[Lead Form] Error message:', error?.message);
+      console.error('[Lead Form] Error stack:', error?.stack);
+      
       toast.error('Failed to submit inquiry', {
-        description: error.message || 'Please check your connection and try again.'
+        description: error?.message || 'Please check your connection and try again.',
+        duration: 5000,
       });
     } finally {
+      console.log('[Lead Form] Setting loading to false');
       setLoading(false);
     }
   };
