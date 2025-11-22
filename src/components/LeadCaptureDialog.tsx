@@ -37,9 +37,7 @@ export const LeadCaptureDialog = ({
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
-    phone: '',
-    email: '',
-    message: ''
+    phone: ''
   });
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,8 +49,8 @@ export const LeadCaptureDialog = ({
         user_id: null,
         name: formData.name,
         phone: formData.phone,
-        email: formData.email,
-        message: formData.message || null,
+        email: `noemail-${Date.now()}@citylifes.placeholder`,
+        message: null,
         status: 'new',
         source: 'listing',
         lead_type: leadType,
@@ -63,12 +61,10 @@ export const LeadCaptureDialog = ({
       });
       
       if (result) {
-        toast.success('Your inquiry has been sent to the owner!');
+        toast.success('Your inquiry has been sent successfully!');
         setFormData({
           name: '',
-          phone: '',
-          email: '',
-          message: ''
+          phone: ''
         });
         onOpenChange(false);
       }
@@ -102,29 +98,6 @@ export const LeadCaptureDialog = ({
             ...formData,
             phone: e.target.value
           })} placeholder="Enter your phone number" />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
-            <Input 
-              id="email" 
-              type="email" 
-              required 
-              value={formData.email} 
-              onChange={e => setFormData({
-                ...formData,
-                email: e.target.value
-              })} 
-              placeholder="Enter your email address" 
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="message">Message (Optional)</Label>
-            <Textarea id="message" value={formData.message} onChange={e => setFormData({
-            ...formData,
-            message: e.target.value
-          })} placeholder="Tell the owner about your requirements..." rows={4} />
           </div>
           <div className="flex gap-3">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
