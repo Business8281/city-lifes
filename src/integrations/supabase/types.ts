@@ -434,7 +434,7 @@ export type Database = {
           campaign_id: string | null
           category: string | null
           created_at: string
-          email: string
+          email: string | null
           id: string
           lead_type: string | null
           listing_id: string | null
@@ -453,7 +453,7 @@ export type Database = {
           campaign_id?: string | null
           category?: string | null
           created_at?: string
-          email: string
+          email?: string | null
           id?: string
           lead_type?: string | null
           listing_id?: string | null
@@ -472,7 +472,7 @@ export type Database = {
           campaign_id?: string | null
           category?: string | null
           created_at?: string
-          email?: string
+          email?: string | null
           id?: string
           lead_type?: string | null
           listing_id?: string | null
