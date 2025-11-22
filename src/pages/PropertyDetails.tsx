@@ -547,23 +547,31 @@ const PropertyDetails = () => {
                   <div className="space-y-1.5">
                     <span className="text-sm text-muted-foreground font-semibold">Operating Hours:</span>
                     <div className="space-y-1">
-                      {Object.entries((property.business_metadata as any).operatingHours)
-                        .filter(([_, hours]: any) => hours.isOpen)
-                        .map(([day, hours]: any) => (
-                          <div key={day} className="flex justify-between text-xs md:text-sm">
-                            <span className="text-muted-foreground capitalize">{day}:</span>
-                            <span className="font-medium">{hours.open} - {hours.close}</span>
+                      {(() => {
+                        const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                        const operatingHours = (property.business_metadata as any).operatingHours;
+                        return dayOrder
+                          .filter(day => operatingHours[day]?.isOpen)
+                          .map(day => {
+                            const hours = operatingHours[day];
+                            return (
+                              <div key={day} className="flex justify-between text-xs md:text-sm">
+                                <span className="text-muted-foreground capitalize">{day}:</span>
+                                <span className="font-medium">{hours.open} - {hours.close}</span>
+                              </div>
+                            );
+                          });
+                      })()}
+                      {(() => {
+                        const dayOrder = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                        const operatingHours = (property.business_metadata as any).operatingHours;
+                        const closedDays = dayOrder.filter(day => operatingHours[day] && !operatingHours[day].isOpen);
+                        return closedDays.length > 0 && (
+                          <div className="text-xs text-muted-foreground italic">
+                            Closed: {closedDays.map(day => day.charAt(0).toUpperCase() + day.slice(1)).join(', ')}
                           </div>
-                        ))}
-                      {Object.entries((property.business_metadata as any).operatingHours)
-                        .filter(([_, hours]: any) => !hours.isOpen).length > 0 && (
-                        <div className="text-xs text-muted-foreground italic">
-                          Closed: {Object.entries((property.business_metadata as any).operatingHours)
-                            .filter(([_, hours]: any) => !hours.isOpen)
-                            .map(([day]: any) => day.charAt(0).toUpperCase() + day.slice(1))
-                            .join(', ')}
-                        </div>
-                      )}
+                        );
+                      })()}
                     </div>
                   </div>
                 )}
