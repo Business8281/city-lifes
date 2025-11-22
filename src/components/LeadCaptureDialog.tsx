@@ -99,13 +99,7 @@ export const LeadCaptureDialog = ({
           })} placeholder="Enter your phone number" />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="email">Email *</Label>
-            <Input id="email" type="email" required value={formData.email} onChange={e => setFormData({
-            ...formData,
-            email: e.target.value
-          })} placeholder="Enter your email" />
-          </div>
+          
           
           <div className="space-y-2">
             <Label htmlFor="message">Message (Optional)</Label>
