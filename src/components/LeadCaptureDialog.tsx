@@ -41,6 +41,18 @@ export const LeadCaptureDialog = ({
   });
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate form data
+    if (!formData.name.trim()) {
+      toast.error('Please enter your name');
+      return;
+    }
+    
+    if (!formData.phone.trim()) {
+      toast.error('Please enter your phone number');
+      return;
+    }
+    
     setLoading(true);
     try {
       console.log('Submitting lead with data:', {
@@ -54,8 +66,8 @@ export const LeadCaptureDialog = ({
         listing_id: listingId,
         owner_id: ownerId,
         user_id: null,
-        name: formData.name,
-        phone: formData.phone,
+        name: formData.name.trim(),
+        phone: formData.phone.trim(),
         email: null,
         message: null,
         status: 'new',
