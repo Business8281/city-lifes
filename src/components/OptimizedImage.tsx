@@ -17,28 +17,30 @@ interface OptimizedImageProps {
 }
 
 // Helper to generate Supabase Storage transformation URLs
-const getOptimizedUrl = (src: string, width?: number, quality: number = 70): string => {
+const getOptimizedUrl = (src: string, width?: number, quality: number = 75): string => {
   if (!src) return '';
   
-  // If already a data URL, return as-is
-  if (src.startsWith('data:')) {
-    return src;
+  // Data URLs - return as-is
+  if (src.startsWith('data:')) return src;
+  
+  // Supabase Storage URLs - add optimization params
+  if (src.includes('supabase.co/storage')) {
+    const url = new URL(src);
+    if (width) url.searchParams.set('width', width.toString());
+    url.searchParams.set('quality', quality.toString());
+    url.searchParams.set('format', 'webp');
+    return url.toString();
   }
   
-  // For Supabase Storage URLs, return as-is (transformations can be added later if needed)
-  // Supabase automatically serves images, no need to modify URLs
-  if (src.startsWith('http://') || src.startsWith('https://')) {
-    return src;
-  }
-  
-  // If it's a relative path, return as-is
   return src;
 };
 
-// Generate srcset for responsive images - disabled for now to simplify
-const generateSrcSet = (src: string, quality: number): string => {
-  // Return empty string to avoid srcset issues
-  return '';
+// Generate srcset for responsive images
+const generateSrcSet = (src: string, width?: number): string => {
+  if (!src || !width || !src.includes('supabase.co/storage')) return '';
+  
+  const sizes = [width, width * 1.5, width * 2].filter(w => w <= 2048);
+  return sizes.map(w => `${getOptimizedUrl(src, w)} ${w}w`).join(', ');
 };
 
 export const OptimizedImage = ({
@@ -77,7 +79,7 @@ export const OptimizedImage = ({
   }[aspectRatio];
 
   const optimizedSrc = getOptimizedUrl(src, width, quality);
-  const srcSet = generateSrcSet(src, quality);
+  const srcSet = generateSrcSet(src, width);
 
   return (
     <div 
@@ -109,6 +111,8 @@ export const OptimizedImage = ({
         <img
           ref={imgRef}
           src={optimizedSrc}
+          srcSet={srcSet || undefined}
+          sizes={srcSet ? sizes : undefined}
           alt={alt}
           width={width}
           height={height}
