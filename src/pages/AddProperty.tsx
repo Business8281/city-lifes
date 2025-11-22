@@ -1116,29 +1116,26 @@ const AddProperty = () => {
                     setFormData({ ...formData, type: value, listingType: "" })
                   }
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full h-11">
                     <SelectValue placeholder="Select property type" />
                   </SelectTrigger>
                   <SelectContent 
-                    className="max-h-[min(400px,80vh)] overflow-y-auto w-full"
                     position="popper"
                     sideOffset={4}
                     align="start"
                   >
-                    <div className="grid grid-cols-1 gap-1 p-1">
-                      {propertyTypes.map((type) => (
-                        <SelectItem 
-                          key={type.type} 
-                          value={type.type}
-                          className="cursor-pointer py-3 px-4 text-base"
-                        >
-                          <span className="flex items-center gap-3">
-                            <span className="text-xl">{type.icon}</span>
-                            <span>{type.label}</span>
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </div>
+                    {propertyTypes.map((type) => (
+                      <SelectItem 
+                        key={type.type} 
+                        value={type.type}
+                        className="cursor-pointer py-3 px-2"
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="text-lg">{type.icon}</span>
+                          <span className="text-sm">{type.label}</span>
+                        </span>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -1153,16 +1150,15 @@ const AddProperty = () => {
                       setFormData({ ...formData, listingType: value })
                     }
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full h-11">
                       <SelectValue placeholder="Select listing type" />
                     </SelectTrigger>
                     <SelectContent 
-                      className="max-h-[min(300px,60vh)] overflow-y-auto w-full"
                       position="popper"
                       sideOffset={4}
                     >
                       {propertyTypes.find(pt => pt.type === formData.type)?.availableFor.map((type) => (
-                        <SelectItem key={type} value={type} className="cursor-pointer py-3 px-4 text-base">
+                        <SelectItem key={type} value={type} className="cursor-pointer py-3 px-2">
                           {type === 'rent' && 'For Rent'}
                           {type === 'sale' && 'For Sale'}
                           {type === 'daily_rent' && 'For Daily Rent'}
@@ -1183,16 +1179,15 @@ const AddProperty = () => {
                       setFormData({ ...formData, targetAudience: value })
                     }
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full h-11">
                       <SelectValue placeholder="Select target audience" />
                     </SelectTrigger>
                     <SelectContent 
-                      className="max-h-[min(300px,60vh)] overflow-y-auto w-full"
                       position="popper"
                       sideOffset={4}
                     >
                       {propertyTypes.find(pt => pt.type === formData.type)?.targetAudience?.map((audience) => (
-                        <SelectItem key={audience} value={audience} className="cursor-pointer py-3 px-4 text-base">
+                        <SelectItem key={audience} value={audience} className="cursor-pointer py-3 px-2">
                           {audience.charAt(0).toUpperCase() + audience.slice(1)}
                         </SelectItem>
                       ))}
