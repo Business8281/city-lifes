@@ -39,9 +39,8 @@ export const LeadCaptureDialog = ({
     name: '',
     phone: ''
   });
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     
     // Validate form data
     const trimmedName = formData.name.trim();
@@ -60,14 +59,13 @@ export const LeadCaptureDialog = ({
     // Basic phone validation (at least 10 digits)
     const phoneDigits = trimmedPhone.replace(/\D/g, '');
     if (phoneDigits.length < 10) {
-      toast.error('Please enter a valid phone number (minimum 10 digits)');
+      toast.error('Please enter a valid phone number');
       return;
     }
     
     setLoading(true);
-    
     try {
-      console.log('[Lead Form] Submitting inquiry:', {
+      console.log('Submitting lead with data:', {
         listing_id: listingId,
         owner_id: ownerId,
         name: trimmedName,
@@ -90,28 +88,22 @@ export const LeadCaptureDialog = ({
         subcategory: subcategory || null
       });
 
-      console.log('[Lead Form] Inquiry submitted successfully:', result);
+      console.log('Lead created successfully:', result);
       
       if (result) {
-        toast.success('Inquiry sent successfully!', {
+        toast.success('Your inquiry has been sent successfully!', {
           description: 'The owner will contact you soon.'
         });
-        
-        // Reset form
         setFormData({
           name: '',
           phone: ''
         });
-        
-        // Close dialog after short delay for better UX
-        setTimeout(() => {
-          onOpenChange(false);
-        }, 500);
+        onOpenChange(false);
       } else {
         throw new Error('Failed to create lead');
       }
     } catch (error: any) {
-      console.error('[Lead Form] Submission error:', error);
+      console.error('Error submitting lead:', error);
       toast.error('Failed to submit inquiry', {
         description: error.message || 'Please check your connection and try again.'
       });
@@ -128,31 +120,19 @@ export const LeadCaptureDialog = ({
             <span className="block font-semibold text-foreground text-base">{listingTitle}</span>
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full Name *</Label>
-            <Input 
-              id="name" 
-              name="name"
-              type="text"
-              autoComplete="name"
-              required 
-              value={formData.name} 
-              onChange={e => setFormData({
-                ...formData,
-                name: e.target.value
-              })} 
-              placeholder="Enter your name"
-              disabled={loading}
-            />
+            <Input id="name" required value={formData.name} onChange={e => setFormData({
+            ...formData,
+            name: e.target.value
+          })} placeholder="Enter your name" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">Phone Number *</Label>
             <Input 
               id="phone" 
-              name="phone"
               type="tel" 
-              autoComplete="tel"
               required 
               value={formData.phone} 
               onChange={e => setFormData({
@@ -160,24 +140,15 @@ export const LeadCaptureDialog = ({
                 phone: e.target.value
               })} 
               placeholder="Enter your phone number"
-              disabled={loading}
+              pattern="[0-9+\-\s()]*"
+              minLength={10}
             />
           </div>
           <div className="flex gap-3">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => onOpenChange(false)} 
-              className="flex-1"
-              disabled={loading}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="flex-1">
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={loading || !formData.name.trim() || !formData.phone.trim()} 
-              className="flex-1"
-            >
+            <Button type="submit" disabled={loading} className="flex-1">
               {loading ? <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Submitting...
