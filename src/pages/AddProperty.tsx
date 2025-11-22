@@ -1116,15 +1116,29 @@ const AddProperty = () => {
                     setFormData({ ...formData, type: value, listingType: "" })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select property type" />
                   </SelectTrigger>
-                  <SelectContent className="max-h-[400px] overflow-y-auto">
-                    {propertyTypes.map((type) => (
-                      <SelectItem key={type.type} value={type.type}>
-                        {type.icon} {type.label}
-                      </SelectItem>
-                    ))}
+                  <SelectContent 
+                    className="max-h-[min(400px,80vh)] overflow-y-auto w-full"
+                    position="popper"
+                    sideOffset={4}
+                    align="start"
+                  >
+                    <div className="grid grid-cols-1 gap-1 p-1">
+                      {propertyTypes.map((type) => (
+                        <SelectItem 
+                          key={type.type} 
+                          value={type.type}
+                          className="cursor-pointer py-3 px-4 text-base"
+                        >
+                          <span className="flex items-center gap-3">
+                            <span className="text-xl">{type.icon}</span>
+                            <span>{type.label}</span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </div>
                   </SelectContent>
                 </Select>
               </div>
@@ -1139,12 +1153,16 @@ const AddProperty = () => {
                       setFormData({ ...formData, listingType: value })
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select listing type" />
                     </SelectTrigger>
-                    <SelectContent className="max-h-[300px] overflow-y-auto">
+                    <SelectContent 
+                      className="max-h-[min(300px,60vh)] overflow-y-auto w-full"
+                      position="popper"
+                      sideOffset={4}
+                    >
                       {propertyTypes.find(pt => pt.type === formData.type)?.availableFor.map((type) => (
-                        <SelectItem key={type} value={type}>
+                        <SelectItem key={type} value={type} className="cursor-pointer py-3 px-4 text-base">
                           {type === 'rent' && 'For Rent'}
                           {type === 'sale' && 'For Sale'}
                           {type === 'daily_rent' && 'For Daily Rent'}
@@ -1165,12 +1183,16 @@ const AddProperty = () => {
                       setFormData({ ...formData, targetAudience: value })
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select target audience" />
                     </SelectTrigger>
-                    <SelectContent className="max-h-[300px] overflow-y-auto">
+                    <SelectContent 
+                      className="max-h-[min(300px,60vh)] overflow-y-auto w-full"
+                      position="popper"
+                      sideOffset={4}
+                    >
                       {propertyTypes.find(pt => pt.type === formData.type)?.targetAudience?.map((audience) => (
-                        <SelectItem key={audience} value={audience}>
+                        <SelectItem key={audience} value={audience} className="cursor-pointer py-3 px-4 text-base">
                           {audience.charAt(0).toUpperCase() + audience.slice(1)}
                         </SelectItem>
                       ))}
