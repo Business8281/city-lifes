@@ -258,7 +258,7 @@ const Listings = () => {
 
       {/* Properties Grid */}
       <div className="max-w-7xl mx-auto px-4 py-6 overflow-x-hidden space-y-6">
-        {/* Sponsored Ads Section - Carousel */}
+        {/* Sponsored Ads Section - Carousel - Only show for business category */}
         {selectedType === "business" && !sponsoredLoading && sponsoredProperties.length > 0 && (
           <div className="space-y-3 bg-amber-50/50 dark:bg-amber-950/10 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
             <div className="flex items-center justify-between">
