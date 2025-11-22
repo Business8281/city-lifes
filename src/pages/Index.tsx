@@ -26,7 +26,8 @@ const Index = () => {
   const [sortBy, setSortBy] = useState("recent");
   const navigate = useNavigate();
   const {
-    properties
+    properties,
+    loading: propertiesLoading
   } = useProperties();
   const {
     location
@@ -112,6 +113,18 @@ const Index = () => {
     }
     return () => observer.disconnect();
   }, [displayedCount, sortedProperties.length]);
+  // Show loading state
+  if (propertiesLoading && properties.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Loading properties...</p>
+        </div>
+      </div>
+    );
+  }
+
   return <div className="min-h-screen bg-background mobile-page overflow-x-hidden max-w-full">
       {/* Hero Section */}
       <div className="relative h-[280px] md:h-[400px] overflow-hidden">
