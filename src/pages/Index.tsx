@@ -26,8 +26,7 @@ const Index = () => {
   const [sortBy, setSortBy] = useState("recent");
   const navigate = useNavigate();
   const {
-    properties,
-    loading: propertiesLoading
+    properties
   } = useProperties();
   const {
     location
@@ -113,9 +112,6 @@ const Index = () => {
     }
     return () => observer.disconnect();
   }, [displayedCount, sortedProperties.length]);
-  // Don't block rendering - show content even while loading
-  console.log('🏠 Index page render:', { propertiesLoading, propertiesCount: properties.length });
-
   return <div className="min-h-screen bg-background mobile-page overflow-x-hidden max-w-full">
       {/* Hero Section */}
       <div className="relative h-[280px] md:h-[400px] overflow-hidden">

@@ -24,7 +24,6 @@ export function useProperties(filters?: PropertyFilters) {
   const fetchProperties = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('🔄 Fetching properties...');
       
       // Use location context if no filters provided
       const effectiveFilters = filters || {};
@@ -42,7 +41,8 @@ export function useProperties(filters?: PropertyFilters) {
         effectiveFilters.radiusKm = effectiveFilters.radiusKm || 10;
       }
 
-      // Location-aware querying with optimized field selection
+      // Location-aware querying
+      // 1) If we have live coordinates, use the geospatial RPC for distance filtering
       if (effectiveFilters.latitude && effectiveFilters.longitude) {
         const { data, error } = await supabase.rpc('search_properties_by_location', {
           search_city: effectiveFilters.city || null,
@@ -54,13 +54,10 @@ export function useProperties(filters?: PropertyFilters) {
           property_type_filter: effectiveFilters.propertyType || null,
         });
 
-        if (error) {
-          console.error('❌ RPC error:', error);
-          throw error;
-        }
-        console.log('✅ Loaded properties via RPC:', data?.length || 0);
+        if (error) throw error;
         setProperties((data || []) as unknown as Property[]);
       }
+      // 2) If we only have textual filters (city/area/pincode), use ILIKE/equals directly
       else if (effectiveFilters.city || effectiveFilters.area || effectiveFilters.pinCode) {
         let query = supabase
           .from('properties')
@@ -69,13 +66,15 @@ export function useProperties(filters?: PropertyFilters) {
           .eq('available', true);
 
         if (effectiveFilters.city) {
-          query = query.eq('city', effectiveFilters.city);
+          query = query.ilike('city', `%${(effectiveFilters.city || '').trim()}%`);
         }
         if (effectiveFilters.area) {
-          query = query.eq('area', effectiveFilters.area);
+          query = query.ilike('area', `%${(effectiveFilters.area || '').trim()}%`);
         }
         if (effectiveFilters.pinCode) {
-          query = query.eq('pin_code', effectiveFilters.pinCode);
+          // Pin code should be an exact match, but allow partial starts-with
+          const pin = (effectiveFilters.pinCode || '').trim();
+          query = pin.length === 6 ? query.eq('pin_code', pin) : query.ilike('pin_code', `${pin}%`);
         }
         if (effectiveFilters.propertyType) {
           query = query.eq('property_type', effectiveFilters.propertyType);
@@ -83,37 +82,27 @@ export function useProperties(filters?: PropertyFilters) {
 
         const { data, error } = await query
           .order('created_at', { ascending: false })
-          .limit(50);
+          .limit(100);
 
-        if (error) {
-          console.error('❌ Query error:', error);
-          throw error;
-        }
-        console.log('✅ Loaded filtered properties:', data?.length || 0);
+        if (error) throw error;
         setProperties((data || []) as unknown as Property[]);
       } else {
-        // Optimized: only fetch active & available properties, limit to 50
+        // Optimized query: only fetch necessary fields, add limit for initial load
         const { data, error } = await supabase
           .from('properties')
           .select('*')
           .eq('status', 'active')
           .eq('available', true)
           .order('created_at', { ascending: false })
-          .limit(50);
+          .limit(50); // Load first 50 properties quickly, implement pagination if needed
 
-        if (error) {
-          console.error('❌ Default query error:', error);
-          throw error;
-        }
-        console.log('✅ Loaded all properties:', data?.length || 0);
+        if (error) throw error;
         setProperties((data || []) as unknown as Property[]);
       }
     } catch (error) {
-      console.error('❌ Error fetching properties:', error);
-      // Don't show error toast on initial load
-      setProperties([]);
+      console.error('Error fetching properties:', error);
+      toast.error('Failed to load properties');
     } finally {
-      console.log('✅ Properties fetch complete');
       setLoading(false);
     }
   }, [
@@ -126,7 +115,27 @@ export function useProperties(filters?: PropertyFilters) {
   useEffect(() => {
     fetchProperties();
 
-    // Debounced real-time updates (every 3 seconds max)
+    // 1) Revalidate when app/tab becomes active again
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchProperties();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    // 2) Revalidate when network returns
+    const onOnline = () => fetchProperties();
+    window.addEventListener('online', onOnline);
+
+    // 3) Revalidate when app comes to foreground (native builds)
+    let removeAppListener: PluginListenerHandle | undefined;
+    if (CapacitorApp.addListener) {
+      removeAppListener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+        if (isActive) fetchProperties();
+      }) as unknown as PluginListenerHandle;
+    }
+
+    // 4) Throttled live updates to prevent excessive queries
     let updateTimeout: NodeJS.Timeout;
     const channel = supabase
       .channel('properties-live')
@@ -135,13 +144,18 @@ export function useProperties(filters?: PropertyFilters) {
         { event: '*', schema: 'public', table: 'properties' },
         () => {
           clearTimeout(updateTimeout);
-          updateTimeout = setTimeout(() => fetchProperties(), 3000);
+          updateTimeout = setTimeout(() => fetchProperties(), 1000);
         }
       )
       .subscribe();
 
     return () => {
       clearTimeout(updateTimeout);
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('online', onOnline);
+      if (removeAppListener?.remove) {
+        removeAppListener.remove();
+      }
       supabase.removeChannel(channel);
     };
   }, [fetchProperties]);

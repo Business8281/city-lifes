@@ -9,7 +9,6 @@ import { LocationProvider } from "./contexts/LocationContext";
 import { Layout } from "./components/Layout";
 import { RequireAuth } from "./components/RequireAuth";
 import { useAppInitialize } from "./hooks/useAppInitialize";
-import ErrorBoundary from "./components/ErrorBoundary";
 
 // Route-based code splitting
 const Index = lazy(() => import("./pages/Index"));
@@ -47,14 +46,13 @@ const App = () => {
   useAppInitialize();
   
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <LocationProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <LocationProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
             <Suspense fallback={<div className="p-6 text-center">Loading…</div>}>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
@@ -62,7 +60,7 @@ const App = () => {
                 <Route path="/setup-profile" element={<ProfileSetup />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/" element={<Layout />}>
-                  <Route index element={<Index />} />
+                  <Route index element={<RequireAuth><Index /></RequireAuth>} />
                   <Route path="listings" element={<Listings />} />
                   <Route path="property/:id" element={<PropertyDetails />} />
                   <Route path="user/:userId" element={<UserProfile />} />
@@ -89,12 +87,11 @@ const App = () => {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
-            </BrowserRouter>
-          </TooltipProvider>
+          </BrowserRouter>
+        </TooltipProvider>
         </LocationProvider>
       </AuthProvider>
     </QueryClientProvider>
-    </ErrorBoundary>
   );
 };
 

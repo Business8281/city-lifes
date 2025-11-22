@@ -6,7 +6,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { OptimizedImage } from "./OptimizedImage";
 import { toast } from "sonner";
 import { formatDistance } from "@/utils/geocoding";
-import { memo } from "react";
 
 interface PropertyCardProps {
   id: string;
@@ -22,12 +21,12 @@ interface PropertyCardProps {
   area?: string;
   verified?: boolean;
   sponsored?: boolean;
-  distance?: number;
+  distance?: number; // Distance in km for "Near Me" results
   onClick?: () => void;
   className?: string;
 }
 
-const PropertyCard = memo(({
+const PropertyCard = ({
   id,
   image,
   title,
@@ -69,6 +68,7 @@ const PropertyCard = memo(({
         className
       )}
     >
+      {/* Sponsored Glow Effect */}
       {sponsored && (
         <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-orange-500/5 pointer-events-none z-0" />
       )}
@@ -81,6 +81,7 @@ const PropertyCard = memo(({
           quality={75}
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
+        {/* Sponsored Ribbon - Top Corner */}
         {sponsored && (
           <div className="absolute top-0 right-0 z-20">
             <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white px-4 py-1 text-xs font-bold shadow-lg transform rotate-0 rounded-bl-lg">
@@ -107,13 +108,13 @@ const PropertyCard = memo(({
             )}
           />
         </button>
-        {verified && (
-          <div className="absolute top-3 left-3 z-10">
+        <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
+          {verified && (
             <Badge className="bg-secondary">
               Verified
             </Badge>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       
       <div className="p-4 space-y-2 overflow-hidden">
@@ -179,8 +180,6 @@ const PropertyCard = memo(({
       </div>
     </div>
   );
-});
-
-PropertyCard.displayName = 'PropertyCard';
+};
 
 export default PropertyCard;
