@@ -24,6 +24,7 @@ export function useProperties(filters?: PropertyFilters) {
   const fetchProperties = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('🔄 Fetching properties...');
       
       // Use location context if no filters provided
       const effectiveFilters = filters || {};
@@ -53,7 +54,11 @@ export function useProperties(filters?: PropertyFilters) {
           property_type_filter: effectiveFilters.propertyType || null,
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('❌ RPC error:', error);
+          throw error;
+        }
+        console.log('✅ Loaded properties via RPC:', data?.length || 0);
         setProperties((data || []) as unknown as Property[]);
       }
       else if (effectiveFilters.city || effectiveFilters.area || effectiveFilters.pinCode) {
@@ -80,7 +85,11 @@ export function useProperties(filters?: PropertyFilters) {
           .order('created_at', { ascending: false })
           .limit(50);
 
-        if (error) throw error;
+        if (error) {
+          console.error('❌ Query error:', error);
+          throw error;
+        }
+        console.log('✅ Loaded filtered properties:', data?.length || 0);
         setProperties((data || []) as unknown as Property[]);
       } else {
         // Optimized: only fetch active & available properties, limit to 50
@@ -92,13 +101,19 @@ export function useProperties(filters?: PropertyFilters) {
           .order('created_at', { ascending: false })
           .limit(50);
 
-        if (error) throw error;
+        if (error) {
+          console.error('❌ Default query error:', error);
+          throw error;
+        }
+        console.log('✅ Loaded all properties:', data?.length || 0);
         setProperties((data || []) as unknown as Property[]);
       }
     } catch (error) {
-      console.error('Error fetching properties:', error);
-      toast.error('Failed to load properties');
+      console.error('❌ Error fetching properties:', error);
+      // Don't show error toast on initial load
+      setProperties([]);
     } finally {
+      console.log('✅ Properties fetch complete');
       setLoading(false);
     }
   }, [
