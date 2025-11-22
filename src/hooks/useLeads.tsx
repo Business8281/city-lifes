@@ -82,13 +82,16 @@ export const useLeads = () => {
     try {
       // Validate required fields
       if (!leadData.owner_id) {
-        throw new Error('Owner ID is required');
+        console.error('Lead validation failed: missing owner_id');
+        throw new Error('Owner information is missing. Please refresh and try again.');
       }
       if (!leadData.name?.trim()) {
-        throw new Error('Name is required');
+        console.error('Lead validation failed: missing name');
+        throw new Error('Please enter your name');
       }
       if (!leadData.phone?.trim()) {
-        throw new Error('Phone is required');
+        console.error('Lead validation failed: missing phone');
+        throw new Error('Please enter your phone number');
       }
       
       // Ensure all required fields are present and properly formatted
@@ -96,10 +99,10 @@ export const useLeads = () => {
         listing_id: leadData.listing_id || null,
         owner_id: leadData.owner_id,
         user_id: user?.id || null, // Use current user if authenticated, null if not
-        name: leadData.name.trim(),
-        phone: leadData.phone.trim(),
-        email: leadData.email?.trim() || null,
-        message: leadData.message?.trim() || null,
+        name: leadData.name.trim().substring(0, 100), // Limit to 100 chars
+        phone: leadData.phone.trim().substring(0, 20), // Limit to 20 chars
+        email: leadData.email?.trim()?.substring(0, 255) || null,
+        message: leadData.message?.trim()?.substring(0, 1000) || null,
         status: leadData.status || 'new',
         source: leadData.source || 'listing',
         lead_type: leadData.lead_type || 'organic',
@@ -109,19 +112,37 @@ export const useLeads = () => {
         campaign_id: leadData.campaign_id || null,
       };
       
+      console.log('Creating lead with data:', { ...sanitizedData, phone: '***' }); // Log without sensitive data
+      
       const { data, error } = await supabase
         .from('leads')
-        .insert([sanitizedData] as any)
+        .insert(sanitizedData as any)
         .select()
         .single();
 
       if (error) {
-        throw new Error(error.message || 'Failed to submit inquiry');
+        console.error('Supabase insert error:', error);
+        
+        // Provide user-friendly error messages
+        if (error.code === '23505') {
+          throw new Error('You have already submitted an inquiry for this listing');
+        } else if (error.code === '23503') {
+          throw new Error('Invalid listing or owner information. Please refresh and try again.');
+        } else if (error.message?.includes('JWT')) {
+          throw new Error('Session expired. Please refresh the page and try again.');
+        } else if (error.message?.includes('RLS')) {
+          throw new Error('Database access error. Please try again or contact support.');
+        } else {
+          throw new Error(error.message || 'Failed to submit inquiry. Please try again.');
+        }
       }
       
       if (!data) {
-        throw new Error('No data returned from database');
+        console.error('No data returned from Supabase insert');
+        throw new Error('Failed to save inquiry. Please try again.');
       }
+      
+      console.log('Lead created successfully:', (data as any).id);
       
       // Trigger refetch for owner's leads
       if (user?.id === leadData.owner_id) {
@@ -130,6 +151,7 @@ export const useLeads = () => {
       
       return data;
     } catch (error: any) {
+      console.error('Create lead error:', error);
       throw error;
     }
   };
