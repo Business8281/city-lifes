@@ -53,7 +53,7 @@ export const LeadCaptureDialog = ({
         email: formData.email,
         message: formData.message || null,
         status: 'new',
-        source: sourcePage,
+        source: 'listing',
         lead_type: leadType,
         source_page: sourcePage,
         campaign_id: campaignId || null,
