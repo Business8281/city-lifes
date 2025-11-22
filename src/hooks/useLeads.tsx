@@ -10,7 +10,7 @@ export interface Lead {
   user_id: string | null;
   name: string;
   phone: string;
-  email: string;
+  email: string | null;
   message: string | null;
   status: 'new' | 'contacted' | 'interested' | 'not_interested' | 'closed';
   source: 'listing' | 'chat' | 'whatsapp' | 'call';
