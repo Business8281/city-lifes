@@ -623,7 +623,7 @@ const PropertyDetails = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-2 mb-2">
+              <div className="grid grid-cols-2 gap-2">
                 {property.contact_phone && (
                   <Button size="sm" className="gap-1.5 text-xs md:text-sm" onClick={() => window.location.href = `tel:${property.contact_phone}`}>
                     <Phone className="h-3.5 w-3.5 md:h-4 md:w-4" />
@@ -650,11 +650,11 @@ const PropertyDetails = () => {
             </>
           )}
           
-          {/* Contact Owner button always visible for non-owners */}
+          {/* Contact Owner button - always visible for non-owners */}
           {user?.id !== property.user_id && (
             <Button 
               size="sm" 
-              className="w-full" 
+              className={cn("w-full", (property.contact_name || property.contact_phone || property.contact_email) && "mt-2")}
               onClick={() => setLeadDialogOpen(true)}
             >
               Contact Owner
