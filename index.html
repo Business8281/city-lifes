@@ -32,7 +32,20 @@
       #root {
         min-height: 100vh;
       }
+      /* Preload shimmer for images */
+      .image-loading {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+      }
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
     </style>
+    
+    <!-- Preload critical assets -->
+    <link rel="preload" as="image" href="/assets/citylifes-logo-optimized.webp" fetchpriority="high" type="image/webp">
     
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/ZzeIKGvhN8XIypBDenzGcRUPWWw2/social-images/social-1762842833269-citylifes_logo.png">

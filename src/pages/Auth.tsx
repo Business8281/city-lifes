@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, AlertCircle, Eye, EyeOff } from "lucide-react";
-import citylifesLogo from "@/assets/citylifes-logo.png";
+import citylifesLogo from "@/assets/citylifes-logo-optimized.webp";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { authSchema } from "@/schemas/validationSchemas";
 import { z } from "zod";
@@ -233,7 +233,16 @@ const Auth = () => {
         {/* Logo and Branding */}
         <div className="flex flex-col items-center space-y-1 text-white">
           <div className="w-28 h-28 sm:w-36 sm:h-36 flex items-center justify-center p-2 sm:p-3 animate-fade-in">
-            <img src={citylifesLogo} alt="citylifes" className="w-full h-full object-contain drop-shadow-none" />
+            <img 
+              src={citylifesLogo} 
+              alt="citylifes" 
+              className="w-full h-full object-contain drop-shadow-none"
+              width="168"
+              height="168"
+              fetchPriority="high"
+              loading="eager"
+              decoding="sync"
+            />
           </div>
           <h1 className="text-3xl font-bold animate-fade-in">citylifes</h1>
           <p className="text-base text-white/90 animate-fade-in">Find your perfect space</p>

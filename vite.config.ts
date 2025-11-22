@@ -33,34 +33,51 @@ export default defineConfig(({ mode }) => ({
     },
     rollupOptions: {
       output: {
-        manualChunks(id) {
+          manualChunks(id) {
           if (id.includes('node_modules')) {
-            // Core React libs
-            if (id.includes('react/') || id.includes('react-dom/')) return 'react-core';
+            // Core React libs - keep together
+            if (id.includes('react/') || id.includes('react-dom/') || id.includes('scheduler')) {
+              return 'react-core';
+            }
+            
+            // Router
             if (id.includes('react-router')) return 'react-router';
             
-            // Query
+            // Query - split from main
             if (id.includes('@tanstack/react-query')) return 'react-query';
             
-            // Supabase - split into smaller chunks
-            if (id.includes('@supabase/supabase-js')) return 'supabase';
+            // Supabase - critical split
+            if (id.includes('@supabase/supabase-js')) return 'supabase-core';
             if (id.includes('@supabase/realtime-js')) return 'supabase-realtime';
             if (id.includes('@supabase/postgrest-js')) return 'supabase-postgrest';
+            if (id.includes('@supabase/storage-js')) return 'supabase-storage';
+            if (id.includes('@supabase/auth-js')) return 'supabase-auth';
             
-            // UI libraries - separate radix components
+            // Radix UI - split commonly used from others
             if (id.includes('@radix-ui/react-dialog')) return 'radix-dialog';
             if (id.includes('@radix-ui/react-dropdown-menu')) return 'radix-dropdown';
             if (id.includes('@radix-ui/react-select')) return 'radix-select';
+            if (id.includes('@radix-ui/react-tabs')) return 'radix-tabs';
+            if (id.includes('@radix-ui/react-popover')) return 'radix-popover';
             if (id.includes('@radix-ui')) return 'radix-ui';
             
-            // Icons - lazy load
+            // Icons - defer loading
             if (id.includes('lucide-react')) return 'icons';
             
-            // Maps
-            if (id.includes('@vis.gl/react-google-maps')) return 'google-maps';
+            // Maps - heavy, separate
+            if (id.includes('@vis.gl/react-google-maps') || id.includes('google-maps')) return 'google-maps';
             
-            // Other large deps
-            if (id.includes('date-fns')) return 'date-fns';
+            // Forms
+            if (id.includes('react-hook-form') || id.includes('zod')) return 'forms';
+            
+            // Date utilities
+            if (id.includes('date-fns')) return 'date-utils';
+            
+            // Charts
+            if (id.includes('recharts')) return 'charts';
+            
+            // Other vendor code
+            return 'vendor';
           }
         },
         // Better file naming for cache busting
@@ -75,6 +92,13 @@ export default defineConfig(({ mode }) => ({
     assetsInlineLimit: 4096,
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
+    include: [
+      'react', 
+      'react-dom', 
+      'react-router-dom',
+      '@supabase/supabase-js',
+      '@tanstack/react-query'
+    ],
+    exclude: ['lucide-react', '@vis.gl/react-google-maps']
   },
 }));
