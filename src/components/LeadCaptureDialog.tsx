@@ -43,13 +43,20 @@ export const LeadCaptureDialog = ({
     e.preventDefault();
     setLoading(true);
     try {
+      console.log('Submitting lead with data:', {
+        listing_id: listingId,
+        owner_id: ownerId,
+        name: formData.name,
+        phone: formData.phone
+      });
+
       const result = await createLead({
         listing_id: listingId,
         owner_id: ownerId,
         user_id: null,
         name: formData.name,
         phone: formData.phone,
-        email: `noemail-${Date.now()}@citylifes.placeholder`,
+        email: null,
         message: null,
         status: 'new',
         source: 'listing',
@@ -59,6 +66,8 @@ export const LeadCaptureDialog = ({
         category: category || null,
         subcategory: subcategory || null
       });
+
+      console.log('Lead created successfully:', result);
       
       if (result) {
         toast.success('Your inquiry has been sent successfully!');

@@ -27,7 +27,7 @@ const Leads = () => {
     const matchesLeadType = leadTypeFilter === 'all' || lead.lead_type === leadTypeFilter;
     const matchesSearch = 
       lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (lead.email && lead.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
       lead.phone.includes(searchQuery);
     return matchesStatus && matchesLeadType && matchesSearch;
   });
@@ -170,10 +170,12 @@ const Leads = () => {
                       <Phone className="h-4 w-4 text-muted-foreground" />
                       <span>{lead.phone}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span>{lead.email}</span>
-                    </div>
+                    {lead.email && (
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <span>{lead.email}</span>
+                      </div>
+                    )}
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span>{formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}</span>

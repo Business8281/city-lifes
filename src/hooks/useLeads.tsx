@@ -80,6 +80,8 @@ export const useLeads = () => {
 
   const createLead = async (leadData: any) => {
     try {
+      console.log('Creating lead in database:', leadData);
+      
       const { data, error } = await supabase
         .from('leads')
         .insert(leadData)
@@ -88,12 +90,15 @@ export const useLeads = () => {
 
       if (error) {
         console.error('Supabase error creating lead:', error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
         throw new Error(error.message || 'Failed to submit lead');
       }
       
+      console.log('Lead successfully inserted:', data);
       return data;
     } catch (error: any) {
       console.error('Error creating lead:', error);
+      console.error('Full error:', JSON.stringify(error, null, 2));
       throw error;
     }
   };
