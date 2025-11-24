@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { useLeads } from '@/hooks/useLeads';
+import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+
 interface LeadCaptureDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -19,6 +19,7 @@ interface LeadCaptureDialogProps {
   category?: string;
   subcategory?: string;
 }
+
 export const LeadCaptureDialog = ({
   open,
   onOpenChange,
@@ -31,9 +32,6 @@ export const LeadCaptureDialog = ({
   category,
   subcategory
 }: LeadCaptureDialogProps) => {
-  const {
-    createLead
-  } = useLeads();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -42,93 +40,66 @@ export const LeadCaptureDialog = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    e.stopPropagation();
     
-    console.log('Form submitted - starting validation');
-    
-    // Validate form data
     const trimmedName = formData.name.trim();
     const trimmedPhone = formData.phone.trim();
     
-    console.log('Form data:', { name: trimmedName, phone: trimmedPhone, ownerId });
-    
-    if (!trimmedName) {
-      console.error('Validation failed: Name is empty');
-      toast.error('Please enter your name');
+    if (!trimmedName || !trimmedPhone) {
+      toast.error('Please fill all required fields');
       return;
     }
-    
-    if (!trimmedPhone) {
-      console.error('Validation failed: Phone is empty');
-      toast.error('Please enter your phone number');
-      return;
-    }
-    
-    // Basic phone validation (at least 10 digits)
+
     const phoneDigits = trimmedPhone.replace(/\D/g, '');
     if (phoneDigits.length < 10) {
-      console.error('Validation failed: Phone number too short:', phoneDigits.length);
       toast.error('Please enter a valid phone number (minimum 10 digits)');
       return;
     }
     
-    console.log('Validation passed, creating lead...');
     setLoading(true);
     
     try {
-      const leadPayload = {
-        listing_id: listingId || null,
-        owner_id: ownerId,
-        name: trimmedName,
-        phone: trimmedPhone,
-        email: null,
-        message: null,
-        status: 'new' as const,
-        source: 'listing' as const,
-        lead_type: leadType,
-        source_page: sourcePage,
-        campaign_id: campaignId || null,
-        category: category || null,
-        subcategory: subcategory || null
-      };
-
-      console.log('Lead payload:', leadPayload);
-
-      const result = await createLead(leadPayload);
+      const { data, error } = await supabase
+        .from('leads')
+        .insert({
+          listing_id: listingId,
+          owner_id: ownerId,
+          name: trimmedName,
+          phone: trimmedPhone,
+          email: null,
+          message: null,
+          status: 'new',
+          source: 'listing',
+          lead_type: leadType,
+          source_page: sourcePage,
+          campaign_id: campaignId || null,
+          category: category || null,
+          subcategory: subcategory || null
+        })
+        .select()
+        .single();
       
-      console.log('Lead creation result:', result);
+      if (error) throw error;
       
-      if (result) {
-        console.log('Lead created successfully');
+      if (data) {
         toast.success('Inquiry sent successfully!', {
-          description: 'The owner will contact you soon.',
-          duration: 3000,
+          description: 'The owner will contact you soon.'
         });
         
-        // Reset form
-        setFormData({
-          name: '',
-          phone: ''
-        });
-        
-        // Close dialog after short delay
-        setTimeout(() => {
-          onOpenChange(false);
-        }, 500);
-      } else {
-        throw new Error('Failed to create lead - no result returned');
+        setFormData({ name: '', phone: '' });
+        setTimeout(() => onOpenChange(false), 500);
       }
     } catch (error: any) {
       console.error('Lead creation error:', error);
       toast.error('Failed to submit inquiry', {
-        description: error?.message || 'Please try again.',
-        duration: 5000,
+        description: error?.message || 'Please try again.'
       });
     } finally {
       setLoading(false);
     }
   };
-  return <Dialog open={open} onOpenChange={onOpenChange}>
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Contact Owner</DialogTitle>
@@ -147,10 +118,7 @@ export const LeadCaptureDialog = ({
               autoComplete="name"
               required 
               value={formData.name} 
-              onChange={e => setFormData({
-                ...formData,
-                name: e.target.value
-              })} 
+              onChange={e => setFormData({ ...formData, name: e.target.value })} 
               placeholder="Enter your name"
               disabled={loading}
             />
@@ -164,10 +132,7 @@ export const LeadCaptureDialog = ({
               autoComplete="tel"
               required 
               value={formData.phone} 
-              onChange={e => setFormData({
-                ...formData,
-                phone: e.target.value
-              })} 
+              onChange={e => setFormData({ ...formData, phone: e.target.value })} 
               placeholder="Enter your phone number"
               disabled={loading}
             />
@@ -187,13 +152,18 @@ export const LeadCaptureDialog = ({
               disabled={loading || !formData.name.trim() || !formData.phone.trim()} 
               className="flex-1"
             >
-              {loading ? <>
+              {loading ? (
+                <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Submitting...
-                </> : 'Submit Inquiry'}
+                </>
+              ) : (
+                'Submit Inquiry'
+              )}
             </Button>
           </div>
         </form>
       </DialogContent>
-    </Dialog>;
+    </Dialog>
+  );
 };
