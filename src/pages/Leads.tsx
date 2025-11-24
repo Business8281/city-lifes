@@ -12,15 +12,31 @@ import {
   Calendar,
   Trash2,
   Search,
-  Filter
+  Filter,
+  MessageCircle
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const Leads = () => {
+  const navigate = useNavigate();
   const { leads, loading, updateLeadStatus, deleteLead } = useLeads();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [leadTypeFilter, setLeadTypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  const handleCall = (phone: string) => {
+    window.location.href = `tel:${phone}`;
+  };
+
+  const handleChat = (lead: Lead) => {
+    if (!lead.user_id) {
+      toast.error('Cannot start chat: Lead user is not registered');
+      return;
+    }
+    navigate(`/messages?user=${lead.user_id}&property=${lead.listing_id || ''}`);
+  };
 
   const filteredLeads = leads.filter(lead => {
     const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
@@ -197,6 +213,27 @@ const Leads = () => {
                       <p className="text-sm">{lead.message}</p>
                     </div>
                   )}
+
+                  {/* Contact Actions */}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => handleCall(lead.phone)}
+                    >
+                      <Phone className="h-4 w-4 mr-2" />
+                      Call
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => handleChat(lead)}
+                      disabled={!lead.user_id}
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      Chat
+                    </Button>
+                  </div>
 
                   <div className="flex gap-2">
                     <Select
