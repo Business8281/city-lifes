@@ -1682,49 +1682,92 @@ export type Database = {
         }[]
       }
       get_report_stats: { Args: never; Returns: Json }
-      get_sponsored_properties: {
-        Args: {
-          filter_area?: string
-          filter_city?: string
-          filter_lat?: number
-          filter_lng?: number
-          filter_pin_code?: string
-          radius_km?: number
-        }
-        Returns: {
-          address: string
-          amenities: string[]
-          area: string
-          area_sqft: number
-          available: boolean
-          bathrooms: number
-          bedrooms: number
-          campaign_id: string
-          city: string
-          contact_email: string
-          contact_name: string
-          contact_phone: string
-          created_at: string
-          description: string
-          distance_km: number
-          id: string
-          images: string[]
-          is_agent: boolean
-          latitude: number
-          location: unknown
-          longitude: number
-          pin_code: string
-          price: number
-          price_type: string
-          property_type: string
-          status: string
-          title: string
-          updated_at: string
-          user_id: string
-          verified: boolean
-          views: number
-        }[]
-      }
+      get_sponsored_properties:
+        | {
+            Args: {
+              filter_area?: string
+              filter_city?: string
+              filter_lat?: number
+              filter_lng?: number
+              filter_pin_code?: string
+              radius_km?: number
+            }
+            Returns: {
+              address: string
+              amenities: string[]
+              area: string
+              area_sqft: number
+              available: boolean
+              bathrooms: number
+              bedrooms: number
+              campaign_id: string
+              city: string
+              contact_email: string
+              contact_name: string
+              contact_phone: string
+              created_at: string
+              description: string
+              distance_km: number
+              id: string
+              images: string[]
+              is_agent: boolean
+              latitude: number
+              location: unknown
+              longitude: number
+              pin_code: string
+              price: number
+              price_type: string
+              property_type: string
+              status: string
+              title: string
+              updated_at: string
+              user_id: string
+              verified: boolean
+              views: number
+            }[]
+          }
+        | {
+            Args: {
+              filter_area?: string
+              filter_city?: string
+              filter_lat?: number
+              filter_lng?: number
+              filter_pin_code?: string
+              radius_km?: number
+            }
+            Returns: {
+              address: string
+              amenities: string[]
+              area: string
+              area_sqft: number
+              available: boolean
+              bathrooms: number
+              bedrooms: number
+              campaign_id: string
+              city: string
+              contact_email: string
+              contact_name: string
+              contact_phone: string
+              created_at: string
+              description: string
+              distance_km: number
+              id: string
+              images: string[]
+              is_agent: boolean
+              latitude: number
+              longitude: number
+              pin_code: string
+              price: number
+              price_type: string
+              property_type: string
+              status: string
+              title: string
+              updated_at: string
+              user_id: string
+              verified: boolean
+              views: number
+            }[]
+          }
       get_user_properties_paginated: {
         Args: { p_user_id: string; page_number?: number; page_size?: number }
         Returns: {
@@ -1857,112 +1900,221 @@ export type Database = {
         Args: { p_property_id: string }
         Returns: Json
       }
-      search_properties: {
-        Args: {
-          area_filter?: string
-          category_filter?: string
-          city_filter?: string
-          max_lat?: number
-          max_lng?: number
-          max_price?: number
-          min_lat?: number
-          min_lng?: number
-          min_price?: number
-          page_number?: number
-          page_size?: number
-          pincode_filter?: string
-          query_text?: string
-          radius_km?: number
-          user_lat?: number
-          user_lng?: number
-        }
-        Returns: {
-          area: string
-          area_sqft: number
-          available: boolean
-          bathrooms: number
-          bedrooms: number
-          city: string
-          description: string
-          distance_km: number
-          id: string
-          images: string[]
-          latitude: number
-          longitude: number
-          pin_code: string
-          price: number
-          price_type: string
-          property_type: string
-          relevance_score: number
-          title: string
-          total_count: number
-          verified: boolean
-        }[]
-      }
-      search_properties_by_location: {
-        Args: {
-          property_type_filter?: string
-          radius_km?: number
-          search_area?: string
-          search_city?: string
-          search_latitude?: number
-          search_longitude?: number
-          search_pin_code?: string
-        }
-        Returns: {
-          amenities: string[]
-          area: string
-          area_sqft: number
-          available: boolean
-          bathrooms: number
-          bedrooms: number
-          city: string
-          created_at: string
-          description: string
-          distance_km: number
-          id: string
-          images: string[]
-          latitude: number
-          longitude: number
-          pin_code: string
-          price: number
-          property_type: string
-          title: string
-          verified: boolean
-        }[]
-      }
-      search_properties_nearby: {
-        Args: {
-          limit_count?: number
-          radius_km?: number
-          user_lat: number
-          user_lng: number
-        }
-        Returns: {
-          amenities: string[]
-          area: string
-          area_sqft: number
-          available: boolean
-          bathrooms: number
-          bedrooms: number
-          city: string
-          created_at: string
-          description: string
-          distance_km: number
-          id: string
-          images: string[]
-          latitude: number
-          longitude: number
-          pin_code: string
-          price: number
-          price_type: string
-          property_type: string
-          status: string
-          title: string
-          user_id: string
-          verified: boolean
-        }[]
-      }
+      search_properties:
+        | {
+            Args: {
+              area_filter?: string
+              category_filter?: string
+              city_filter?: string
+              max_lat?: number
+              max_lng?: number
+              max_price?: number
+              min_lat?: number
+              min_lng?: number
+              min_price?: number
+              page_number?: number
+              page_size?: number
+              pincode_filter?: string
+              query_text?: string
+              radius_km?: number
+              user_lat?: number
+              user_lng?: number
+            }
+            Returns: {
+              area: string
+              area_sqft: number
+              available: boolean
+              bathrooms: number
+              bedrooms: number
+              city: string
+              description: string
+              distance_km: number
+              id: string
+              images: string[]
+              latitude: number
+              longitude: number
+              pin_code: string
+              price: number
+              price_type: string
+              property_type: string
+              relevance_score: number
+              title: string
+              total_count: number
+              verified: boolean
+            }[]
+          }
+        | {
+            Args: {
+              area_filter?: string
+              category_filter?: string
+              city_filter?: string
+              max_lat?: number
+              max_lng?: number
+              max_price?: number
+              min_lat?: number
+              min_lng?: number
+              min_price?: number
+              page_number?: number
+              page_size?: number
+              pincode_filter?: string
+              query_text?: string
+              radius_km?: number
+              user_lat?: number
+              user_lng?: number
+            }
+            Returns: {
+              area: string
+              area_sqft: number
+              available: boolean
+              bathrooms: number
+              bedrooms: number
+              city: string
+              description: string
+              distance_km: number
+              id: string
+              images: string[]
+              latitude: number
+              longitude: number
+              pin_code: string
+              price: number
+              price_type: string
+              property_type: string
+              relevance_score: number
+              title: string
+              total_count: number
+              verified: boolean
+            }[]
+          }
+      search_properties_by_location:
+        | {
+            Args: {
+              property_type_filter?: string
+              radius_km?: number
+              search_area?: string
+              search_city?: string
+              search_latitude?: number
+              search_longitude?: number
+              search_pin_code?: string
+            }
+            Returns: {
+              amenities: string[]
+              area: string
+              area_sqft: number
+              available: boolean
+              bathrooms: number
+              bedrooms: number
+              city: string
+              created_at: string
+              description: string
+              distance_km: number
+              id: string
+              images: string[]
+              latitude: number
+              longitude: number
+              pin_code: string
+              price: number
+              property_type: string
+              title: string
+              verified: boolean
+            }[]
+          }
+        | {
+            Args: {
+              property_type_filter?: string
+              radius_km?: number
+              search_area?: string
+              search_city?: string
+              search_latitude?: number
+              search_longitude?: number
+              search_pin_code?: string
+            }
+            Returns: {
+              amenities: string[]
+              area: string
+              area_sqft: number
+              available: boolean
+              bathrooms: number
+              bedrooms: number
+              city: string
+              created_at: string
+              description: string
+              distance_km: number
+              id: string
+              images: string[]
+              latitude: number
+              longitude: number
+              pin_code: string
+              price: number
+              property_type: string
+              title: string
+              verified: boolean
+            }[]
+          }
+      search_properties_nearby:
+        | {
+            Args: {
+              limit_count?: number
+              radius_km?: number
+              user_lat: number
+              user_lng: number
+            }
+            Returns: {
+              amenities: string[]
+              area: string
+              area_sqft: number
+              available: boolean
+              bathrooms: number
+              bedrooms: number
+              city: string
+              created_at: string
+              description: string
+              distance_km: number
+              id: string
+              images: string[]
+              latitude: number
+              longitude: number
+              pin_code: string
+              price: number
+              price_type: string
+              property_type: string
+              status: string
+              title: string
+              user_id: string
+              verified: boolean
+            }[]
+          }
+        | {
+            Args: {
+              limit_count?: number
+              radius_km?: number
+              user_lat: number
+              user_lng: number
+            }
+            Returns: {
+              amenities: string[]
+              area: string
+              area_sqft: number
+              available: boolean
+              bathrooms: number
+              bedrooms: number
+              city: string
+              created_at: string
+              description: string
+              distance_km: number
+              id: string
+              images: string[]
+              latitude: number
+              longitude: number
+              pin_code: string
+              price: number
+              price_type: string
+              property_type: string
+              status: string
+              title: string
+              user_id: string
+              verified: boolean
+            }[]
+          }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
       st_3dclosestpoint: {
