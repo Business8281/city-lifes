@@ -683,11 +683,7 @@ const PropertyDetails = () => {
             <Button 
               size="sm" 
               className={cn("w-full", (property.contact_name || property.contact_phone || property.contact_email) && "mt-2")}
-              onClick={() => {
-                console.log('Contact Owner button clicked - Opening dialog');
-                console.log('User ID:', user?.id, 'Property Owner ID:', property.user_id);
-                setLeadDialogOpen(true);
-              }}
+              onClick={() => setLeadDialogOpen(true)}
             >
               Contact Owner
             </Button>

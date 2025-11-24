@@ -46,6 +46,66 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          id: string
+          listing_id: string | null
+          owner_id: string
+          user_id: string | null
+          name: string
+          phone: string
+          email: string | null
+          message: string | null
+          status: string
+          source: string
+          lead_type: string | null
+          category: string | null
+          subcategory: string | null
+          source_page: string | null
+          campaign_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          listing_id?: string | null
+          owner_id: string
+          user_id?: string | null
+          name: string
+          phone: string
+          email?: string | null
+          message?: string | null
+          status?: string
+          source?: string
+          lead_type?: string | null
+          category?: string | null
+          subcategory?: string | null
+          source_page?: string | null
+          campaign_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          listing_id?: string | null
+          owner_id?: string
+          user_id?: string | null
+          name?: string
+          phone?: string
+          email?: string | null
+          message?: string | null
+          status?: string
+          source?: string
+          lead_type?: string | null
+          category?: string | null
+          subcategory?: string | null
+          source_page?: string | null
+          campaign_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       properties: {
         Row: {
           id: string
