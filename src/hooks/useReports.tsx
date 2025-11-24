@@ -150,15 +150,25 @@ export function useReports() {
   };
 
   useEffect(() => {
+    if (!user) return;
+
     fetchReports();
 
     const channel = supabase
-      .channel('user-reports-changes')
+      .channel('user-reports-realtime')
       .on('postgres_changes', { 
-        event: '*', 
+        event: 'INSERT', 
         schema: 'public', 
         table: 'reports',
-        filter: `reporter_id=eq.${user?.id}`
+        filter: `reporter_id=eq.${user.id}`
+      }, () => {
+        fetchReports();
+      })
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'reports',
+        filter: `reporter_id=eq.${user.id}`
       }, () => {
         fetchReports();
       })
@@ -167,7 +177,7 @@ export function useReports() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user?.id]);
 
   return { reports, loading, createReport, refetch: fetchReports };
 }
