@@ -43,42 +43,56 @@ export const LeadCaptureDialog = ({
   // Fetch and pre-fill user profile data when dialog opens
   useEffect(() => {
     const fetchUserProfile = async () => {
-      if (!open || !user) {
+      if (!open) {
+        setFormData({ name: '', phone: '' });
+        return;
+      }
+
+      if (!user) {
         setFormData({ name: '', phone: '' });
         return;
       }
 
       try {
-        // Try to get profile from Supabase profiles table
-        const { data: profile, error } = await supabase
+        // First try database profile
+        const { data: profile } = await supabase
           .from('profiles')
           .select('full_name, phone')
           .eq('id', user.id)
           .maybeSingle();
 
-        if (error) {
-          console.error('Error fetching profile:', error);
+        if (profile?.full_name && profile?.phone) {
+          // Database profile has complete data
+          setFormData({
+            name: profile.full_name,
+            phone: profile.phone
+          });
+          return;
         }
 
-        // If profile exists, use it
-        if (profile) {
-          setFormData({
-            name: profile.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || '',
-            phone: profile.phone || user.user_metadata?.phone || ''
-          });
-        } else {
-          // Fallback to user metadata (for Google login users)
-          setFormData({
-            name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '',
-            phone: user.user_metadata?.phone || user.phone || ''
-          });
-        }
-      } catch (error) {
-        console.error('Error in fetchUserProfile:', error);
-        // Final fallback
+        // Fallback chain for incomplete or missing profile
+        const nameFromMetadata = 
+          user.user_metadata?.full_name || 
+          user.user_metadata?.name || 
+          user.user_metadata?.display_name ||
+          (user.email ? user.email.split('@')[0] : '');
+
+        const phoneFromMetadata = 
+          user.user_metadata?.phone || 
+          user.phone || 
+          profile?.phone || 
+          '';
+
         setFormData({
-          name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '',
-          phone: user.user_metadata?.phone || user.phone || ''
+          name: nameFromMetadata,
+          phone: phoneFromMetadata
+        });
+      } catch (error) {
+        console.error('Profile fetch error:', error);
+        // Emergency fallback
+        setFormData({
+          name: user.user_metadata?.full_name || user.user_metadata?.name || '',
+          phone: user.user_metadata?.phone || ''
         });
       }
     };
