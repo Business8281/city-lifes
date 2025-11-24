@@ -21,18 +21,53 @@ export function useAdminReports() {
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      
+      // Fetch all reports
+      const { data: reportsData, error: reportsError } = await supabase
         .from('reports')
-        .select(`
-          *,
-          reporter:profiles!reports_reporter_id_fkey(full_name, email, phone),
-          reported_user:profiles!reports_reported_user_id_fkey(full_name, email, phone, safety_score, suspended_until, is_banned),
-          listing:properties(title, property_type, city, area)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      setReports(data || []);
+      if (reportsError) throw reportsError;
+
+      if (!reportsData || reportsData.length === 0) {
+        setReports([]);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch related profiles
+      const reporterIds = [...new Set(reportsData.map((r: any) => r.reporter_id))];
+      const reportedUserIds = [...new Set(reportsData.map((r: any) => r.reported_user_id))];
+      const allUserIds = [...new Set([...reporterIds, ...reportedUserIds])];
+
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, phone')
+        .in('id', allUserIds);
+
+      // Fetch related listings
+      const listingIds = reportsData.filter((r: any) => r.listing_id).map((r: any) => r.listing_id);
+      const { data: listingsData } = listingIds.length > 0 ? await supabase
+        .from('properties')
+        .select('id, title, property_type, city, area')
+        .in('id', listingIds) : { data: [] };
+
+      // Map data together
+      const profilesMap = new Map<string, any>();
+      profilesData?.forEach(p => profilesMap.set(p.id, p));
+      
+      const listingsMap = new Map<string, any>();
+      listingsData?.forEach((l: any) => listingsMap.set(l.id, l));
+
+      const enrichedReports = reportsData.map((report: any) => ({
+        ...report,
+        reporter: profilesMap.get(report.reporter_id) || null,
+        reported_user: profilesMap.get(report.reported_user_id) || null,
+        listing: report.listing_id ? listingsMap.get(report.listing_id) || null : null,
+      }));
+
+      setReports(enrichedReports as any);
     } catch (error: any) {
       console.error('Error fetching admin reports:', error);
       toast.error('Failed to load reports');
