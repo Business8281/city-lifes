@@ -154,27 +154,38 @@ export function useReports() {
 
     fetchReports();
 
+    // Real-time subscription for instant updates
     const channel = supabase
-      .channel('user-reports-realtime')
+      .channel(`user-reports-${user.id}`)
       .on('postgres_changes', { 
         event: 'INSERT', 
         schema: 'public', 
         table: 'reports',
         filter: `reporter_id=eq.${user.id}`
-      }, () => {
-        fetchReports();
+      }, (payload) => {
+        console.log('New report created in real-time:', payload);
+        fetchReports(); // Instant update
       })
       .on('postgres_changes', { 
         event: 'UPDATE', 
         schema: 'public', 
         table: 'reports',
         filter: `reporter_id=eq.${user.id}`
-      }, () => {
-        fetchReports();
+      }, (payload) => {
+        console.log('Report updated in real-time:', payload);
+        fetchReports(); // Instant update when admin changes status
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          console.log('Real-time reports subscription active for user:', user.id);
+        }
+        if (status === 'CHANNEL_ERROR') {
+          console.error('Real-time reports subscription error');
+        }
+      });
 
     return () => {
+      console.log('Cleaning up reports subscription');
       supabase.removeChannel(channel);
     };
   }, [user?.id]);
