@@ -44,16 +44,22 @@ export const LeadCaptureDialog = ({
     e.preventDefault();
     e.stopPropagation();
     
+    console.log('Form submitted - starting validation');
+    
     // Validate form data
     const trimmedName = formData.name.trim();
     const trimmedPhone = formData.phone.trim();
     
+    console.log('Form data:', { name: trimmedName, phone: trimmedPhone, ownerId });
+    
     if (!trimmedName) {
+      console.error('Validation failed: Name is empty');
       toast.error('Please enter your name');
       return;
     }
     
     if (!trimmedPhone) {
+      console.error('Validation failed: Phone is empty');
       toast.error('Please enter your phone number');
       return;
     }
@@ -61,14 +67,17 @@ export const LeadCaptureDialog = ({
     // Basic phone validation (at least 10 digits)
     const phoneDigits = trimmedPhone.replace(/\D/g, '');
     if (phoneDigits.length < 10) {
+      console.error('Validation failed: Phone number too short:', phoneDigits.length);
       toast.error('Please enter a valid phone number (minimum 10 digits)');
       return;
     }
+    
+    console.log('Validation passed, creating lead...');
     setLoading(true);
     
     try {
       const leadPayload = {
-        listing_id: listingId,
+        listing_id: listingId || null,
         owner_id: ownerId,
         name: trimmedName,
         phone: trimmedPhone,
@@ -83,9 +92,14 @@ export const LeadCaptureDialog = ({
         subcategory: subcategory || null
       };
 
+      console.log('Lead payload:', leadPayload);
+
       const result = await createLead(leadPayload);
       
+      console.log('Lead creation result:', result);
+      
       if (result) {
+        console.log('Lead created successfully');
         toast.success('Inquiry sent successfully!', {
           description: 'The owner will contact you soon.',
           duration: 3000,
@@ -102,9 +116,10 @@ export const LeadCaptureDialog = ({
           onOpenChange(false);
         }, 500);
       } else {
-        throw new Error('Failed to create lead');
+        throw new Error('Failed to create lead - no result returned');
       }
     } catch (error: any) {
+      console.error('Lead creation error:', error);
       toast.error('Failed to submit inquiry', {
         description: error?.message || 'Please try again.',
         duration: 5000,
