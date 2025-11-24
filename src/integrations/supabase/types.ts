@@ -1568,6 +1568,7 @@ export type Database = {
           total_leads: number
         }[]
       }
+      get_current_user_id: { Args: never; Returns: string }
       get_map_clusters: {
         Args: {
           category_filter?: string
@@ -1793,7 +1794,19 @@ export type Database = {
         Args: { property_id: string }
         Returns: undefined
       }
+      is_inquiry_participant: {
+        Args: { _receiver_id: string; _sender_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_management_role: { Args: { user_id: string }; Returns: boolean }
+      is_message_participant: {
+        Args: { _receiver_id: string; _sender_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_owner: {
+        Args: { _record_user_id: string; _user_id: string }
+        Returns: boolean
+      }
       longtransactionsenabled: { Args: never; Returns: boolean }
       populate_geometry_columns:
         | { Args: { use_typmod?: boolean }; Returns: string }
