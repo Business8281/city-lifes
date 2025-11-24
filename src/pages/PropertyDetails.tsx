@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Heart, Share2, MapPin, Phone, MessageCircle, Calendar, Tag, Home, AlertCircle } from "lucide-react";
+import { ArrowLeft, Heart, Share2, MapPin, Phone, MessageCircle, Calendar, Tag, Home, AlertCircle, Flag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -655,6 +655,26 @@ const PropertyDetails = () => {
                   Chat
                 </Button>
               </div>
+              
+              {/* Report User button */}
+              {user?.id !== property.user_id && (
+                <Button 
+                  size="sm"
+                  variant="ghost" 
+                  className="w-full gap-1.5 text-xs md:text-sm mt-2 text-muted-foreground hover:text-destructive"
+                  onClick={() => {
+                    if (!user) {
+                      toast.error("Please login to report");
+                      navigate("/auth");
+                      return;
+                    }
+                    setReportDialogOpen(true);
+                  }}
+                >
+                  <Flag className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                  Report User
+                </Button>
+              )}
             </>
           )}
           

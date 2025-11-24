@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import PropertyCard from '@/components/PropertyCard';
 import { WriteReviewDialog } from '@/components/WriteReviewDialog';
+import { ReportUserDialog } from '@/components/ReportUserDialog';
 import BottomNav from '@/components/BottomNav';
 import { 
   ArrowLeft, 
@@ -14,7 +15,8 @@ import {
   Star,
   MapPin,
   Calendar,
-  Edit
+  Edit,
+  Flag
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -26,6 +28,7 @@ export default function UserProfile() {
   const { user } = useAuth();
   const { profile, stats, reviews, properties, loading, refetch } = useUserProfile(userId);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
   const isOwnProfile = user?.id === userId;
 
@@ -183,6 +186,22 @@ export default function UserProfile() {
                         <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         Review
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          if (!user) {
+                            toast.error('Please login to report');
+                            navigate('/auth');
+                            return;
+                          }
+                          setReportDialogOpen(true);
+                        }}
+                        className="gap-1.5 sm:gap-2 text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4 text-muted-foreground hover:text-destructive"
+                      >
+                        <Flag className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        Report
+                      </Button>
                     </>
                   )}
                   <Button 
@@ -294,6 +313,14 @@ export default function UserProfile() {
         reviewedUserId={userId!}
         reviewedUserName={profile.full_name}
         onSuccess={refetch}
+      />
+
+      {/* Report Dialog */}
+      <ReportUserDialog
+        open={reportDialogOpen}
+        onOpenChange={setReportDialogOpen}
+        reportedUserId={userId!}
+        reportedUserName={profile.full_name || undefined}
       />
     </>
   );
