@@ -1,4 +1,4 @@
-import { Home, Map, MessageCircle, Heart, User, Plus, FileText, Target, Users, ClipboardList } from "lucide-react";
+import { Home, Map, MessageCircle, Heart, User, Plus, FileText, Target, Users, ClipboardList, Flag, Star } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -31,6 +31,8 @@ const actionItems = [
   { title: "Ad Campaign", url: "/ad-campaign", icon: Target },
   { title: "CRM", url: "/crm", icon: Users },
   { title: "Lead Management", url: "/leads", icon: ClipboardList },
+  { title: "My Reports", url: "/my-reports", icon: Flag },
+  { title: "My Reviews", url: "/my-reviews", icon: Star },
 ];
 
 export function AppSidebar() {
