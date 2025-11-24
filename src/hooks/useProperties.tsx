@@ -129,11 +129,18 @@ export function useProperties(filters?: PropertyFilters) {
 
     // 3) Revalidate when app comes to foreground (native builds)
     let removeAppListener: PluginListenerHandle | undefined;
-    if (CapacitorApp.addListener) {
-      removeAppListener = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-        if (isActive) fetchProperties();
-      }) as unknown as PluginListenerHandle;
-    }
+    const setupAppListener = async () => {
+      try {
+        if (CapacitorApp?.addListener) {
+          removeAppListener = await CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+            if (isActive) fetchProperties();
+          });
+        }
+      } catch (error) {
+        console.log('App listener not available (web environment)');
+      }
+    };
+    setupAppListener();
 
     // 4) Throttled live updates to prevent excessive queries
     let updateTimeout: NodeJS.Timeout;
@@ -153,8 +160,8 @@ export function useProperties(filters?: PropertyFilters) {
       clearTimeout(updateTimeout);
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('online', onOnline);
-      if (removeAppListener?.remove) {
-        removeAppListener.remove();
+      if (removeAppListener) {
+        removeAppListener.remove().catch(() => {});
       }
       supabase.removeChannel(channel);
     };
