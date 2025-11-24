@@ -38,7 +38,11 @@ export const useLeads = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchLeads = async () => {
-    if (!user) return;
+    if (!user) {
+      setLeads([]);
+      setLoading(false);
+      return;
+    }
     
     try {
       const { data, error } = await supabase
@@ -48,7 +52,7 @@ export const useLeads = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setLeads(data || []);
+      setLeads((data || []) as Lead[]);
     } catch (error: any) {
       console.error('Error fetching leads:', error);
       toast.error('Failed to fetch leads');
@@ -60,14 +64,16 @@ export const useLeads = () => {
   useEffect(() => {
     fetchLeads();
 
-    // Realtime subscription
+    if (!user) return;
+
+    // Realtime subscription for instant updates
     const channel = supabase
       .channel('leads-changes')
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'leads',
-        filter: `owner_id=eq.${user?.id}`
+        filter: `owner_id=eq.${user.id}`
       }, () => {
         fetchLeads();
       })
@@ -82,25 +88,22 @@ export const useLeads = () => {
     try {
       // Validate required fields
       if (!leadData.owner_id) {
-        console.error('Lead validation failed: missing owner_id');
-        throw new Error('Owner information is missing. Please refresh and try again.');
+        throw new Error('Owner information is missing');
       }
       if (!leadData.name?.trim()) {
-        console.error('Lead validation failed: missing name');
         throw new Error('Please enter your name');
       }
       if (!leadData.phone?.trim()) {
-        console.error('Lead validation failed: missing phone');
         throw new Error('Please enter your phone number');
       }
       
-      // Ensure all required fields are present and properly formatted
+      // Sanitize and format data
       const sanitizedData = {
         listing_id: leadData.listing_id || null,
         owner_id: leadData.owner_id,
-        user_id: user?.id || null, // Use current user if authenticated, null if not
-        name: leadData.name.trim().substring(0, 100), // Limit to 100 chars
-        phone: leadData.phone.trim().substring(0, 20), // Limit to 20 chars
+        user_id: user?.id || null,
+        name: leadData.name.trim().substring(0, 100),
+        phone: leadData.phone.trim().substring(0, 20),
         email: leadData.email?.trim()?.substring(0, 255) || null,
         message: leadData.message?.trim()?.substring(0, 1000) || null,
         status: leadData.status || 'new',
@@ -112,8 +115,6 @@ export const useLeads = () => {
         campaign_id: leadData.campaign_id || null,
       };
       
-      console.log('Creating lead with data:', { ...sanitizedData, phone: '***' }); // Log without sensitive data
-      
       const { data, error } = await supabase
         .from('leads')
         .insert(sanitizedData as any)
@@ -121,30 +122,19 @@ export const useLeads = () => {
         .single();
 
       if (error) {
-        console.error('Supabase insert error:', error);
-        
-        // Provide user-friendly error messages
         if (error.code === '23505') {
           throw new Error('You have already submitted an inquiry for this listing');
         } else if (error.code === '23503') {
-          throw new Error('Invalid listing or owner information. Please refresh and try again.');
-        } else if (error.message?.includes('JWT')) {
-          throw new Error('Session expired. Please refresh the page and try again.');
-        } else if (error.message?.includes('RLS')) {
-          throw new Error('Database access error. Please try again or contact support.');
-        } else {
-          throw new Error(error.message || 'Failed to submit inquiry. Please try again.');
+          throw new Error('Invalid listing information');
         }
+        throw new Error(error.message || 'Failed to submit inquiry');
       }
       
       if (!data) {
-        console.error('No data returned from Supabase insert');
-        throw new Error('Failed to save inquiry. Please try again.');
+        throw new Error('Failed to save inquiry');
       }
       
-      console.log('Lead created successfully:', (data as any).id);
-      
-      // Trigger refetch for owner's leads
+      // Refresh leads if user is the owner
       if (user?.id === leadData.owner_id) {
         fetchLeads();
       }
@@ -161,8 +151,7 @@ export const useLeads = () => {
       // @ts-ignore - Table types will be generated after migration
       const { error } = await supabase
         .from('leads')
-        // @ts-ignore
-        .update({ status })
+        .update({ status, updated_at: new Date().toISOString() })
         .eq('id', leadId);
 
       if (error) throw error;
