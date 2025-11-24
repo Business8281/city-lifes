@@ -137,11 +137,11 @@ export const LeadCaptureDialog = ({
             <span className="block font-semibold text-foreground text-base">{listingTitle}</span>
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name *</Label>
+            <Label htmlFor="lead-name">Full Name *</Label>
             <Input 
-              id="name" 
+              id="lead-name" 
               name="name"
               type="text"
               autoComplete="name"
@@ -156,9 +156,9 @@ export const LeadCaptureDialog = ({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone Number *</Label>
+            <Label htmlFor="lead-phone">Phone Number *</Label>
             <Input 
-              id="phone" 
+              id="lead-phone" 
               name="phone"
               type="tel" 
               autoComplete="tel"
