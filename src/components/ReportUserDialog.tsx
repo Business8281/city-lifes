@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useReports, CreateReportInput } from '@/hooks/useReports';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ReportUserDialogProps {
   open: boolean;
@@ -39,7 +40,9 @@ export function ReportUserDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!description.trim()) {
+      toast.error('Please provide a description');
       return;
     }
 
@@ -51,12 +54,13 @@ export function ReportUserDialog({
       description: description.trim()
     });
 
+    setSubmitting(false);
+    
     if (result) {
       setDescription('');
       setReasonType('fraud');
       onOpenChange(false);
     }
-    setSubmitting(false);
   };
 
   return (
