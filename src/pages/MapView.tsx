@@ -255,11 +255,11 @@ const MapView = () => {
               <Card className="border-0 shadow-none max-w-xs">
                 <CardContent className="p-3">
                   {selectedProperty.images?.[0] && (
-                    <div className="w-full h-32 rounded-lg mb-2 overflow-hidden">
+                    <div className="w-full rounded-lg mb-2 overflow-hidden">
                       <OptimizedImage
                         src={selectedProperty.images[0]}
                         alt={selectedProperty.title}
-                        aspectRatio="video"
+                        aspectRatio="square"
                         width={400}
                         quality={75}
                       />

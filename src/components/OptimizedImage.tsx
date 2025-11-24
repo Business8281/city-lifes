@@ -45,7 +45,7 @@ export const OptimizedImage = ({
   src,
   alt,
   className,
-  aspectRatio = 'auto',
+  aspectRatio = 'square',
   priority = false,
   width,
   height,
