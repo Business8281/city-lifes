@@ -44,29 +44,42 @@ export const LeadCaptureDialog = ({
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!open || !user) {
+        setFormData({ name: '', phone: '' });
         return;
       }
 
       try {
+        // Try to get profile from Supabase profiles table
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('full_name, phone')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error('Error fetching profile:', error);
-          return;
         }
 
+        // If profile exists, use it
         if (profile) {
           setFormData({
-            name: profile.full_name || '',
-            phone: profile.phone || ''
+            name: profile.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || '',
+            phone: profile.phone || user.user_metadata?.phone || ''
+          });
+        } else {
+          // Fallback to user metadata (for Google login users)
+          setFormData({
+            name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '',
+            phone: user.user_metadata?.phone || user.phone || ''
           });
         }
       } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error in fetchUserProfile:', error);
+        // Final fallback
+        setFormData({
+          name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '',
+          phone: user.user_metadata?.phone || user.phone || ''
+        });
       }
     };
 
@@ -137,9 +150,10 @@ export const LeadCaptureDialog = ({
       const leadData = {
         listing_id: listingId || null,
         owner_id: ownerId,
+        user_id: user?.id || null,
         name: trimmedName,
         phone: trimmedPhone,
-        email: null,
+        email: user?.email || null,
         message: null,
         status: 'new',
         source: 'listing',
