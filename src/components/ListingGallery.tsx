@@ -123,7 +123,7 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
               src={validImages[lightboxIndex]}
               alt={`${title} - Image ${lightboxIndex + 1}`}
               className="w-full h-full"
-              aspectRatio="auto"
+              aspectRatio="square"
               width={1920}
               quality={90}
               priority

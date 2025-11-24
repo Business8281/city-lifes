@@ -48,10 +48,11 @@ export const PromotedListingCard = ({
 
         <div onClick={handleCardClick}>
           {/* Image */}
-          <div className="relative h-56 overflow-hidden">
+          <div className="relative overflow-hidden">
             <OptimizedImage
               src={property.images?.[0] || '/placeholder-property.jpg'}
               alt={property.title}
+              aspectRatio="square"
               className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
               width={900}
               quality={80}
