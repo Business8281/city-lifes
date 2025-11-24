@@ -39,9 +39,14 @@ export const LeadCaptureDialog = ({
     name: '',
     phone: ''
   });
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
+
+  // Log when dialog opens
+  console.log('LeadCaptureDialog rendered - open:', open, 'listingId:', listingId, 'ownerId:', ownerId);
+  const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     
     console.log('=== CONTACT OWNER FORM SUBMIT STARTED ===');
     console.log('Form data:', { name: formData.name, phone: formData.phone });
@@ -193,6 +198,17 @@ export const LeadCaptureDialog = ({
               type="submit" 
               disabled={loading || !formData.name.trim() || !formData.phone.trim()} 
               className="flex-1"
+              onClick={(e) => {
+                console.log('Submit button clicked!');
+                // Additional safeguard: manually trigger handleSubmit if form doesn't
+                if (e.currentTarget.form) {
+                  console.log('Form exists on button');
+                } else {
+                  console.log('WARNING: No form found on button');
+                  e.preventDefault();
+                  handleSubmit();
+                }
+              }}
             >
               {loading ? <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
