@@ -159,8 +159,16 @@ const Leads = () => {
           </Card>
         ) : filteredLeads.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              No leads found
+            <CardContent className="py-12 text-center">
+              <div className="space-y-3">
+                <MessageCircle className="h-12 w-12 mx-auto text-muted-foreground/50" />
+                <div>
+                  <h3 className="font-semibold text-lg mb-1">No leads yet</h3>
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                    When someone submits an inquiry on your properties, their contact details will appear here.
+                  </p>
+                </div>
+              </div>
             </CardContent>
           </Card>
         ) : (
