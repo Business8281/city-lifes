@@ -40,16 +40,7 @@ const MyReviews = lazy(() => import("./pages/MyReviews"));
 const ReviewModeration = lazy(() => import("./pages/ReviewModeration"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
-      refetchOnWindowFocus: false,
-      retry: 1,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 const App = () => {
   useAppInitialize();
@@ -62,14 +53,7 @@ const App = () => {
             <Toaster />
             <Sonner />
             <BrowserRouter>
-            <Suspense fallback={
-              <div className="flex items-center justify-center min-h-screen">
-                <div className="text-center">
-                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-                  <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
-                </div>
-              </div>
-            }>
+            <Suspense fallback={<div className="p-6 text-center">Loading…</div>}>
               <Routes>
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />

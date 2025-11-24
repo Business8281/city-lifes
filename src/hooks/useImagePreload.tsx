@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { preloadImage } from '@/utils/imageOptimization';
 
 /**
  * Preload critical images for faster page rendering
@@ -7,15 +8,8 @@ export const useImagePreload = (images: string[]) => {
   useEffect(() => {
     const preloadPromises = images
       .filter(Boolean)
-      .slice(0, 2) // Only preload first 2 critical images
-      .map((src) => {
-        return new Promise((resolve) => {
-          const img = new Image();
-          img.onload = resolve;
-          img.onerror = resolve; // Don't block on errors
-          img.src = src;
-        });
-      });
+      .slice(0, 3) // Only preload first 3 images
+      .map((src) => preloadImage(src).catch(console.error));
 
     Promise.all(preloadPromises);
   }, [images]);
@@ -26,13 +20,8 @@ export const useImagePreload = (images: string[]) => {
  */
 export const usePrefetchOnHover = () => {
   const prefetchImage = (src: string) => {
-    if (!src || typeof window === 'undefined') return;
-    
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
-    link.as = 'image';
-    link.href = src;
-    document.head.appendChild(link);
+    if (!src) return;
+    preloadImage(src).catch(console.error);
   };
 
   return { prefetchImage };

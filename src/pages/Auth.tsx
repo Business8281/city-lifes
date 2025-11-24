@@ -232,17 +232,8 @@ const Auth = () => {
       <div className="w-full max-w-md space-y-4 px-safe-edge pb-safe-edge max-h-[100dvh] overflow-y-auto no-scrollbar" style={{ WebkitOverflowScrolling: 'touch' }}>
         {/* Logo and Branding */}
         <div className="flex flex-col items-center space-y-1 text-white">
-          <div className="w-28 h-28 sm:w-36 sm:h-36 flex items-center justify-center p-3 sm:p-4 animate-fade-in bg-[#368bb7] rounded-2xl">
-            <img 
-              src={citylifesLogo} 
-              alt="citylifes" 
-              className="w-full h-full object-contain"
-              width="168"
-              height="168"
-              fetchPriority="high"
-              loading="eager"
-              decoding="sync"
-            />
+          <div className="w-28 h-28 sm:w-36 sm:h-36 flex items-center justify-center p-2 sm:p-3 animate-fade-in">
+            <img src={citylifesLogo} alt="citylifes" className="w-full h-full object-contain drop-shadow-none" />
           </div>
           <h1 className="text-3xl font-bold animate-fade-in">citylifes</h1>
           <p className="text-base text-white/90 animate-fade-in">Find your perfect space</p>

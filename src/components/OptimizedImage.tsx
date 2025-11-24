@@ -17,30 +17,28 @@ interface OptimizedImageProps {
 }
 
 // Helper to generate Supabase Storage transformation URLs
-const getOptimizedUrl = (src: string, width?: number, quality: number = 75): string => {
+const getOptimizedUrl = (src: string, width?: number, quality: number = 70): string => {
   if (!src) return '';
   
-  // Data URLs - return as-is
-  if (src.startsWith('data:')) return src;
-  
-  // Supabase Storage URLs - add optimization params
-  if (src.includes('supabase.co/storage')) {
-    const url = new URL(src);
-    if (width) url.searchParams.set('width', width.toString());
-    url.searchParams.set('quality', quality.toString());
-    url.searchParams.set('format', 'webp');
-    return url.toString();
+  // If already a data URL, return as-is
+  if (src.startsWith('data:')) {
+    return src;
   }
   
+  // For Supabase Storage URLs, return as-is (transformations can be added later if needed)
+  // Supabase automatically serves images, no need to modify URLs
+  if (src.startsWith('http://') || src.startsWith('https://')) {
+    return src;
+  }
+  
+  // If it's a relative path, return as-is
   return src;
 };
 
-// Generate srcset for responsive images
-const generateSrcSet = (src: string, width?: number): string => {
-  if (!src || !width || !src.includes('supabase.co/storage')) return '';
-  
-  const sizes = [width, width * 1.5, width * 2].filter(w => w <= 2048);
-  return sizes.map(w => `${getOptimizedUrl(src, w)} ${w}w`).join(', ');
+// Generate srcset for responsive images - disabled for now to simplify
+const generateSrcSet = (src: string, quality: number): string => {
+  // Return empty string to avoid srcset issues
+  return '';
 };
 
 export const OptimizedImage = ({
@@ -79,7 +77,7 @@ export const OptimizedImage = ({
   }[aspectRatio];
 
   const optimizedSrc = getOptimizedUrl(src, width, quality);
-  const srcSet = generateSrcSet(src, width);
+  const srcSet = generateSrcSet(src, quality);
 
   return (
     <div 
@@ -111,8 +109,6 @@ export const OptimizedImage = ({
         <img
           ref={imgRef}
           src={optimizedSrc}
-          srcSet={srcSet || undefined}
-          sizes={srcSet ? sizes : undefined}
           alt={alt}
           width={width}
           height={height}
@@ -121,8 +117,7 @@ export const OptimizedImage = ({
             isLoaded ? 'opacity-100' : 'opacity-0'
           )}
           loading={priority ? 'eager' : 'lazy'}
-          decoding={priority ? 'sync' : 'async'}
-          fetchPriority={priority ? 'high' : 'auto'}
+          decoding="async"
           onLoad={handleLoad}
           onError={handleError}
           draggable={false}
