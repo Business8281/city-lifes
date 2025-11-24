@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import PropertyCard from '@/components/PropertyCard';
 import { WriteReviewDialog } from '@/components/WriteReviewDialog';
 import { ReportUserDialog } from '@/components/ReportUserDialog';
+import { LeadCaptureDialog } from '@/components/LeadCaptureDialog';
 import BottomNav from '@/components/BottomNav';
 import { 
   ArrowLeft, 
@@ -16,7 +17,8 @@ import {
   MapPin,
   Calendar,
   Edit,
-  Flag
+  Flag,
+  UserPlus
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -29,6 +31,7 @@ export default function UserProfile() {
   const { profile, stats, reviews, properties, loading, refetch } = useUserProfile(userId);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
 
   const isOwnProfile = user?.id === userId;
 
@@ -161,7 +164,16 @@ export default function UserProfile() {
                     <>
                       <Button 
                         size="sm" 
+                        onClick={() => setContactDialogOpen(true)} 
+                        className="gap-1.5 sm:gap-2 text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
+                      >
+                        <UserPlus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                        Contact Owner
+                      </Button>
+                      <Button 
+                        size="sm" 
                         onClick={handleCall} 
+                        variant="outline"
                         className="gap-1.5 sm:gap-2 text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
                         disabled={!profile.phone}
                       >
@@ -321,6 +333,17 @@ export default function UserProfile() {
         onOpenChange={setReportDialogOpen}
         reportedUserId={userId!}
         reportedUserName={profile.full_name || undefined}
+      />
+
+      {/* Contact Owner Dialog */}
+      <LeadCaptureDialog
+        open={contactDialogOpen}
+        onOpenChange={setContactDialogOpen}
+        listingId=""
+        ownerId={userId!}
+        listingTitle={`Contact ${profile.full_name || 'Owner'}`}
+        leadType="organic"
+        sourcePage="listing_page"
       />
     </>
   );
