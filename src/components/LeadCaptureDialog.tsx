@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface LeadCaptureDialogProps {
   open: boolean;
@@ -32,11 +33,45 @@ export const LeadCaptureDialog = ({
   category,
   subcategory
 }: LeadCaptureDialogProps) => {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     phone: ''
   });
+
+  // Fetch and pre-fill user profile data when dialog opens
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!open || !user) {
+        return;
+      }
+
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('full_name, phone')
+          .eq('id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+          return;
+        }
+
+        if (profile) {
+          setFormData({
+            name: profile.full_name || '',
+            phone: profile.phone || ''
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+      }
+    };
+
+    fetchUserProfile();
+  }, [open, user]);
 
   // Retry logic for network failures
   const submitWithRetry = async (data: any, retries = 3): Promise<any> => {
@@ -158,6 +193,7 @@ export const LeadCaptureDialog = ({
 
   const handleClose = () => {
     if (!loading) {
+      // Reset form to empty - will be refilled on next open
       setFormData({ name: '', phone: '' });
       onOpenChange(false);
     }
