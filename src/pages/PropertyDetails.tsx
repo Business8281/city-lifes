@@ -189,27 +189,7 @@ const PropertyDetails = () => {
         <div>
           <div className="flex items-start justify-between gap-3 mb-1.5">
             <h1 className="text-xl md:text-2xl font-bold text-foreground">{property.title}</h1>
-            <div className="flex flex-col items-end gap-1.5">
-              {property.status === 'active' && <Badge className="bg-secondary shrink-0 text-xs">Active</Badge>}
-              {property.property_type === 'business' && stats && (
-                <div className="flex items-center gap-1 shrink-0">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={cn(
-                        "h-3.5 w-3.5",
-                        star <= Math.round(stats.average_rating)
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "fill-muted text-muted"
-                      )}
-                    />
-                  ))}
-                  <span className="text-xs text-muted-foreground ml-1">
-                    ({stats.total_reviews})
-                  </span>
-                </div>
-              )}
-            </div>
+            {property.status === 'active' && <Badge className="bg-secondary shrink-0 text-xs">Active</Badge>}
           </div>
           
           <div className="flex items-start gap-1.5 text-sm text-muted-foreground mb-2">
@@ -422,7 +402,27 @@ const PropertyDetails = () => {
         {/* Business Metadata - for business properties */}
         {property.property_type === 'business' && property.business_metadata && Object.keys(property.business_metadata).length > 0 && <>
             <Card className="p-3 md:p-4">
-              <h3 className="font-semibold text-sm md:text-base mb-3">Business Details</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold text-sm md:text-base">Business Details</h3>
+                {stats && (
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={cn(
+                          "h-3.5 w-3.5",
+                          star <= Math.round(stats.average_rating)
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "fill-muted text-muted"
+                        )}
+                      />
+                    ))}
+                    <span className="text-xs text-muted-foreground ml-1">
+                      ({stats.total_reviews})
+                    </span>
+                  </div>
+                )}
+              </div>
               <div className="space-y-2.5">
                 {(property.business_metadata as any).category && <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Category:</span>
