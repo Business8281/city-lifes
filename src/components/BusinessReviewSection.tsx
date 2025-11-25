@@ -4,12 +4,13 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { useReviews, Review } from '@/hooks/useReviews';
+import { Separator } from '@/components/ui/separator';
+import { useReviews } from '@/hooks/useReviews';
+import type { Review } from '@/hooks/useReviews';
 import { ReviewForm } from './ReviewForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
-import { Separator } from '@/components/ui/separator';
 
 interface BusinessReviewSectionProps {
   ownerId: string;
@@ -18,7 +19,7 @@ interface BusinessReviewSectionProps {
 
 export function BusinessReviewSection({ ownerId, listingId }: BusinessReviewSectionProps) {
   const { user } = useAuth();
-  const { reviews, stats, loading, canReview, userReview, createReview, updateReview, deleteReview } = useReviews(ownerId, listingId);
+  const { reviews, stats, loading, canReview, userReview, createReview, updateReview } = useReviews(ownerId, listingId);
   const [reviewFormOpen, setReviewFormOpen] = useState(false);
   const [showAllReviews, setShowAllReviews] = useState(false);
 
@@ -38,9 +39,17 @@ export function BusinessReviewSection({ ownerId, listingId }: BusinessReviewSect
         toast.success('Review submitted successfully');
       }
     } catch (error) {
-      toast.error('Failed to submit review. Please try again.');
+      toast.error('Failed to submit review');
       throw error;
     }
+  };
+
+  const getRatingBreakdown = () => {
+    const breakdown = [0, 0, 0, 0, 0];
+    reviews.forEach(review => {
+      breakdown[review.rating - 1]++;
+    });
+    return breakdown.reverse();
   };
 
   if (loading) {
@@ -54,15 +63,8 @@ export function BusinessReviewSection({ ownerId, listingId }: BusinessReviewSect
     );
   }
 
-  const getRatingBreakdown = () => {
-    const breakdown = [0, 0, 0, 0, 0];
-    reviews.forEach(review => {
-      breakdown[review.rating - 1]++;
-    });
-    return breakdown.reverse();
-  };
-
   const ratingBreakdown = getRatingBreakdown();
+  const hasReviews = stats && stats.total_reviews > 0;
 
   return (
     <>
@@ -71,17 +73,17 @@ export function BusinessReviewSection({ ownerId, listingId }: BusinessReviewSect
           {/* Header */}
           <div>
             <h2 className="text-lg md:text-xl font-bold mb-1">Reviews</h2>
-            {stats && stats.total_reviews > 0 && (
+            {hasReviews && (
               <p className="text-sm text-muted-foreground">
                 Based on {stats.total_reviews} {stats.total_reviews === 1 ? 'review' : 'reviews'}
               </p>
             )}
           </div>
 
-          {/* Rating Summary - Google My Business Style */}
-          {stats && stats.total_reviews > 0 ? (
+          {/* Rating Summary */}
+          {hasReviews ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Left: Overall Rating */}
+              {/* Overall Rating */}
               <div className="flex flex-col items-center md:items-start justify-center space-y-3">
                 <div className="flex items-baseline gap-2">
                   <span className="text-5xl md:text-6xl font-bold">
@@ -103,15 +105,11 @@ export function BusinessReviewSection({ ownerId, listingId }: BusinessReviewSect
                 </div>
                 <p className="text-sm text-muted-foreground text-center md:text-left">
                   {stats.total_reviews} {stats.total_reviews === 1 ? 'review' : 'reviews'}
-                  {stats.verified_reviews > 0 && (
-                    <span className="ml-1">
-                      • {stats.verified_reviews} verified
-                    </span>
-                  )}
+                  {stats.verified_reviews > 0 && ` • ${stats.verified_reviews} verified`}
                 </p>
               </div>
 
-              {/* Right: Rating Breakdown */}
+              {/* Rating Breakdown */}
               <div className="space-y-2">
                 {[5, 4, 3, 2, 1].map((star, index) => {
                   const count = ratingBreakdown[index];
@@ -126,9 +124,7 @@ export function BusinessReviewSection({ ownerId, listingId }: BusinessReviewSect
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
-                      <span className="w-8 text-muted-foreground text-xs">
-                        {count}
-                      </span>
+                      <span className="w-8 text-muted-foreground text-xs">{count}</span>
                     </div>
                   );
                 })}
@@ -176,9 +172,7 @@ export function BusinessReviewSection({ ownerId, listingId }: BusinessReviewSect
                             {review.reviewer?.full_name || 'Anonymous User'}
                           </p>
                           {review.verified && (
-                            <Badge variant="secondary" className="text-xs">
-                              Verified
-                            </Badge>
+                            <Badge variant="secondary" className="text-xs">Verified</Badge>
                           )}
                         </div>
                         <div className="flex items-center gap-2">
@@ -212,7 +206,6 @@ export function BusinessReviewSection({ ownerId, listingId }: BusinessReviewSect
                   </div>
                 ))}
 
-                {/* Show More/Less Button */}
                 {reviews.length > 3 && (
                   <Button
                     variant="ghost"
@@ -229,7 +222,6 @@ export function BusinessReviewSection({ ownerId, listingId }: BusinessReviewSect
         </div>
       </Card>
 
-      {/* Review Form Dialog */}
       <ReviewForm
         open={reviewFormOpen}
         onOpenChange={setReviewFormOpen}
