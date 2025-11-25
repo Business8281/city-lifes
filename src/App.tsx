@@ -60,7 +60,7 @@ const App = () => {
                 <Route path="/setup-profile" element={<ProfileSetup />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/" element={<Layout />}>
-                  <Route index element={<RequireAuth><Index /></RequireAuth>} />
+                  <Route index element={<Index />} />
                   <Route path="listings" element={<Listings />} />
                   <Route path="property/:id" element={<PropertyDetails />} />
                   <Route path="user/:userId" element={<UserProfile />} />
