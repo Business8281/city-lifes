@@ -20,6 +20,8 @@ import { Share } from '@capacitor/share';
 import { LeadCaptureDialog } from '@/components/LeadCaptureDialog';
 import { ReportUserDialog } from '@/components/ReportUserDialog';
 import { PropertySchema, BreadcrumbSchema } from '@/components/SEOSchema';
+import { ReviewForm } from '@/components/ReviewForm';
+import { ReviewsList } from '@/components/ReviewsList';
 const PropertyDetails = () => {
   const {
     id
@@ -36,10 +38,20 @@ const PropertyDetails = () => {
     favoriteIds,
     toggleFavorite
   } = useFavorites(user?.id);
-  const { stats } = useReviews(property?.user_id, id);
+  const { 
+    reviews, 
+    userReview, 
+    stats, 
+    loading: reviewsLoading, 
+    canReview,
+    createReview,
+    updateReview,
+    deleteReview 
+  } = useReviews(property?.user_id, id);
   const [currentImage, setCurrentImage] = useState(0);
   const [leadDialogOpen, setLeadDialogOpen] = useState(false);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
   const goPrev = () => {
@@ -404,23 +416,26 @@ const PropertyDetails = () => {
             <Card className="p-3 md:p-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-semibold text-sm md:text-base">Business Details</h3>
-                {stats && (
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <Star
-                        key={star}
-                        className={cn(
-                          "h-3.5 w-3.5",
-                          star <= Math.round(stats.average_rating)
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "fill-muted text-muted"
-                        )}
-                      />
-                    ))}
-                    <span className="text-xs text-muted-foreground ml-1">
-                      ({stats.total_reviews})
-                    </span>
-                  </div>
+                {user?.id !== property.user_id && (
+                  <button
+                    onClick={() => setReviewDialogOpen(true)}
+                    className="flex items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer"
+                  >
+                    {stats && stats.total_reviews > 0 ? (
+                      <>
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-semibold text-sm">{stats.average_rating.toFixed(1)}</span>
+                        <span className="text-xs text-muted-foreground">({stats.total_reviews})</span>
+                      </>
+                    ) : (
+                      <>
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star key={i} className="h-4 w-4 text-muted-foreground" />
+                        ))}
+                        <span className="text-xs text-muted-foreground ml-1">Write Review</span>
+                      </>
+                    )}
+                  </button>
                 )}
               </div>
               <div className="space-y-2.5">
@@ -539,11 +554,52 @@ const PropertyDetails = () => {
           <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4" />
           <span>Posted {format(new Date(property.created_at), 'PPP')}</span>
         </div>
+
+        {/* Reviews Section for Business */}
+        {property.property_type === 'business' && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-4">Reviews</h3>
+            <ReviewsList
+              reviews={reviews}
+              stats={stats}
+              loading={reviewsLoading}
+              showActions={user?.id === userReview?.reviewer_id}
+              onEdit={() => setReviewDialogOpen(true)}
+              onDelete={(reviewId) => deleteReview(reviewId)}
+              onWriteReview={() => setReviewDialogOpen(true)}
+              canReview={canReview || user?.id !== property.user_id}
+              hasUserReview={!!userReview}
+            />
+          </div>
+        )}
       </div>
 
       <LeadCaptureDialog open={leadDialogOpen} onOpenChange={setLeadDialogOpen} listingId={id || ''} ownerId={property.user_id} listingTitle={property.title} leadType="organic" sourcePage="listing_page" category={property.property_type} />
 
       <ReportUserDialog open={reportDialogOpen} onOpenChange={setReportDialogOpen} reportedUserId={property.user_id} reportedUserName={property.contact_name || property.profiles?.full_name} listingId={id} />
+
+      <ReviewForm
+        open={reviewDialogOpen}
+        onOpenChange={setReviewDialogOpen}
+        onSubmit={async (data) => {
+          if (!user) {
+            toast.error("Please login to write a review");
+            navigate("/auth");
+            return;
+          }
+          if (userReview) {
+            await updateReview(userReview.id, data);
+          } else {
+            await createReview({
+              owner_id: property.user_id,
+              listing_id: property.id,
+              ...data
+            });
+          }
+        }}
+        existingReview={userReview}
+        isEdit={!!userReview}
+      />
 
       <BottomNav />
     </div>;

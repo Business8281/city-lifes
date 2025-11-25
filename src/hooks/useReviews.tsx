@@ -44,10 +44,7 @@ export function useReviews(ownerId?: string, listingId?: string) {
       setLoading(true);
       let query = supabase
         .from('reviews')
-        .select(`
-          *,
-          reviewer:profiles(full_name, avatar_url)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (listingId) {
@@ -59,12 +56,29 @@ export function useReviews(ownerId?: string, listingId?: string) {
       const { data, error } = await query;
 
       if (error) throw error;
-      setReviews((data as any) || []);
+      
+      // Fetch reviewer profiles separately
+      const reviewsWithProfiles = await Promise.all(
+        (data || []).map(async (review) => {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('full_name, avatar_url')
+            .eq('id', review.reviewer_id)
+            .single();
+          
+          return {
+            ...review,
+            reviewer: profileData || { full_name: null, avatar_url: null }
+          };
+        })
+      );
+      
+      setReviews(reviewsWithProfiles as any);
 
       // Check if user has already reviewed this owner
       if (user && ownerId) {
-        const existingReview = (data as any)?.find((r: any) => r.reviewer_id === user.id && r.owner_id === ownerId);
-        setUserReview(existingReview || null);
+        const existingReview = reviewsWithProfiles.find((r: any) => r.reviewer_id === user.id && r.owner_id === ownerId);
+        setUserReview(existingReview as any || null);
       }
     } catch (error: any) {
       console.error('Error fetching reviews:', error);
