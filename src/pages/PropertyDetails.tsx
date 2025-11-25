@@ -18,6 +18,7 @@ import { Share } from '@capacitor/share';
 import { LeadCaptureDialog } from '@/components/LeadCaptureDialog';
 import { ReportUserDialog } from '@/components/ReportUserDialog';
 import { PropertySchema, BreadcrumbSchema } from '@/components/SEOSchema';
+import { BusinessReviewSection } from '@/components/BusinessReviewSection';
 const PropertyDetails = () => {
   const {
     id
@@ -516,6 +517,11 @@ const PropertyDetails = () => {
           <Calendar className="h-3.5 w-3.5 md:h-4 md:w-4" />
           <span>Posted {format(new Date(property.created_at), 'PPP')}</span>
         </div>
+
+        {/* Business Reviews Section */}
+        {property.property_type === 'business' && id && (
+          <BusinessReviewSection ownerId={property.user_id} listingId={id} />
+        )}
       </div>
 
       <LeadCaptureDialog open={leadDialogOpen} onOpenChange={setLeadDialogOpen} listingId={id || ''} ownerId={property.user_id} listingTitle={property.title} leadType="organic" sourcePage="listing_page" category={property.property_type} />
