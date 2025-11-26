@@ -1,4 +1,4 @@
-import { Heart, MapPin, Bed, Bath, Square, Navigation } from "lucide-react";
+import { Heart, MapPin, Bed, Bath, Square, Navigation, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "./ui/badge";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { OptimizedImage } from "./OptimizedImage";
 import { toast } from "sonner";
 import { formatDistance } from "@/utils/geocoding";
+import { useOwnerRating } from "@/hooks/useOwnerRating";
 
 interface PropertyCardProps {
   id: string;
@@ -22,6 +23,7 @@ interface PropertyCardProps {
   verified?: boolean;
   sponsored?: boolean;
   distance?: number; // Distance in km for "Near Me" results
+  userId?: string; // Owner's user ID for fetching ratings
   onClick?: () => void;
   className?: string;
 }
@@ -41,12 +43,16 @@ const PropertyCard = ({
   verified = false,
   sponsored = false,
   distance,
+  userId,
   onClick,
   className,
 }: PropertyCardProps) => {
   const { user } = useAuth();
   const { favoriteIds, toggleFavorite: toggleFavoriteInDb } = useFavorites(user?.id);
   const isFavorite = favoriteIds.has(id);
+  
+  // Fetch rating for business listings
+  const { rating } = useOwnerRating(propertyType === 'business' ? userId : undefined);
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -173,8 +179,31 @@ const PropertyCard = ({
         )}
         
         {propertyType === 'business' && (
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
             <Badge variant="secondary">Business Listing</Badge>
+            {rating && rating.total_reviews > 0 && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={cn(
+                        "h-4 w-4",
+                        i < Math.round(rating.average_rating)
+                          ? "fill-amber-500 text-amber-500"
+                          : "fill-muted text-muted"
+                      )}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm font-semibold text-foreground">
+                  {rating.average_rating.toFixed(1)}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  ({rating.total_reviews} {rating.total_reviews === 1 ? 'review' : 'reviews'})
+                </span>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -43,6 +43,7 @@ const Favorites = () => {
                 bathrooms={property.bathrooms || undefined}
                 area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
                 verified={property.status === 'active'}
+                userId={property.user_id}
                 onClick={() => navigate(`/property/${property.id}`)}
               />
             ))}

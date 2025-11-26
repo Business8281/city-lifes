@@ -304,6 +304,7 @@ const Listings = () => {
                         area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
                         verified={property.verified}
                         sponsored={true}
+                        userId={property.user_id}
                         onClick={() => {
                           if (property.campaign_id) {
                             incrementClicks(property.campaign_id);
@@ -345,6 +346,7 @@ const Listings = () => {
                   bathrooms={property.bathrooms || undefined}
                   area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
                   verified={property.verified}
+                  userId={property.user_id}
                   onClick={() => navigate(`/property/${property.id}`)}
                 />
               ))}
