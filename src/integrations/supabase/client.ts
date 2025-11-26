@@ -11,12 +11,40 @@ const SUPABASE_PUBLISHABLE_KEY = env?.VITE_SUPABASE_ANON_KEY ?? "eyJhbGciOiJIUzI
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+// Safari-compatible storage adapter
+const safariStorage = {
+  getItem: (key: string) => {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      console.warn('Storage access failed:', e);
+      return null;
+    }
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      console.warn('Storage write failed:', e);
+    }
+  },
+  removeItem: (key: string) => {
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {
+      console.warn('Storage remove failed:', e);
+    }
+  }
+};
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storage: safariStorage as any,
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
+    // Safari-specific: Add storage key prefix
+    storageKey: 'citylifes-auth-token',
   }
 });
