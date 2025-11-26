@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Review } from '@/hooks/useReviews';
 import { format } from 'date-fns';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ReviewCardProps {
   review: Review;
@@ -13,6 +14,9 @@ interface ReviewCardProps {
 }
 
 export function ReviewCard({ review, showActions, onEdit, onDelete }: ReviewCardProps) {
+  const { user } = useAuth();
+  const isOwnReview = user?.id === review.reviewer_id;
+  
   return (
     <Card className="p-3 md:p-4 space-y-2 md:space-y-3">
       <div className="flex items-start justify-between gap-3">
@@ -61,7 +65,7 @@ export function ReviewCard({ review, showActions, onEdit, onDelete }: ReviewCard
         <p className="text-sm md:text-base text-muted-foreground break-words">{review.comment}</p>
       )}
 
-      {showActions && (
+      {showActions && isOwnReview && (onEdit || onDelete) && (
         <div className="flex gap-2 pt-2 border-t">
           {onEdit && (
             <button
