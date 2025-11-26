@@ -150,26 +150,26 @@ export const useLeads = () => {
     try {
       // Verify user is authenticated
       if (!user) {
-        toast.error('You must be logged in to update lead status');
-        return;
-      }
-
-      // Get fresh session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !session) {
-        console.error('Session error:', sessionError);
-        toast.error('Please log in again to update lead status');
+        toast.error('⚠️ Please log in to update lead status');
         return;
       }
 
       console.log('📝 Updating lead status:', { 
         leadId, 
         status, 
-        userId: user.id,
-        sessionExists: !!session 
+        userId: user.id
       });
 
-      // Update lead status
+      // Optimistic UI update - update local state immediately
+      setLeads(prevLeads => 
+        prevLeads.map(lead => 
+          lead.id === leadId 
+            ? { ...lead, status, updated_at: new Date().toISOString() }
+            : lead
+        )
+      );
+
+      // Update in database
       const { data, error } = await supabase
         .from('leads')
         .update({ 
@@ -177,36 +177,41 @@ export const useLeads = () => {
           updated_at: new Date().toISOString() 
         })
         .eq('id', leadId)
-        .eq('owner_id', user.id) // Explicitly verify ownership
+        .eq('owner_id', user.id)
         .select()
         .single();
 
       if (error) {
-        console.error('❌ Update lead status error:', error);
+        console.error('❌ Lead status update error:', error);
+        
+        // Revert optimistic update on error
+        fetchLeads();
         
         if (error.code === '42501' || error.message?.includes('policy')) {
-          toast.error('⚠️ You do not have permission to update this lead');
+          toast.error('⚠️ Permission denied. You can only update your own leads.');
         } else if (error.code === 'PGRST116') {
-          toast.error('⚠️ Lead not found or you do not own this lead');
+          toast.error('⚠️ Lead not found or access denied.');
         } else {
-          toast.error(`Failed to update: ${error.message || 'Unknown error'}`);
+          toast.error(`❌ Update failed: ${error.message || 'Unknown error'}`);
         }
         return;
       }
 
       if (!data) {
-        toast.error('⚠️ Lead not found or you do not own this lead');
+        console.warn('⚠️ No data returned from update');
+        fetchLeads();
+        toast.error('⚠️ Update failed. Please try again.');
         return;
       }
 
-      console.log('✅ Lead status updated successfully:', data);
-      toast.success(`✅ Lead status updated to "${status.replace('_', ' ')}"`);
+      console.log('✅ Lead status updated:', data);
+      toast.success(`✅ Status changed to "${status.replace('_', ' ').toUpperCase()}"`);
       
-      // Refresh leads to show updated data
-      fetchLeads();
     } catch (error: any) {
-      console.error('❌ Unexpected error updating lead:', error);
-      toast.error('Failed to update lead status. Please try again.');
+      console.error('❌ Unexpected error:', error);
+      // Revert optimistic update
+      fetchLeads();
+      toast.error('❌ Failed to update. Please check your connection and try again.');
     }
   };
 
