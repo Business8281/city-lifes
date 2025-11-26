@@ -78,14 +78,14 @@ const Leads = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Lead Management</h1>
-        <p className="text-muted-foreground">Manage and track your property inquiries</p>
+    <div className="container mx-auto px-4 py-4 sm:py-8 max-w-7xl">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">Lead Management</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Manage and track your property inquiries</p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
         <Card>
           <CardContent className="pt-6">
             <div className="text-2xl font-bold">{leadStats.total}</div>
@@ -119,9 +119,9 @@ const Leads = () => {
       </div>
 
       {/* Filters */}
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
+      <Card className="mb-4 sm:mb-6">
+        <CardContent className="pt-4 sm:pt-6">
+          <div className="flex flex-col md:flex-row gap-3 sm:gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
@@ -223,10 +223,10 @@ const Leads = () => {
                   )}
 
                   {/* Contact Actions */}
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Button
                       variant="outline"
-                      className="flex-1"
+                      className="w-full sm:flex-1"
                       onClick={() => handleCall(lead.phone)}
                     >
                       <Phone className="h-4 w-4 mr-2" />
@@ -234,21 +234,21 @@ const Leads = () => {
                     </Button>
                     <Button
                       variant="outline"
-                      className="flex-1"
+                      className="w-full sm:flex-1"
                       onClick={() => handleChat(lead)}
                       disabled={!lead.user_id}
                     >
                       <MessageCircle className="h-4 w-4 mr-2" />
-                      Chat
+                      {lead.user_id ? 'Chat' : 'User Not Registered'}
                     </Button>
                   </div>
 
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <Select
                       value={lead.status}
                       onValueChange={(value) => updateLeadStatus(lead.id, value as Lead['status'])}
                     >
-                      <SelectTrigger className="flex-1">
+                      <SelectTrigger className="w-full sm:flex-1">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -262,9 +262,15 @@ const Leads = () => {
                     <Button
                       variant="destructive"
                       size="icon"
-                      onClick={() => deleteLead(lead.id)}
+                      onClick={() => {
+                        if (confirm('Are you sure you want to delete this lead?')) {
+                          deleteLead(lead.id);
+                        }
+                      }}
+                      className="w-full sm:w-auto"
                     >
                       <Trash2 className="h-4 w-4" />
+                      <span className="sm:hidden ml-2">Delete</span>
                     </Button>
                   </div>
                 </div>

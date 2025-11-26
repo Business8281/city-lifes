@@ -586,8 +586,15 @@ const PropertyDetails = () => {
             </>}
           
           {/* Contact Owner button - always visible for non-owners */}
-          {user?.id !== property.user_id && <Button size="sm" className={cn("w-full", (property.contact_name || property.contact_phone || property.contact_email) && "mt-2")} onClick={() => setLeadDialogOpen(true)}>
-              Contact Owner
+          {user?.id !== property.user_id && <Button 
+              size="sm" 
+              className={cn(
+                "w-full text-sm sm:text-base h-9 sm:h-10", 
+                (property.contact_name || property.contact_phone || property.contact_email) && "mt-2"
+              )} 
+              onClick={() => setLeadDialogOpen(true)}
+            >
+              📤 Contact Owner
             </Button>}
         </Card>
 

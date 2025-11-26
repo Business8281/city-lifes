@@ -182,37 +182,43 @@ export const LeadCaptureDialog = ({
       const result = await submitWithRetry(leadData);
       
       if (result?.data) {
-        toast.success('Inquiry sent successfully!', {
-          description: 'The owner will contact you soon.',
-          duration: 4000,
+        // Show prominent success message
+        toast.success('✅ Inquiry Sent Successfully!', {
+          description: `The owner will contact you at ${trimmedPhone}`,
+          duration: 5000,
         });
         
         // Reset form
         setFormData({ name: '', phone: '' });
         
-        // Close dialog after delay
-        setTimeout(() => {
-          onOpenChange(false);
-        }, 500);
+        // Close dialog immediately to show success
+        onOpenChange(false);
       } else {
         throw new Error('Failed to submit inquiry');
       }
     } catch (error: any) {
       console.error('Lead submission error:', error);
       
-      // User-friendly error messages
-      let errorMessage = 'Failed to submit inquiry. Please try again.';
+      // User-friendly error messages with clear icons
+      let errorMessage = '❌ Failed to submit inquiry. Please try again.';
+      let errorDescription = 'If the problem persists, please contact support.';
       
       if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
-        errorMessage = 'Network error. Please check your connection and try again.';
-      } else if (error?.code === '23505') {
-        errorMessage = 'You have already submitted an inquiry for this listing.';
+        errorMessage = '🌐 Network Error';
+        errorDescription = 'Please check your internet connection and try again.';
+      } else if (error?.code === '23505' || error?.message?.includes('already submitted')) {
+        errorMessage = '⚠️ Already Submitted';
+        errorDescription = 'You have already sent an inquiry for this listing.';
       } else if (error?.code === '23503') {
-        errorMessage = 'Invalid listing. Please refresh and try again.';
+        errorMessage = '❌ Invalid Listing';
+        errorDescription = 'Please refresh the page and try again.';
+      } else if (error?.message) {
+        errorDescription = error.message;
       }
       
       toast.error(errorMessage, {
-        duration: 5000,
+        description: errorDescription,
+        duration: 6000,
       });
     } finally {
       setLoading(false);
@@ -229,17 +235,17 @@ export const LeadCaptureDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => loading && e.preventDefault()}>
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto" onPointerDownOutside={(e) => loading && e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Contact Owner</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">Contact Owner</DialogTitle>
           <DialogDescription className="space-y-2">
             <span className="block text-sm text-muted-foreground">Send your inquiry about:</span>
-            <span className="block font-semibold text-foreground text-base">{listingTitle}</span>
+            <span className="block font-semibold text-foreground text-sm sm:text-base">{listingTitle}</span>
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="lead-name">Full Name *</Label>
+            <Label htmlFor="lead-name" className="text-sm font-medium">Full Name *</Label>
             <Input 
               id="lead-name" 
               name="name"
@@ -252,10 +258,11 @@ export const LeadCaptureDialog = ({
               onChange={e => setFormData({ ...formData, name: e.target.value })} 
               placeholder="Enter your name"
               disabled={loading}
+              className="w-full"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lead-phone">Phone Number *</Label>
+            <Label htmlFor="lead-phone" className="text-sm font-medium">Phone Number *</Label>
             <Input 
               id="lead-phone" 
               name="phone"
@@ -268,14 +275,18 @@ export const LeadCaptureDialog = ({
               onChange={e => setFormData({ ...formData, phone: e.target.value })} 
               placeholder="Enter your phone number"
               disabled={loading}
+              className="w-full"
             />
+            <p className="text-xs text-muted-foreground">
+              The owner will contact you on this number
+            </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <Button 
               type="button" 
               variant="outline" 
               onClick={handleClose} 
-              className="flex-1"
+              className="w-full sm:flex-1 order-2 sm:order-1"
               disabled={loading}
             >
               Cancel
@@ -283,7 +294,7 @@ export const LeadCaptureDialog = ({
             <Button 
               type="submit" 
               disabled={loading || !formData.name.trim() || !formData.phone.trim()} 
-              className="flex-1"
+              className="w-full sm:flex-1 order-1 sm:order-2"
             >
               {loading ? (
                 <>
@@ -291,7 +302,7 @@ export const LeadCaptureDialog = ({
                   Submitting...
                 </>
               ) : (
-                'Submit Inquiry'
+                '📤 Submit Inquiry'
               )}
             </Button>
           </div>
