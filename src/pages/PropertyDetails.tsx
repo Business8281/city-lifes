@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import BottomNav from "@/components/BottomNav";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ListingGallery from '@/components/ListingGallery';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ import { ReportUserDialog } from '@/components/ReportUserDialog';
 import { PropertySchema, BreadcrumbSchema } from '@/components/SEOSchema';
 import { ReviewForm } from '@/components/ReviewForm';
 import { ReviewsList } from '@/components/ReviewsList';
+import { supabase } from '@/integrations/supabase/client';
 const PropertyDetails = () => {
   const {
     id
@@ -46,7 +47,8 @@ const PropertyDetails = () => {
     canReview,
     createReview,
     updateReview,
-    deleteReview 
+    deleteReview,
+    refetch
   } = useReviews(property?.user_id, id);
   const [currentImage, setCurrentImage] = useState(0);
   const [leadDialogOpen, setLeadDialogOpen] = useState(false);
@@ -54,6 +56,29 @@ const PropertyDetails = () => {
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
+
+  // Auto-create review interaction when user views property
+  useEffect(() => {
+    const createViewInteraction = async () => {
+      if (!user || !property || user.id === property.user_id) return;
+
+      try {
+        await (supabase
+          .from('review_interaction') as any)
+          .insert({
+            reviewer_id: user.id,
+            owner_id: property.user_id,
+            listing_id: property.id,
+            interaction_type: 'view'
+          });
+      } catch (error) {
+        // Silently fail - constraint will prevent duplicates
+        console.log('View interaction already exists or failed to create');
+      }
+    };
+
+    createViewInteraction();
+  }, [user, property]);
   const goPrev = () => {
     setCurrentImage(prev => {
       const total = property?.images?.length || 0;
