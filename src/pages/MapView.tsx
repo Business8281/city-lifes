@@ -339,6 +339,7 @@ const MapView = () => {
                   area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
                   verified={property.verified}
                   distance={property.distance_km}
+                  userId={property.user_id}
                   onClick={() => navigate(`/property/${property.id}`)}
                 />
               </div>

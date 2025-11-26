@@ -300,6 +300,7 @@ export default function UserProfile() {
                     bathrooms={property.bathrooms}
                     area={property.area_sqft ? `${property.area_sqft} sqft` : undefined}
                     verified={property.verified}
+                    userId={property.user_id}
                     onClick={() => navigate(`/property/${property.id}`)}
                   />
                 ))}
