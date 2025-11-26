@@ -66,6 +66,8 @@ export const useLeads = () => {
 
     if (!user) return;
 
+    console.log('🔔 Setting up real-time subscription for leads, user:', user.id);
+
     // Realtime subscription for instant updates
     const channel = supabase
       .channel('leads-changes')
@@ -74,12 +76,16 @@ export const useLeads = () => {
         schema: 'public',
         table: 'leads',
         filter: `owner_id=eq.${user.id}`
-      }, () => {
+      }, (payload) => {
+        console.log('🔔 Real-time lead update received:', payload);
         fetchLeads();
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('🔔 Subscription status:', status);
+      });
 
     return () => {
+      console.log('🔕 Cleaning up leads subscription');
       supabase.removeChannel(channel);
     };
   }, [user]);

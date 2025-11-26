@@ -246,17 +246,20 @@ const Leads = () => {
                   <div className="flex flex-col sm:flex-row gap-2">
                     <Select
                       value={lead.status}
-                      onValueChange={(value) => updateLeadStatus(lead.id, value as Lead['status'])}
+                      onValueChange={(value) => {
+                        console.log('🔄 Status change triggered:', { leadId: lead.id, oldStatus: lead.status, newStatus: value });
+                        updateLeadStatus(lead.id, value as Lead['status']);
+                      }}
                     >
                       <SelectTrigger className="w-full sm:flex-1">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="new">New</SelectItem>
-                        <SelectItem value="contacted">Contacted</SelectItem>
-                        <SelectItem value="interested">Interested</SelectItem>
-                        <SelectItem value="not_interested">Not Interested</SelectItem>
-                        <SelectItem value="closed">Closed</SelectItem>
+                        <SelectItem value="new">🆕 New</SelectItem>
+                        <SelectItem value="contacted">📞 Contacted</SelectItem>
+                        <SelectItem value="interested">✅ Interested</SelectItem>
+                        <SelectItem value="not_interested">❌ Not Interested</SelectItem>
+                        <SelectItem value="closed">🔒 Closed</SelectItem>
                       </SelectContent>
                     </Select>
                     <Button
