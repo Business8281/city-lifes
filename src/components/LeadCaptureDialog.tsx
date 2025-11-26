@@ -54,45 +54,56 @@ export const LeadCaptureDialog = ({
       }
 
       try {
-        // First try database profile
-        const { data: profile } = await supabase
+        // Try database profile first
+        const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('full_name, phone')
           .eq('id', user.id)
           .maybeSingle();
 
-        if (profile?.full_name && profile?.phone) {
-          // Database profile has complete data
-          setFormData({
-            name: profile.full_name,
-            phone: profile.phone
-          });
-          return;
-        }
+        // Build comprehensive fallback data
+        const emailName = user.email ? user.email.split('@')[0] : '';
+        
+        // Google users: user_metadata might have full_name, name, or display_name
+        // Email users: user_metadata might have full_name or name
+        const metadataName = 
+          user.user_metadata?.full_name || 
+          user.user_metadata?.name || 
+          user.user_metadata?.display_name ||
+          emailName;
 
-        // Fallback chain for incomplete or missing profile
-        const nameFromMetadata = 
+        const metadataPhone = 
+          user.user_metadata?.phone || 
+          user.user_metadata?.phone_number ||
+          user.phone || 
+          '';
+
+        // Prefer database profile, fallback to metadata
+        const finalName = profile?.full_name || metadataName;
+        const finalPhone = profile?.phone || metadataPhone;
+
+        setFormData({
+          name: finalName,
+          phone: finalPhone
+        });
+      } catch (error) {
+        console.error('Profile fetch error:', error);
+        // Final fallback using whatever we can extract
+        const fallbackName = 
           user.user_metadata?.full_name || 
           user.user_metadata?.name || 
           user.user_metadata?.display_name ||
           (user.email ? user.email.split('@')[0] : '');
-
-        const phoneFromMetadata = 
+        
+        const fallbackPhone = 
           user.user_metadata?.phone || 
+          user.user_metadata?.phone_number ||
           user.phone || 
-          profile?.phone || 
           '';
 
         setFormData({
-          name: nameFromMetadata,
-          phone: phoneFromMetadata
-        });
-      } catch (error) {
-        console.error('Profile fetch error:', error);
-        // Emergency fallback
-        setFormData({
-          name: user.user_metadata?.full_name || user.user_metadata?.name || '',
-          phone: user.user_metadata?.phone || ''
+          name: fallbackName,
+          phone: fallbackPhone
         });
       }
     };
@@ -178,10 +189,14 @@ export const LeadCaptureDialog = ({
         subcategory: subcategory || null
       };
 
+      console.log('Submitting lead data:', { ...leadData, user_auth_method: user?.app_metadata?.provider });
+
       // Submit with retry logic
       const result = await submitWithRetry(leadData);
       
       if (result?.data) {
+        console.log('Lead submitted successfully:', result.data);
+        
         // Show prominent success message
         toast.success('✅ Inquiry Sent Successfully!', {
           description: `The owner will contact you at ${trimmedPhone}`,
@@ -198,6 +213,7 @@ export const LeadCaptureDialog = ({
       }
     } catch (error: any) {
       console.error('Lead submission error:', error);
+      console.error('Error details:', { code: error?.code, message: error?.message, details: error?.details });
       
       // User-friendly error messages with clear icons
       let errorMessage = '❌ Failed to submit inquiry. Please try again.';
@@ -212,6 +228,9 @@ export const LeadCaptureDialog = ({
       } else if (error?.code === '23503') {
         errorMessage = '❌ Invalid Listing';
         errorDescription = 'Please refresh the page and try again.';
+      } else if (error?.code === '42501' || error?.message?.includes('permission')) {
+        errorMessage = '🔒 Permission Error';
+        errorDescription = 'Unable to submit inquiry. Please try logging in again.';
       } else if (error?.message) {
         errorDescription = error.message;
       }
