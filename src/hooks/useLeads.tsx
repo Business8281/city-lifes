@@ -148,18 +148,65 @@ export const useLeads = () => {
 
   const updateLeadStatus = async (leadId: string, status: Lead['status']) => {
     try {
-      // @ts-ignore - Table types will be generated after migration
-      const { error } = await supabase
-        .from('leads')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', leadId);
+      // Verify user is authenticated
+      if (!user) {
+        toast.error('You must be logged in to update lead status');
+        return;
+      }
 
-      if (error) throw error;
-      toast.success('Lead status updated');
+      // Get fresh session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        console.error('Session error:', sessionError);
+        toast.error('Please log in again to update lead status');
+        return;
+      }
+
+      console.log('📝 Updating lead status:', { 
+        leadId, 
+        status, 
+        userId: user.id,
+        sessionExists: !!session 
+      });
+
+      // Update lead status
+      const { data, error } = await supabase
+        .from('leads')
+        .update({ 
+          status, 
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', leadId)
+        .eq('owner_id', user.id) // Explicitly verify ownership
+        .select()
+        .single();
+
+      if (error) {
+        console.error('❌ Update lead status error:', error);
+        
+        if (error.code === '42501' || error.message?.includes('policy')) {
+          toast.error('⚠️ You do not have permission to update this lead');
+        } else if (error.code === 'PGRST116') {
+          toast.error('⚠️ Lead not found or you do not own this lead');
+        } else {
+          toast.error(`Failed to update: ${error.message || 'Unknown error'}`);
+        }
+        return;
+      }
+
+      if (!data) {
+        toast.error('⚠️ Lead not found or you do not own this lead');
+        return;
+      }
+
+      console.log('✅ Lead status updated successfully:', data);
+      toast.success(`✅ Lead status updated to "${status.replace('_', ' ')}"`);
+      
+      // Refresh leads to show updated data
       fetchLeads();
     } catch (error: any) {
-      console.error('Error updating lead:', error);
-      toast.error('Failed to update lead status');
+      console.error('❌ Unexpected error updating lead:', error);
+      toast.error('Failed to update lead status. Please try again.');
     }
   };
 
