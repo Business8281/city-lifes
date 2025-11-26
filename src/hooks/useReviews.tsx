@@ -92,22 +92,55 @@ export function useReviews(ownerId?: string, listingId?: string) {
     if (!ownerId) return;
 
     try {
-      // @ts-ignore - Types not yet generated
-      const { data, error } = await supabase.rpc('get_owner_rating_stats', {
+      // First try RPC function
+      const { data: rpcData, error: rpcError } = await (supabase.rpc as any)('get_owner_rating_stats', {
         owner_user_id: ownerId
       });
 
-      if (error) throw error;
-      if (data && Array.isArray(data) && data.length > 0) {
-        const statsData = data[0] as any;
+      if (!rpcError && rpcData && Array.isArray(rpcData) && rpcData.length > 0) {
+        const statsData = rpcData[0] as any;
         setStats({
           average_rating: Number(statsData.average_rating) || 0,
           total_reviews: Number(statsData.total_reviews) || 0,
           verified_reviews: Number(statsData.verified_reviews) || 0,
         });
+        return;
+      }
+
+      // Fallback: Calculate stats directly from reviews
+      const { data: reviewsData, error: reviewsError } = await supabase
+        .from('reviews')
+        .select('rating, verified')
+        .eq('owner_id', ownerId);
+
+      if (reviewsError) throw reviewsError;
+
+      if (reviewsData && reviewsData.length > 0) {
+        const totalReviews = reviewsData.length;
+        const verifiedReviews = reviewsData.filter((r: any) => r.verified).length;
+        const totalRating = reviewsData.reduce((sum: number, r: any) => sum + r.rating, 0);
+        const avgRating = totalRating / totalReviews;
+
+        setStats({
+          average_rating: Number(avgRating.toFixed(1)) || 0,
+          total_reviews: totalReviews,
+          verified_reviews: verifiedReviews,
+        });
+      } else {
+        setStats({
+          average_rating: 0,
+          total_reviews: 0,
+          verified_reviews: 0,
+        });
       }
     } catch (error: any) {
       console.error('Error fetching stats:', error);
+      // Set default stats on error
+      setStats({
+        average_rating: 0,
+        total_reviews: 0,
+        verified_reviews: 0,
+      });
     }
   };
 
@@ -254,18 +287,24 @@ export function useReviews(ownerId?: string, listingId?: string) {
     fetchStats();
     checkCanReview();
 
+    // Set up real-time subscription for reviews
+    const channelName = `reviews-${ownerId || listingId || 'all'}-${Date.now()}`;
     const channel = supabase
-      .channel('reviews-changes')
+      .channel(channelName)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
         table: 'reviews',
-        filter: ownerId ? `owner_id=eq.${ownerId}` : undefined,
-      }, () => {
+        filter: ownerId ? `owner_id=eq.${ownerId}` : listingId ? `listing_id=eq.${listingId}` : undefined,
+      }, (payload) => {
+        console.log('Review changed:', payload);
         fetchReviews();
         fetchStats();
+        checkCanReview();
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Reviews subscription status:', status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
