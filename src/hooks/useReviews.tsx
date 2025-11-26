@@ -7,11 +7,12 @@ export interface Review {
   id: string;
   reviewer_id: string;
   owner_id: string;
-  listing_id: string;
+  listing_id: string | null;
   rating: number;
   title: string | null;
   comment: string | null;
   verified: boolean;
+  review_type: 'business' | 'profile';
   created_at: string;
   updated_at: string;
   reviewer?: {
@@ -26,7 +27,7 @@ export interface ReviewStats {
   verified_reviews: number;
 }
 
-export function useReviews(ownerId?: string, listingId?: string) {
+export function useReviews(ownerId?: string, reviewType: 'business' | 'profile' = 'profile', listingId?: string) {
   const { user } = useAuth();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [userReview, setUserReview] = useState<Review | null>(null);
@@ -45,6 +46,7 @@ export function useReviews(ownerId?: string, listingId?: string) {
       let query = supabase
         .from('reviews')
         .select('*')
+        .eq('review_type', reviewType)
         .order('created_at', { ascending: false });
 
       if (listingId) {
@@ -77,7 +79,9 @@ export function useReviews(ownerId?: string, listingId?: string) {
 
       // Check if user has already reviewed this owner
       if (user && ownerId) {
-        const existingReview = reviewsWithProfiles.find((r: any) => r.reviewer_id === user.id && r.owner_id === ownerId);
+        const existingReview = reviewsWithProfiles.find((r: any) => 
+          r.reviewer_id === user.id && r.owner_id === ownerId && r.review_type === reviewType
+        );
         setUserReview(existingReview as any || null);
       }
     } catch (error: any) {
@@ -92,26 +96,12 @@ export function useReviews(ownerId?: string, listingId?: string) {
     if (!ownerId) return;
 
     try {
-      // First try RPC function
-      const { data: rpcData, error: rpcError } = await (supabase.rpc as any)('get_owner_rating_stats', {
-        owner_user_id: ownerId
-      });
-
-      if (!rpcError && rpcData && Array.isArray(rpcData) && rpcData.length > 0) {
-        const statsData = rpcData[0] as any;
-        setStats({
-          average_rating: Number(statsData.average_rating) || 0,
-          total_reviews: Number(statsData.total_reviews) || 0,
-          verified_reviews: Number(statsData.verified_reviews) || 0,
-        });
-        return;
-      }
-
-      // Fallback: Calculate stats directly from reviews
+      // Calculate stats directly from reviews with review_type filter
       const { data: reviewsData, error: reviewsError } = await supabase
         .from('reviews')
         .select('rating, verified')
-        .eq('owner_id', ownerId);
+        .eq('owner_id', ownerId)
+        .eq('review_type', reviewType);
 
       if (reviewsError) throw reviewsError;
 
@@ -157,7 +147,22 @@ export function useReviews(ownerId?: string, listingId?: string) {
     }
 
     try {
-      const { data, error } = await supabase
+      // Check if user already has a review for this owner of this type
+      const { data: existingReview } = await supabase
+        .from('reviews')
+        .select('id')
+        .eq('reviewer_id', user.id)
+        .eq('owner_id', ownerId)
+        .eq('review_type', reviewType)
+        .maybeSingle();
+
+      if (existingReview) {
+        setCanReview(false);
+        return;
+      }
+
+      // Check if user has interaction with this owner
+      const { data: interaction, error } = await supabase
         .from('review_interaction')
         .select('id')
         .eq('reviewer_id', user.id)
@@ -165,7 +170,7 @@ export function useReviews(ownerId?: string, listingId?: string) {
         .limit(1);
 
       if (error) throw error;
-      setCanReview((data?.length || 0) > 0);
+      setCanReview((interaction?.length || 0) > 0);
     } catch (error: any) {
       console.error('Error checking review eligibility:', error);
       setCanReview(false);
@@ -174,10 +179,11 @@ export function useReviews(ownerId?: string, listingId?: string) {
 
   const createReview = async (input: {
     owner_id: string;
-    listing_id: string;
+    listing_id?: string | null;
     rating: number;
     title?: string;
     comment?: string;
+    review_type: 'business' | 'profile';
   }): Promise<any> => {
     if (!user) {
       toast.error('You must be logged in to leave a review');
@@ -190,10 +196,11 @@ export function useReviews(ownerId?: string, listingId?: string) {
         .insert({
           reviewer_id: user.id,
           owner_id: input.owner_id,
-          listing_id: input.listing_id,
+          listing_id: input.listing_id || null,
           rating: input.rating,
           title: input.title || null,
           comment: input.comment || null,
+          review_type: input.review_type,
         } as any)
         .select()
         .single();
@@ -288,7 +295,7 @@ export function useReviews(ownerId?: string, listingId?: string) {
     checkCanReview();
 
     // Set up real-time subscription for reviews
-    const channelName = `reviews-${ownerId || listingId || 'all'}-${Date.now()}`;
+    const channelName = `reviews-${reviewType}-${ownerId || listingId || 'all'}-${Date.now()}`;
     const channel = supabase
       .channel(channelName)
       .on('postgres_changes', {
@@ -309,7 +316,7 @@ export function useReviews(ownerId?: string, listingId?: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, ownerId, listingId]);
+  }, [user, ownerId, reviewType, listingId]);
 
   return {
     reviews,

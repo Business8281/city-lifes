@@ -39,7 +39,7 @@ export default function UserProfile() {
     canReview,
     deleteReview,
     refetch: refetchReviews 
-  } = useReviews(userId);
+  } = useReviews(userId, 'profile');
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
@@ -329,6 +329,7 @@ export default function UserProfile() {
         }}
         reviewedUserId={userId!}
         reviewedUserName={profile.full_name}
+        reviewType="profile"
         existingReview={editingReview ? userReview : null}
         onSuccess={refetchReviews}
       />

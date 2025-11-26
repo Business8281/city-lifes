@@ -39,9 +39,10 @@ const PropertyDetails = () => {
     favoriteIds,
     toggleFavorite
   } = useFavorites(user?.id);
+  const reviewType: 'business' | 'profile' = property?.property_type === 'business' ? 'business' : 'profile';
   const { 
     reviews, 
-    userReview, 
+    userReview,
     stats, 
     loading: reviewsLoading, 
     canReview,
@@ -49,7 +50,7 @@ const PropertyDetails = () => {
     updateReview,
     deleteReview,
     refetch
-  } = useReviews(property?.user_id, id);
+  } = useReviews(property?.user_id, reviewType, id);
   const [currentImage, setCurrentImage] = useState(0);
   const [leadDialogOpen, setLeadDialogOpen] = useState(false);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
@@ -653,6 +654,7 @@ const PropertyDetails = () => {
               await createReview({
                 owner_id: property.user_id,
                 listing_id: property.id,
+                review_type: reviewType,
                 ...data
               });
             }

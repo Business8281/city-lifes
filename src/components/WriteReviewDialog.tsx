@@ -14,6 +14,7 @@ interface WriteReviewDialogProps {
   onOpenChange: (open: boolean) => void;
   reviewedUserId: string;
   reviewedUserName: string | null;
+  reviewType: 'business' | 'profile';
   listingId?: string;
   existingReview?: Review | null;
   onSuccess?: () => void;
@@ -24,6 +25,7 @@ export function WriteReviewDialog({
   onOpenChange,
   reviewedUserId,
   reviewedUserName,
+  reviewType,
   listingId,
   existingReview,
   onSuccess,
@@ -35,7 +37,7 @@ export function WriteReviewDialog({
   const [submitting, setSubmitting] = useState(false);
   const [ownerListingId, setOwnerListingId] = useState<string | null>(listingId || null);
   
-  const { createReview, updateReview } = useReviews(reviewedUserId);
+  const { createReview, updateReview } = useReviews(reviewedUserId, reviewType);
   const isEditMode = !!existingReview;
 
   // Load existing review data when in edit mode
@@ -52,14 +54,15 @@ export function WriteReviewDialog({
     }
   }, [open, existingReview]);
 
-  // Fetch owner's first listing if not provided
+  // Fetch owner's first listing if not provided AND review type is business
   useEffect(() => {
-    if (open && !listingId && reviewedUserId) {
+    if (open && !listingId && reviewedUserId && reviewType === 'business') {
       const fetchOwnerListing = async () => {
         const { data } = await supabase
           .from('properties')
           .select('id')
           .eq('user_id', reviewedUserId)
+          .eq('property_type', 'business')
           .limit(1)
           .single();
         
@@ -68,8 +71,11 @@ export function WriteReviewDialog({
         }
       };
       fetchOwnerListing();
+    } else if (reviewType === 'profile') {
+      // Profile reviews don't need a listing_id
+      setOwnerListingId(null);
     }
-  }, [open, listingId, reviewedUserId]);
+  }, [open, listingId, reviewedUserId, reviewType]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,8 +85,8 @@ export function WriteReviewDialog({
       return;
     }
 
-    if (!isEditMode && !ownerListingId) {
-      toast.error('Cannot submit review: Owner has no listings');
+    if (!isEditMode && reviewType === 'business' && !ownerListingId) {
+      toast.error('Cannot submit review: Owner has no business listings');
       return;
     }
 
@@ -97,10 +103,11 @@ export function WriteReviewDialog({
       } else {
         result = await createReview({
           owner_id: reviewedUserId,
-          listing_id: ownerListingId!,
+          listing_id: reviewType === 'business' ? ownerListingId! : null,
           rating,
           title: title.trim() || undefined,
           comment: comment.trim() || undefined,
+          review_type: reviewType,
         });
       }
 
@@ -187,7 +194,7 @@ export function WriteReviewDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={submitting || !rating || (!isEditMode && !ownerListingId)}>
+            <Button type="submit" disabled={submitting || !rating || (!isEditMode && reviewType === 'business' && !ownerListingId)}>
               {submitting ? (isEditMode ? 'Updating...' : 'Submitting...') : (isEditMode ? 'Update Review' : 'Submit Review')}
             </Button>
           </div>
