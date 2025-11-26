@@ -63,7 +63,7 @@ const PropertyDetails = () => {
       if (!user || !property || user.id === property.user_id) return;
 
       try {
-        await (supabase
+        const { error } = await (supabase
           .from('review_interaction') as any)
           .insert({
             reviewer_id: user.id,
@@ -71,9 +71,17 @@ const PropertyDetails = () => {
             listing_id: property.id,
             interaction_type: 'view'
           });
+        
+        if (error && !error.message.includes('duplicate')) {
+          console.error('Error creating view interaction:', error);
+        } else if (!error) {
+          console.log('View interaction created successfully');
+          // Refresh review eligibility after creating interaction
+          refetch();
+        }
       } catch (error) {
         // Silently fail - constraint will prevent duplicates
-        console.log('View interaction already exists or failed to create');
+        console.log('View interaction error:', error);
       }
     };
 
