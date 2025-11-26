@@ -40,9 +40,10 @@ export const LeadCaptureDialog = ({
     phone: ''
   });
 
-  // Fetch and pre-fill user profile data when dialog opens
+  // Safari-compatible: Fetch and pre-fill user profile data when dialog opens
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    // Safari: Use IIFE pattern for async in useEffect
+    (async () => {
       if (!open) {
         setFormData({ name: '', phone: '' });
         return;
@@ -54,12 +55,14 @@ export const LeadCaptureDialog = ({
       }
 
       try {
-        // Try database profile first
-        const { data: profile, error: profileError } = await supabase
+        // Safari: Use explicit promise handling with proper error catching
+        const profileResponse = await supabase
           .from('profiles')
           .select('full_name, phone')
           .eq('id', user.id)
           .maybeSingle();
+        
+        const { data: profile, error: profileError } = profileResponse;
 
         // Build comprehensive fallback data
         const emailName = user.email ? user.email.split('@')[0] : '';
@@ -106,41 +109,64 @@ export const LeadCaptureDialog = ({
           phone: fallbackPhone
         });
       }
-    };
-
-    fetchUserProfile();
+    })(); // Safari: Execute IIFE immediately
   }, [open, user]);
 
-  // Retry logic for network failures
+  // Safari-compatible retry logic for network failures
   const submitWithRetry = async (data: any, retries = 3): Promise<any> => {
     for (let i = 0; i < retries; i++) {
       try {
-        const { data: result, error } = await supabase
+        // Safari: Use explicit promise handling
+        const response = await supabase
           .from('leads')
           .insert(data)
           .select()
           .single();
         
+        const { data: result, error } = response;
+        
         if (error) {
+          console.error('Supabase error:', error);
           // If it's the last retry, throw the error
           if (i === retries - 1) throw error;
-          // Otherwise wait before retrying
-          await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+          // Otherwise wait before retrying (Safari-compatible delay)
+          await new Promise(resolve => {
+            const timeout = setTimeout(() => {
+              clearTimeout(timeout);
+              resolve(undefined);
+            }, 1000 * (i + 1));
+          });
           continue;
         }
         
         return { data: result, error: null };
       } catch (err) {
-        // Network error - retry
+        console.error('Submit error:', err);
+        // Network error - retry (Safari-compatible)
         if (i === retries - 1) throw err;
-        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+        await new Promise(resolve => {
+          const timeout = setTimeout(() => {
+            clearTimeout(timeout);
+            resolve(undefined);
+          }, 1000 * (i + 1));
+        });
       }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
+    // Safari-specific: Prevent all default behaviors explicitly
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault();
+    }
+    if (e && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
+    
+    // Safari: Prevent any potential form navigation
+    if (typeof window !== 'undefined' && window.event) {
+      window.event.returnValue = false;
+    }
     
     const trimmedName = formData.name.trim();
     const trimmedPhone = formData.phone.trim();
@@ -262,7 +288,7 @@ export const LeadCaptureDialog = ({
             <span className="block font-semibold text-foreground text-sm sm:text-base">{listingTitle}</span>
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div className="space-y-2">
             <Label htmlFor="lead-name" className="text-sm font-medium">Full Name *</Label>
             <Input 
