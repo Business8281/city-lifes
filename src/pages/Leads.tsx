@@ -246,9 +246,9 @@ const Leads = () => {
                   <div className="flex flex-col sm:flex-row gap-2">
                     <Select
                       value={lead.status}
-                      onValueChange={(value) => {
+                      onValueChange={async (value) => {
                         console.log('🔄 Status change triggered:', { leadId: lead.id, oldStatus: lead.status, newStatus: value });
-                        updateLeadStatus(lead.id, value as Lead['status']);
+                        await updateLeadStatus(lead.id, value as Lead['status']);
                       }}
                     >
                       <SelectTrigger className="w-full sm:flex-1">
