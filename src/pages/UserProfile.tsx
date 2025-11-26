@@ -7,6 +7,8 @@ import PropertyCard from '@/components/PropertyCard';
 import { WriteReviewDialog } from '@/components/WriteReviewDialog';
 import { ReportUserDialog } from '@/components/ReportUserDialog';
 import { LeadCaptureDialog } from '@/components/LeadCaptureDialog';
+import { ReviewsList } from '@/components/ReviewsList';
+import { useReviews } from '@/hooks/useReviews';
 import BottomNav from '@/components/BottomNav';
 import { 
   ArrowLeft, 
@@ -28,12 +30,23 @@ export default function UserProfile() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { profile, stats, reviews, properties, loading, refetch } = useUserProfile(userId);
+  const { profile, properties, loading: profileLoading } = useUserProfile(userId);
+  const { 
+    reviews, 
+    userReview,
+    stats, 
+    loading: reviewsLoading, 
+    canReview,
+    deleteReview,
+    refetch: refetchReviews 
+  } = useReviews(userId);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [editingReview, setEditingReview] = useState(false);
 
   const isOwnProfile = user?.id === userId;
+  const loading = profileLoading || reviewsLoading;
 
   const handleCall = () => {
     if (!profile?.phone) {
@@ -189,15 +202,20 @@ export default function UserProfile() {
                         <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         Chat
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setReviewDialogOpen(true)}
-                        className="gap-1.5 sm:gap-2 text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
-                      >
-                        <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        Review
-                      </Button>
+                      {canReview && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setEditingReview(!!userReview);
+                            setReviewDialogOpen(true);
+                          }}
+                          className="gap-1.5 sm:gap-2 text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
+                        >
+                          <Edit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                          {userReview ? 'Edit Review' : 'Write Review'}
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="ghost"
@@ -231,54 +249,37 @@ export default function UserProfile() {
           </Card>
 
           {/* Reviews Section */}
-          {reviews.length > 0 && (
-            <Card className="p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Reviews ({totalReviews})</h3>
-              <div className="space-y-3 sm:space-y-4">
-                {reviews.map((review) => (
-                  <div key={review.id} className="border-b last:border-0 pb-3 sm:pb-4 last:pb-0">
-                    <div className="flex items-start gap-2 sm:gap-3">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold shrink-0 text-sm sm:text-base">
-                        {review.reviewer.full_name?.charAt(0) || 'U'}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
-                          <p className="font-semibold text-xs sm:text-sm truncate">
-                            {review.reviewer.full_name || 'Anonymous'}
-                          </p>
-                          <div className="flex gap-0.5">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`h-3 w-3 sm:h-3.5 sm:w-3.5 ${
-                                  i < review.rating
-                                    ? 'fill-yellow-400 text-yellow-400'
-                                    : 'text-gray-300'
-                                }`}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                        {review.title && (
-                          <p className="text-xs sm:text-sm font-medium mb-1">
-                            {review.title}
-                          </p>
-                        )}
-                        {review.comment && (
-                          <p className="text-xs sm:text-sm text-muted-foreground mb-1.5 sm:mb-2 break-words">
-                            {review.comment}
-                          </p>
-                        )}
-                        <p className="text-xs text-muted-foreground">
-                          {format(new Date(review.created_at), 'MMM d, yyyy')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          )}
+          <Card className="p-4 sm:p-6">
+            <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">
+              Reviews {stats && stats.total_reviews > 0 && `(${stats.total_reviews})`}
+            </h3>
+            <ReviewsList
+              reviews={reviews}
+              stats={stats}
+              loading={reviewsLoading}
+              showActions={!!user}
+              onEdit={(review) => {
+                if (review.reviewer_id === user?.id) {
+                  setEditingReview(true);
+                  setReviewDialogOpen(true);
+                }
+              }}
+              onDelete={async (reviewId) => {
+                const review = reviews.find(r => r.id === reviewId);
+                if (review?.reviewer_id === user?.id) {
+                  if (window.confirm('Are you sure you want to delete this review?')) {
+                    await deleteReview(reviewId);
+                  }
+                }
+              }}
+              onWriteReview={canReview && !isOwnProfile ? () => {
+                setEditingReview(!!userReview);
+                setReviewDialogOpen(true);
+              } : undefined}
+              canReview={canReview && !isOwnProfile}
+              hasUserReview={!!userReview}
+            />
+          </Card>
 
           {/* Properties Section */}
           {properties.length > 0 && (
@@ -322,10 +323,14 @@ export default function UserProfile() {
       {/* Review Dialog */}
       <WriteReviewDialog
         open={reviewDialogOpen}
-        onOpenChange={setReviewDialogOpen}
+        onOpenChange={(open) => {
+          setReviewDialogOpen(open);
+          if (!open) setEditingReview(false);
+        }}
         reviewedUserId={userId!}
         reviewedUserName={profile.full_name}
-        onSuccess={refetch}
+        existingReview={editingReview ? userReview : null}
+        onSuccess={refetchReviews}
       />
 
       {/* Report Dialog */}
