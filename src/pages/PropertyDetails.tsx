@@ -175,7 +175,7 @@ const PropertyDetails = () => {
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm border-b border-border max-w-full overflow-x-hidden">
         <div className="flex items-center justify-between px-4 py-3 max-w-full">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/listings")} aria-label="Go back">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           

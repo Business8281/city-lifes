@@ -117,7 +117,6 @@ export const OptimizedImage = ({
             isLoaded ? 'opacity-100' : 'opacity-0'
           )}
           loading={priority ? 'eager' : 'lazy'}
-          fetchPriority={priority ? 'high' : 'auto'}
           decoding="async"
           onLoad={handleLoad}
           onError={handleError}
