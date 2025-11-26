@@ -29,23 +29,67 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
+    let mounted = true;
+
+    // Set up auth state listener with better error handling
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
+        if (!mounted) return;
+
+        console.log('🔐 Auth state changed:', event, session?.user?.id ? 'User logged in' : 'No user');
+        
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
       }
     );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Check for existing session with retry logic for reliability
+    const checkSession = async (retries = 3) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (error) {
+            console.warn('Session check error:', error);
+            if (i === retries - 1) {
+              setSession(null);
+              setUser(null);
+              setLoading(false);
+              return;
+            }
+            // Wait before retry
+            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+            continue;
+          }
 
-    return () => subscription.unsubscribe();
+          if (mounted) {
+            setSession(session);
+            setUser(session?.user ?? null);
+            setLoading(false);
+          }
+          return;
+        } catch (err) {
+          console.error('Session check failed:', err);
+          if (i === retries - 1) {
+            if (mounted) {
+              setSession(null);
+              setUser(null);
+              setLoading(false);
+            }
+          } else {
+            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+          }
+        }
+      }
+    };
+
+    checkSession();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

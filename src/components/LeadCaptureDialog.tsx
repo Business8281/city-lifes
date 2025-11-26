@@ -198,13 +198,26 @@ export const LeadCaptureDialog = ({
     setLoading(true);
     
     try {
+      // Verify Supabase client is initialized
+      if (!supabase) {
+        throw new Error('Database connection not available. Please refresh the page.');
+      }
+
+      // Get current session to ensure auth state is fresh
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.warn('Session check error:', sessionError);
+      }
+
+      // Build lead data with all required fields
       const leadData = {
         listing_id: listingId || null,
         owner_id: ownerId,
-        user_id: user?.id || null,
+        user_id: session?.user?.id || user?.id || null,
         name: trimmedName,
         phone: trimmedPhone,
-        email: user?.email || null,
+        email: session?.user?.email || user?.email || null,
         message: null,
         status: 'new',
         source: 'listing',
@@ -215,13 +228,20 @@ export const LeadCaptureDialog = ({
         subcategory: subcategory || null
       };
 
-      console.log('Submitting lead data:', { ...leadData, user_auth_method: user?.app_metadata?.provider });
+      console.log('📤 Submitting lead:', { 
+        listing_id: leadData.listing_id,
+        owner_id: leadData.owner_id,
+        has_user_id: !!leadData.user_id,
+        has_session: !!session,
+        auth_provider: session?.user?.app_metadata?.provider || user?.app_metadata?.provider,
+        browser: navigator.userAgent.includes('Safari') ? 'Safari' : 'Other'
+      });
 
       // Submit with retry logic
       const result = await submitWithRetry(leadData);
       
       if (result?.data) {
-        console.log('Lead submitted successfully:', result.data);
+        console.log('✅ Lead submitted successfully:', result.data.id);
         
         // Show prominent success message
         toast.success('✅ Inquiry Sent Successfully!', {
@@ -232,38 +252,48 @@ export const LeadCaptureDialog = ({
         // Reset form
         setFormData({ name: '', phone: '' });
         
-        // Close dialog immediately to show success
-        onOpenChange(false);
+        // Close dialog after short delay to ensure user sees success message
+        setTimeout(() => {
+          onOpenChange(false);
+        }, 300);
       } else {
-        throw new Error('Failed to submit inquiry');
+        throw new Error('Failed to submit inquiry - no data returned');
       }
     } catch (error: any) {
-      console.error('Lead submission error:', error);
-      console.error('Error details:', { code: error?.code, message: error?.message, details: error?.details });
+      console.error('❌ Lead submission error:', error);
+      console.error('Error details:', { 
+        code: error?.code, 
+        message: error?.message, 
+        details: error?.details,
+        hint: error?.hint 
+      });
       
       // User-friendly error messages with clear icons
-      let errorMessage = '❌ Failed to submit inquiry. Please try again.';
-      let errorDescription = 'If the problem persists, please contact support.';
+      let errorMessage = '❌ Failed to submit inquiry';
+      let errorDescription = 'Please try again or contact support if the issue persists.';
       
-      if (error?.message?.includes('network') || error?.message?.includes('fetch')) {
+      if (error?.message?.includes('network') || error?.message?.includes('fetch') || error?.message?.includes('Failed to fetch')) {
         errorMessage = '🌐 Network Error';
         errorDescription = 'Please check your internet connection and try again.';
-      } else if (error?.code === '23505' || error?.message?.includes('already submitted')) {
+      } else if (error?.code === '23505' || error?.message?.includes('duplicate')) {
         errorMessage = '⚠️ Already Submitted';
         errorDescription = 'You have already sent an inquiry for this listing.';
-      } else if (error?.code === '23503') {
+      } else if (error?.code === '23503' || error?.message?.includes('foreign key')) {
         errorMessage = '❌ Invalid Listing';
-        errorDescription = 'Please refresh the page and try again.';
-      } else if (error?.code === '42501' || error?.message?.includes('permission')) {
+        errorDescription = 'This listing may no longer be available. Please refresh the page.';
+      } else if (error?.code === '42501' || error?.message?.includes('permission') || error?.message?.includes('policy')) {
         errorMessage = '🔒 Permission Error';
-        errorDescription = 'Unable to submit inquiry. Please try logging in again.';
+        errorDescription = 'Unable to submit. Please try refreshing the page or logging in again.';
+      } else if (error?.message?.includes('connection')) {
+        errorMessage = '🔌 Connection Error';
+        errorDescription = 'Could not connect to server. Please check your internet and try again.';
       } else if (error?.message) {
         errorDescription = error.message;
       }
       
       toast.error(errorMessage, {
         description: errorDescription,
-        duration: 6000,
+        duration: 7000,
       });
     } finally {
       setLoading(false);
