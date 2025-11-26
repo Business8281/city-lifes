@@ -418,8 +418,16 @@ const PropertyDetails = () => {
                 <h3 className="font-semibold text-sm md:text-base">Business Details</h3>
                 {user?.id !== property.user_id && (
                   <button
-                    onClick={() => setReviewDialogOpen(true)}
+                    onClick={() => {
+                      if (!user) {
+                        toast.error("Please login to write a review");
+                        navigate("/auth");
+                        return;
+                      }
+                      setReviewDialogOpen(true);
+                    }}
                     className="flex items-center gap-1 hover:opacity-80 transition-opacity cursor-pointer"
+                    aria-label="Write or view reviews"
                   >
                     {stats && stats.total_reviews > 0 ? (
                       <>
@@ -566,8 +574,19 @@ const PropertyDetails = () => {
               showActions={user?.id === userReview?.reviewer_id}
               onEdit={() => setReviewDialogOpen(true)}
               onDelete={(reviewId) => deleteReview(reviewId)}
-              onWriteReview={() => setReviewDialogOpen(true)}
-              canReview={canReview || user?.id !== property.user_id}
+              onWriteReview={() => {
+                if (!user) {
+                  toast.error("Please login to write a review");
+                  navigate("/auth");
+                  return;
+                }
+                if (user.id === property.user_id) {
+                  toast.error("You cannot review your own business");
+                  return;
+                }
+                setReviewDialogOpen(true);
+              }}
+              canReview={!!user && user.id !== property.user_id}
               hasUserReview={!!userReview}
             />
           </div>
@@ -587,14 +606,26 @@ const PropertyDetails = () => {
             navigate("/auth");
             return;
           }
-          if (userReview) {
-            await updateReview(userReview.id, data);
-          } else {
-            await createReview({
-              owner_id: property.user_id,
-              listing_id: property.id,
-              ...data
-            });
+          
+          if (user.id === property.user_id) {
+            toast.error("You cannot review your own business");
+            setReviewDialogOpen(false);
+            return;
+          }
+
+          try {
+            if (userReview) {
+              await updateReview(userReview.id, data);
+            } else {
+              await createReview({
+                owner_id: property.user_id,
+                listing_id: property.id,
+                ...data
+              });
+            }
+            setReviewDialogOpen(false);
+          } catch (error) {
+            console.error("Review submission error:", error);
           }
         }}
         existingReview={userReview}
