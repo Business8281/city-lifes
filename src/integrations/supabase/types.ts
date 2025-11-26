@@ -936,9 +936,10 @@ export type Database = {
           comment: string | null
           created_at: string | null
           id: string
-          listing_id: string
+          listing_id: string | null
           owner_id: string
           rating: number
+          review_type: string
           reviewer_id: string
           title: string | null
           updated_at: string | null
@@ -948,9 +949,10 @@ export type Database = {
           comment?: string | null
           created_at?: string | null
           id?: string
-          listing_id: string
+          listing_id?: string | null
           owner_id: string
           rating: number
+          review_type?: string
           reviewer_id: string
           title?: string | null
           updated_at?: string | null
@@ -960,9 +962,10 @@ export type Database = {
           comment?: string | null
           created_at?: string | null
           id?: string
-          listing_id?: string
+          listing_id?: string | null
           owner_id?: string
           rating?: number
+          review_type?: string
           reviewer_id?: string
           title?: string | null
           updated_at?: string | null
