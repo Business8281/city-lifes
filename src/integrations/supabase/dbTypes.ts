@@ -468,6 +468,100 @@ export type Database = {
           }
         ]
       }
+      reports: {
+        Row: {
+          id: string
+          reporter_id: string
+          reported_user_id: string
+          listing_id: string | null
+          reason_type: Database["public"]["Enums"]["report_reason_type"]
+          description: string
+          evidence_urls: string[] | null
+          status: Database["public"]["Enums"]["report_status"]
+          admin_action: Database["public"]["Enums"]["admin_action_type"] | null
+          admin_id: string | null
+          admin_notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          reporter_id: string
+          reported_user_id: string
+          listing_id?: string | null
+          reason_type: Database["public"]["Enums"]["report_reason_type"]
+          description: string
+          evidence_urls?: string[] | null
+          status?: Database["public"]["Enums"]["report_status"]
+          admin_action?: Database["public"]["Enums"]["admin_action_type"] | null
+          admin_id?: string | null
+          admin_notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          reporter_id?: string
+          reported_user_id?: string
+          listing_id?: string | null
+          reason_type?: Database["public"]["Enums"]["report_reason_type"]
+          description?: string
+          evidence_urls?: string[] | null
+          status?: Database["public"]["Enums"]["report_status"]
+          admin_action?: Database["public"]["Enums"]["admin_action_type"] | null
+          admin_id?: string | null
+          admin_notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_actions: {
+        Row: {
+          id: string
+          admin_id: string
+          user_id: string
+          action_type: Database["public"]["Enums"]["admin_action_type"]
+          action_reason: string
+          report_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          admin_id: string
+          user_id: string
+          action_type: Database["public"]["Enums"]["admin_action_type"]
+          action_reason: string
+          report_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          admin_id?: string
+          user_id?: string
+          action_type?: Database["public"]["Enums"]["admin_action_type"]
+          action_reason?: string
+          report_id?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_actions_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [key: string]: never
@@ -567,9 +661,22 @@ export type Database = {
       }
       increment_campaign_impressions: { Args: { campaign_id: string }; Returns: void }
       increment_campaign_clicks: { Args: { campaign_id: string }; Returns: void }
+      get_report_stats: { Args: Record<string, never>; Returns: Json }
+      apply_admin_action: { 
+        Args: { 
+          p_report_id: string
+          p_admin_id: string
+          p_action_type: Database["public"]["Enums"]["admin_action_type"]
+          p_admin_notes: string
+        }
+        Returns: void 
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      report_reason_type: "fraud" | "cheating" | "misleading" | "inactive_owner" | "spam" | "abuse" | "other"
+      report_status: "new" | "in_review" | "action_taken" | "dismissed"
+      admin_action_type: "warning" | "suspend_7d" | "suspend_30d" | "suspend_permanent" | "ban" | "listing_removed" | "dismissed"
     }
     CompositeTypes: {
       [key: string]: never

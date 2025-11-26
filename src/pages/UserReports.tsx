@@ -40,11 +40,11 @@ export default function UserReports() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto py-4 sm:py-8 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">My Reports</h1>
-          <p className="text-muted-foreground">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">My Reports</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Track the status of reports you've submitted
           </p>
         </div>
