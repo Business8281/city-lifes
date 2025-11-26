@@ -65,7 +65,7 @@ export function ReportUserDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Report User</DialogTitle>
@@ -79,10 +79,14 @@ export function ReportUserDialog({
             <div className="space-y-2">
               <Label htmlFor="reason">Reason for Reporting</Label>
               <Select value={reasonType} onValueChange={(value) => setReasonType(value as any)}>
-                <SelectTrigger id="reason">
+                <SelectTrigger id="reason" className="w-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent 
+                  position="popper"
+                  sideOffset={5}
+                  className="max-h-[300px] overflow-y-auto"
+                >
                   {REASON_TYPES.map((reason) => (
                     <SelectItem key={reason.value} value={reason.value}>
                       {reason.label}
@@ -101,6 +105,7 @@ export function ReportUserDialog({
                 onChange={(e) => setDescription(e.target.value)}
                 rows={5}
                 required
+                className="resize-none"
               />
               <p className="text-xs text-muted-foreground">
                 Describe the issue in detail. Your report will be reviewed by our safety team.
@@ -108,11 +113,11 @@ export function ReportUserDialog({
             </div>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button type="submit" disabled={submitting || !description.trim()}>
+            <Button type="submit" disabled={submitting || !description.trim()} className="w-full sm:w-auto">
               {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Submit Report
             </Button>

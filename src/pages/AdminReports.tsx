@@ -43,7 +43,7 @@ export default function AdminReports() {
   const { reports, loading, stats, applyAdminAction } = useAdminReports();
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
-  const [actionType, setActionType] = useState('');
+  const [actionType, setActionType] = useState<'warning' | 'suspend_7d' | 'suspend_30d' | 'suspend_permanent' | 'ban' | 'listing_removed' | 'dismissed' | ''>('');
   const [adminNotes, setAdminNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
@@ -64,7 +64,7 @@ export default function AdminReports() {
     if (!actionType || !selectedReport) return;
 
     setSubmitting(true);
-    await applyAdminAction(selectedReport.id, actionType, adminNotes);
+    await applyAdminAction(selectedReport.id, actionType as any, adminNotes);
     setSubmitting(false);
     setActionDialogOpen(false);
     setSelectedReport(null);
@@ -84,17 +84,17 @@ export default function AdminReports() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">User Safety & Reports</h1>
-        <p className="text-muted-foreground">
+    <div className="container mx-auto py-4 sm:py-8 px-4">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">User Safety & Reports</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Review and take action on user reports
         </p>
       </div>
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -240,7 +240,7 @@ export default function AdminReports() {
 
       {/* Action Dialog */}
       <Dialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Take Action on Report</DialogTitle>
             <DialogDescription>
@@ -251,11 +251,15 @@ export default function AdminReports() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="action">Action</Label>
-              <Select value={actionType} onValueChange={setActionType}>
-                <SelectTrigger id="action">
+              <Select value={actionType} onValueChange={(value) => setActionType(value as any)}>
+                <SelectTrigger id="action" className="w-full">
                   <SelectValue placeholder="Select an action" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent 
+                  position="popper"
+                  sideOffset={5}
+                  className="max-h-[300px] overflow-y-auto"
+                >
                   {ACTION_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
@@ -273,15 +277,16 @@ export default function AdminReports() {
                 value={adminNotes}
                 onChange={(e) => setAdminNotes(e.target.value)}
                 rows={4}
+                className="resize-none"
               />
             </div>
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setActionDialogOpen(false)}>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button type="button" variant="outline" onClick={() => setActionDialogOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button onClick={handleSubmitAction} disabled={!actionType || submitting}>
+            <Button onClick={handleSubmitAction} disabled={!actionType || submitting} className="w-full sm:w-auto">
               {submitting ? 'Applying...' : 'Apply Action'}
             </Button>
           </DialogFooter>

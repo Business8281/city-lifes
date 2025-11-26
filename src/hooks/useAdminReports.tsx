@@ -89,7 +89,7 @@ export function useAdminReports() {
 
   const applyAdminAction = async (
     reportId: string,
-    actionType: string,
+    actionType: 'warning' | 'suspend_7d' | 'suspend_30d' | 'suspend_permanent' | 'ban' | 'listing_removed' | 'dismissed',
     adminNotes: string
   ) => {
     try {
