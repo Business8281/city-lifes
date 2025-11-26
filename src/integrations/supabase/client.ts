@@ -46,5 +46,19 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     flowType: 'pkce',
     // Safari-specific: Add storage key prefix
     storageKey: 'citylifes-auth-token',
-  }
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'citylifes-web',
+    },
+  },
+  db: {
+    schema: 'public',
+  },
+  // Improve reliability for all browsers
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
+    },
+  },
 });
