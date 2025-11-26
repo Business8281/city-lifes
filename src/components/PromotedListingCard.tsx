@@ -100,7 +100,7 @@ export const PromotedListingCard = ({
               </div>
               <Button 
                 onClick={handleContactClick}
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 text-sm sm:text-base h-9 sm:h-10 px-4 sm:px-6"
               >
                 Contact Owner
               </Button>

@@ -178,10 +178,10 @@ export default function UserProfile() {
                       <Button 
                         size="sm" 
                         onClick={() => setContactDialogOpen(true)} 
-                        className="gap-1.5 sm:gap-2 text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
+                        className="gap-1.5 sm:gap-2 text-xs sm:text-sm h-8 sm:h-10 px-3 sm:px-4 w-full sm:w-auto"
                       >
                         <UserPlus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        Contact Owner
+                        📤 Contact Owner
                       </Button>
                       <Button 
                         size="sm" 
