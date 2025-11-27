@@ -96,45 +96,19 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
         }
       }
 
-      // Direct query when no filters to avoid RPC overload ambiguity
-      const hasFilters = filterCity || filterArea || filterPinCode || (filterLat && filterLng);
-      
-      if (!hasFilters) {
-        // Query active campaigns with their properties directly
-        const { data: campaigns, error: campaignsError } = await supabase
-          .from('ad_campaigns')
-          .select(`
-            id,
-            property_id,
-            properties:property_id (*)
-          `)
-          .eq('status', 'active')
-          .lte('start_date', new Date().toISOString())
-          .gte('end_date', new Date().toISOString())
-          .order('created_at', { ascending: false });
+      // Use the cleaned-up RPC function
+      const { data, error } = await supabase.rpc('get_sponsored_properties', {
+        filter_city: filterCity,
+        filter_area: filterArea,
+        filter_pin_code: filterPinCode,
+        filter_lat: filterLat,
+        filter_lng: filterLng,
+        radius_km: 10
+      });
 
-        if (campaignsError) throw campaignsError;
+      if (error) throw error;
 
-        const sponsoredProps = (campaigns || []).map(campaign => ({
-          ...campaign.properties,
-          campaign_id: campaign.id
-        })).filter(prop => prop.id) as SponsoredProperty[];
-
-        setSponsoredProperties(sponsoredProps);
-      } else {
-        // Use RPC when we have filters
-        const { data, error } = await supabase.rpc('get_sponsored_properties', {
-          filter_city: filterCity,
-          filter_area: filterArea,
-          filter_pin_code: filterPinCode,
-          filter_lat: filterLat,
-          filter_lng: filterLng,
-          radius_km: 10
-        });
-
-        if (error) throw error;
-        setSponsoredProperties((data || []) as unknown as SponsoredProperty[]);
-      }
+      setSponsoredProperties((data || []) as unknown as SponsoredProperty[]);
     } catch (error) {
       console.error('Error fetching sponsored properties:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to load sponsored ads';
