@@ -119,15 +119,17 @@ const ListingGallery = ({ images, title }: ListingGalleryProps) => {
               {lightboxIndex + 1} / {validImages.length}
             </div>
 
-            <OptimizedImage
-              src={validImages[lightboxIndex]}
-              alt={`${title} - Image ${lightboxIndex + 1}`}
-              className="w-full h-full"
-              aspectRatio="square"
-              width={1920}
-              quality={90}
-              priority
-            />
+            <div className="w-full max-w-[90vh] max-h-[90vh] aspect-square">
+              <OptimizedImage
+                src={validImages[lightboxIndex]}
+                alt={`${title} - Image ${lightboxIndex + 1}`}
+                className="w-full h-full"
+                aspectRatio="square"
+                width={1920}
+                quality={90}
+                priority
+              />
+            </div>
           </div>
         </DialogContent>
       </Dialog>
