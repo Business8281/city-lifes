@@ -83,11 +83,17 @@ export const OptimizedImage = ({
     <div 
       className={cn(
         'relative overflow-hidden bg-muted',
-        aspectClass,
+        aspectRatio === 'square' ? 'aspect-square' : aspectClass,
         rounded && 'rounded-lg',
         className
       )}
-      style={width && height ? { aspectRatio: `${width}/${height}` } : undefined}
+      style={
+        aspectRatio === 'square' 
+          ? { aspectRatio: '1 / 1', width: '100%' }
+          : width && height 
+          ? { aspectRatio: `${width}/${height}` } 
+          : undefined
+      }
     >
       {/* Shimmer loading placeholder */}
       {!isLoaded && !error && (
@@ -110,10 +116,10 @@ export const OptimizedImage = ({
           ref={imgRef}
           src={optimizedSrc}
           alt={alt}
-          width={width}
-          height={height}
+          width={aspectRatio === 'square' ? 1 : width}
+          height={aspectRatio === 'square' ? 1 : height}
           className={cn(
-            'w-full h-full object-cover transition-opacity duration-300',
+            'absolute inset-0 w-full h-full object-cover transition-opacity duration-300',
             isLoaded ? 'opacity-100' : 'opacity-0'
           )}
           loading={priority ? 'eager' : 'lazy'}
