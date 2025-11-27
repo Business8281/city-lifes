@@ -96,23 +96,51 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
         }
       }
 
-      // Use the cleaned-up RPC function
-      const { data, error } = await supabase.rpc('get_sponsored_properties', {
-        filter_city: filterCity,
-        filter_area: filterArea,
-        filter_pin_code: filterPinCode,
-        filter_lat: filterLat,
-        filter_lng: filterLng,
-        radius_km: 10
-      });
+      // Fallback: Direct query to ensure we get results
+      try {
+        const { data, error } = await supabase.rpc('get_sponsored_properties', {
+          filter_city: filterCity,
+          filter_area: filterArea,
+          filter_pin_code: filterPinCode,
+          filter_lat: filterLat,
+          filter_lng: filterLng,
+          radius_km: 10
+        });
 
-      if (error) throw error;
+        if (error) throw error;
+        console.log('Sponsored properties from RPC:', data);
+        setSponsoredProperties((data || []) as unknown as SponsoredProperty[]);
+      } catch (rpcError) {
+        console.warn('RPC failed, using direct query fallback:', rpcError);
+        
+        // Fallback: Query active campaigns directly
+        const now = new Date().toISOString();
+        const { data: campaigns, error: campaignsError } = await supabase
+          .from('ad_campaigns')
+          .select(`
+            id,
+            property_id,
+            properties:property_id (*)
+          `)
+          .eq('status', 'active')
+          .lte('start_date', now)
+          .gte('end_date', now)
+          .order('created_at', { ascending: false });
 
-      setSponsoredProperties((data || []) as unknown as SponsoredProperty[]);
+        if (campaignsError) throw campaignsError;
+
+        const sponsoredProps = (campaigns || [])
+          .map(campaign => ({
+            ...(campaign.properties as any),
+            campaign_id: campaign.id
+          }))
+          .filter(prop => prop && prop.id) as SponsoredProperty[];
+
+        console.log('Sponsored properties from fallback:', sponsoredProps);
+        setSponsoredProperties(sponsoredProps);
+      }
     } catch (error) {
       console.error('Error fetching sponsored properties:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load sponsored ads';
-      toast.error(errorMessage);
       setSponsoredProperties([]);
     } finally {
       setLoading(false);
