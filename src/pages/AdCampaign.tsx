@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { Property } from "@/types/database";
 import CreateCampaignDialog from "@/components/CreateCampaignDialog";
+import CampaignLeadsSection from "@/components/CampaignLeadsSection";
 
 const AdCampaign = () => {
   const navigate = useNavigate();
@@ -261,6 +262,12 @@ const AdCampaign = () => {
                     <p className="text-lg font-semibold">{campaign.clicks.toLocaleString()}</p>
                   </div>
                 </div>
+
+                {/* Paid Leads Management Section */}
+                <CampaignLeadsSection 
+                  campaignId={campaign.id} 
+                  campaignTitle={campaign.title}
+                />
               </Card>
             ))
           ) : (
