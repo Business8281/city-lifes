@@ -45,14 +45,31 @@ export const useLeads = () => {
     }
     
     try {
+      // Fetch leads excluding business category
       const { data, error } = await supabase
         .from('leads')
-        .select('*, properties(*)')
+        .select(`
+          *,
+          properties:listing_id (
+            id,
+            title,
+            property_type,
+            city,
+            area
+          )
+        `)
         .eq('owner_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setLeads((data || []) as Lead[]);
+      
+      // Filter out business listings on frontend for safety
+      const filteredData = (data || []).filter(lead => 
+        lead.category !== 'business' && 
+        lead.subcategory !== 'business'
+      );
+      
+      setLeads(filteredData as Lead[]);
     } catch (error: any) {
       console.error('Error fetching leads:', error);
       toast.error('Failed to fetch leads');
