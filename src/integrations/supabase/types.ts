@@ -1685,51 +1685,97 @@ export type Database = {
         }[]
       }
       get_report_stats: { Args: never; Returns: Json }
-      get_sponsored_properties: {
-        Args: {
-          filter_area?: string
-          filter_city?: string
-          filter_lat?: number
-          filter_lng?: number
-          filter_pin_code?: string
-          radius_km?: number
-        }
-        Returns: {
-          address: string
-          amenities: string[]
-          area: string
-          area_sqft: number
-          available: boolean
-          bathrooms: number
-          bedrooms: number
-          business_metadata: Json
-          campaign_id: string
-          city: string
-          contact_email: string
-          contact_name: string
-          contact_phone: string
-          created_at: string
-          created_by_email: string
-          created_by_name: string
-          description: string
-          distance_km: number
-          id: string
-          images: string[]
-          is_agent: boolean
-          latitude: number
-          longitude: number
-          pin_code: string
-          price: number
-          price_type: string
-          property_type: string
-          status: string
-          title: string
-          updated_at: string
-          user_id: string
-          verified: boolean
-          views: number
-        }[]
-      }
+      get_sponsored_properties:
+        | {
+            Args: {
+              filter_area?: string
+              filter_city?: string
+              filter_lat?: number
+              filter_lng?: number
+              filter_pin_code?: string
+              radius_km?: number
+            }
+            Returns: {
+              address: string
+              amenities: string[]
+              area: string
+              area_sqft: number
+              available: boolean
+              bathrooms: number
+              bedrooms: number
+              business_metadata: Json
+              campaign_id: string
+              city: string
+              contact_email: string
+              contact_name: string
+              contact_phone: string
+              created_at: string
+              created_by_email: string
+              created_by_name: string
+              description: string
+              distance_km: number
+              id: string
+              images: string[]
+              is_agent: boolean
+              latitude: number
+              longitude: number
+              pin_code: string
+              price: number
+              price_type: string
+              property_type: string
+              status: string
+              title: string
+              updated_at: string
+              user_id: string
+              verified: boolean
+              views: number
+            }[]
+          }
+        | {
+            Args: {
+              filter_area?: string
+              filter_city?: string
+              filter_lat?: number
+              filter_lng?: number
+              filter_pin_code?: string
+              radius_km?: number
+            }
+            Returns: {
+              address: string
+              amenities: string[]
+              area: string
+              area_sqft: number
+              available: boolean
+              bathrooms: number
+              bedrooms: number
+              business_metadata: Json
+              campaign_id: string
+              city: string
+              contact_email: string
+              contact_name: string
+              contact_phone: string
+              created_at: string
+              created_by_email: string
+              created_by_name: string
+              description: string
+              distance_km: number
+              id: string
+              images: string[]
+              is_agent: boolean
+              latitude: number
+              longitude: number
+              pin_code: string
+              price: number
+              price_type: string
+              property_type: string
+              status: string
+              title: string
+              updated_at: string
+              user_id: string
+              verified: boolean
+              views: number
+            }[]
+          }
       get_user_properties_paginated: {
         Args: { p_user_id: string; page_number?: number; page_size?: number }
         Returns: {
