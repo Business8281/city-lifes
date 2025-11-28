@@ -12,6 +12,7 @@ export interface AdCampaign {
   spent: number;
   impressions: number;
   clicks: number;
+  leads_generated: number;
   start_date: string;
   end_date: string;
   created_at: string;
@@ -80,7 +81,7 @@ export function useAdCampaigns(businessOnly: boolean = false) {
     fetchCampaigns();
 
     // Real-time listener for campaign changes
-    const channel = supabase
+    const campaignsChannel = supabase
       .channel('ad-campaigns')
       .on(
         'postgres_changes',
@@ -89,8 +90,24 @@ export function useAdCampaigns(businessOnly: boolean = false) {
       )
       .subscribe();
 
+    // Real-time listener for leads table to update campaign lead counts
+    const leadsChannel = supabase
+      .channel('campaign-leads-updates')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'leads' },
+        (payload: any) => {
+          // Refetch campaigns when a lead with campaign_id is added/updated/deleted
+          if (payload.new?.campaign_id || payload.old?.campaign_id) {
+            fetchCampaigns();
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(campaignsChannel);
+      supabase.removeChannel(leadsChannel);
     };
   }, [businessOnly, fetchCampaigns]);
 

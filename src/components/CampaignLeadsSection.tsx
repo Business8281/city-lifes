@@ -21,9 +21,10 @@ import { Lead } from '@/hooks/useLeads';
 interface CampaignLeadsSectionProps {
   campaignId: string;
   campaignTitle: string;
+  initialLeadCount?: number;
 }
 
-const CampaignLeadsSection = ({ campaignId, campaignTitle }: CampaignLeadsSectionProps) => {
+const CampaignLeadsSection = ({ campaignId, campaignTitle, initialLeadCount = 0 }: CampaignLeadsSectionProps) => {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -131,7 +132,10 @@ const CampaignLeadsSection = ({ campaignId, campaignTitle }: CampaignLeadsSectio
       >
         <span className="flex items-center gap-2">
           <Users className="h-4 w-4" />
-          Campaign Leads {leads.length > 0 && `(${leads.length})`}
+          Campaign Leads
+          <Badge variant="secondary" className="ml-1 bg-green-500/10 text-green-700 border-green-500/20">
+            {expanded ? leads.length : initialLeadCount}
+          </Badge>
         </span>
         {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </Button>

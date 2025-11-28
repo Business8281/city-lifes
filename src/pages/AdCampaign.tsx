@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, TrendingUp, Eye, MousePointerClick, DollarSign, PlayCircle, PauseCircle, Trash2, Megaphone } from "lucide-react";
+import { ArrowLeft, Plus, TrendingUp, Eye, MousePointerClick, DollarSign, PlayCircle, PauseCircle, Trash2, Megaphone, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +46,7 @@ const AdCampaign = () => {
   const totalSpent = campaigns.reduce((sum, c) => sum + Number(c.spent), 0);
   const totalImpressions = campaigns.reduce((sum, c) => sum + c.impressions, 0);
   const totalClicks = campaigns.reduce((sum, c) => sum + c.clicks, 0);
+  const totalLeads = campaigns.reduce((sum, c) => sum + (c.leads_generated || 0), 0);
 
   const handleStatusToggle = async (campaignId: string, currentStatus: string) => {
     const newStatus = currentStatus === 'active' ? 'paused' : 'active';
@@ -111,7 +112,7 @@ const AdCampaign = () => {
 
       <div className="max-w-6xl mx-auto mobile-container md:px-4 py-6 space-y-6 overflow-x-hidden">
         {/* Overview Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -153,6 +154,17 @@ const AdCampaign = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Total Clicks</p>
                 <p className="text-xl font-bold">{totalClicks.toLocaleString()}</p>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                <Users className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Total Leads</p>
+                <p className="text-xl font-bold text-green-600">{totalLeads.toLocaleString()}</p>
               </div>
             </div>
           </Card>
@@ -211,6 +223,12 @@ const AdCampaign = () => {
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <h3 className="text-lg font-semibold">{campaign.title}</h3>
                       {getStatusBadge(campaign.status)}
+                      <Badge 
+                        variant="secondary" 
+                        className="bg-green-500/10 text-green-700 border-green-500/20"
+                      >
+                        🎯 {campaign.leads_generated || 0} Leads
+                      </Badge>
                     </div>
                     {campaign.properties && (
                       <p className="text-sm text-muted-foreground mb-1">
@@ -244,7 +262,7 @@ const AdCampaign = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-4">
                   <div>
                     <p className="text-sm text-muted-foreground">Budget</p>
                     <p className="text-lg font-semibold">₹{Number(campaign.budget).toLocaleString()}</p>
@@ -261,12 +279,17 @@ const AdCampaign = () => {
                     <p className="text-sm text-muted-foreground">Clicks</p>
                     <p className="text-lg font-semibold">{campaign.clicks.toLocaleString()}</p>
                   </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Leads</p>
+                    <p className="text-lg font-semibold text-green-600">{campaign.leads_generated || 0}</p>
+                  </div>
                 </div>
 
                 {/* Paid Leads Management Section */}
                 <CampaignLeadsSection 
                   campaignId={campaign.id} 
                   campaignTitle={campaign.title}
+                  initialLeadCount={campaign.leads_generated || 0}
                 />
               </Card>
             ))
