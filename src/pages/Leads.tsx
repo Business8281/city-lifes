@@ -69,12 +69,28 @@ const Leads = () => {
     return <span className="text-sm">{icons[source]} {source}</span>;
   };
 
+  // Business listing leads
+  const businessLeads = leads.filter(l => 
+    l.category === 'business' || 
+    l.properties?.property_type === 'business'
+  );
+
   const leadStats = {
     total: leads.length,
     new: leads.filter(l => l.status === 'new').length,
     contacted: leads.filter(l => l.status === 'contacted').length,
     interested: leads.filter(l => l.status === 'interested').length,
     closed: leads.filter(l => l.status === 'closed').length
+  };
+
+  // Business listing specific stats
+  const businessStats = {
+    total: businessLeads.length,
+    organic: businessLeads.filter(l => !l.campaign_id).length,
+    paid: businessLeads.filter(l => l.campaign_id).length,
+    contactOwner: businessLeads.filter(l => l.source === 'listing').length,
+    phone: businessLeads.filter(l => l.source === 'call').length,
+    chat: businessLeads.filter(l => l.source === 'chat').length
   };
 
   return (
@@ -119,6 +135,57 @@ const Leads = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Business Listing Stats */}
+      {businessStats.total > 0 && (
+        <>
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold mb-1">Business Listing Leads</h2>
+            <p className="text-sm text-muted-foreground">
+              Real-time breakdown of all business listing inquiries
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold">{businessStats.total}</div>
+                <p className="text-sm text-muted-foreground">Total Business</p>
+              </CardContent>
+            </Card>
+            <Card className="border-green-200 bg-green-50/50">
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold text-green-600">🌱 {businessStats.organic}</div>
+                <p className="text-sm text-muted-foreground">Organic</p>
+              </CardContent>
+            </Card>
+            <Card className="border-blue-200 bg-blue-50/50">
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold text-blue-600">💰 {businessStats.paid}</div>
+                <p className="text-sm text-muted-foreground">Paid Ads</p>
+              </CardContent>
+            </Card>
+            <Card className="border-purple-200 bg-purple-50/50">
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold text-purple-600">📝 {businessStats.contactOwner}</div>
+                <p className="text-sm text-muted-foreground">Contact Form</p>
+              </CardContent>
+            </Card>
+            <Card className="border-orange-200 bg-orange-50/50">
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold text-orange-600">📞 {businessStats.phone}</div>
+                <p className="text-sm text-muted-foreground">Phone Calls</p>
+              </CardContent>
+            </Card>
+            <Card className="border-cyan-200 bg-cyan-50/50">
+              <CardContent className="pt-6">
+                <div className="text-2xl font-bold text-cyan-600">💬 {businessStats.chat}</div>
+                <p className="text-sm text-muted-foreground">Chats</p>
+              </CardContent>
+            </Card>
+          </div>
+        </>
+      )}
 
       {/* Filters */}
       <Card className="mb-4 sm:mb-6">
