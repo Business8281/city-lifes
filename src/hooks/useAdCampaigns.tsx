@@ -96,11 +96,10 @@ export function useAdCampaigns(businessOnly: boolean = false) {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'leads' },
-        (payload: any) => {
-          // Refetch campaigns when a lead with campaign_id is added/updated/deleted
-          if (payload.new?.campaign_id || payload.old?.campaign_id) {
-            fetchCampaigns();
-          }
+        () => {
+          // Refetch campaigns on any leads change to ensure lead counts are updated
+          // The database trigger automatically updates ad_campaigns.leads_generated
+          fetchCampaigns();
         }
       )
       .subscribe();
