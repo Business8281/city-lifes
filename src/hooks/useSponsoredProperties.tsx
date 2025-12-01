@@ -96,14 +96,14 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
         }
       }
 
-      // Fallback: Direct query to ensure we get results
+      // Try RPC function first with explicit numeric casting
       try {
         const { data, error } = await supabase.rpc('get_sponsored_properties', {
           filter_city: filterCity,
           filter_area: filterArea,
           filter_pin_code: filterPinCode,
-          filter_lat: filterLat,
-          filter_lng: filterLng,
+          filter_lat: filterLat ? Number(filterLat) : null,
+          filter_lng: filterLng ? Number(filterLng) : null,
           radius_km: 10
         });
 
@@ -113,9 +113,9 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
       } catch (rpcError) {
         console.warn('RPC failed, using direct query fallback:', rpcError);
         
-        // Fallback: Query active campaigns directly
+        // Fallback: Query active campaigns directly with client-side filtering
         const now = new Date().toISOString();
-        const { data: campaigns, error: campaignsError } = await supabase
+        let query = supabase
           .from('ad_campaigns')
           .select(`
             id,
@@ -125,16 +125,34 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
           .eq('status', 'active')
           .lte('start_date', now)
           .gte('end_date', now)
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        const { data: campaigns, error: campaignsError } = await query;
 
         if (campaignsError) throw campaignsError;
 
-        const sponsoredProps = (campaigns || [])
+        let sponsoredProps = (campaigns || [])
           .map(campaign => ({
             ...(campaign.properties as any),
             campaign_id: campaign.id
           }))
-          .filter(prop => prop && prop.id) as SponsoredProperty[];
+          .filter(prop => prop && prop.id && prop.status === 'active' && prop.available) as SponsoredProperty[];
+
+        // Apply client-side location filtering if needed
+        if (filterCity) {
+          sponsoredProps = sponsoredProps.filter(p => 
+            p.city?.toLowerCase().includes(filterCity.toLowerCase())
+          );
+        }
+        if (filterArea) {
+          sponsoredProps = sponsoredProps.filter(p => 
+            p.area?.toLowerCase().includes(filterArea.toLowerCase())
+          );
+        }
+        if (filterPinCode) {
+          sponsoredProps = sponsoredProps.filter(p => p.pin_code === filterPinCode);
+        }
 
         console.log('Sponsored properties from fallback:', sponsoredProps);
         setSponsoredProperties(sponsoredProps);
