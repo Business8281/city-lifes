@@ -21,14 +21,14 @@ export const useCampaignAnalytics = (campaignId: string | null) => {
     }
 
     try {
-      // @ts-ignore - Function types will be generated after migration
+      // @ts-expect-error - Fix type error - Function types will be generated after migration
       const { data, error } = await supabase
-        // @ts-ignore
+        // @ts-expect-error - Fix type error
         .rpc('get_campaign_analytics', { p_campaign_id: campaignId });
 
       if (error) throw error;
       
-      // @ts-ignore
+      // @ts-expect-error - Fix type error
       if (data && data.length > 0) {
         setAnalytics(data[0]);
       }

@@ -1,0 +1,246 @@
+{
+  "tech_stack": [
+    "TypeScript",
+    "React",
+    "Vite",
+    "TailwindCSS",
+    "Radix UI",
+    "TanStack Query",
+    "React Router",
+    "Supabase",
+    "Capacitor (Android/iOS)",
+    "Zod",
+    "React Hook Form",
+    "Google Maps (@vis.gl/react-google-maps)",
+    "Terser"
+  ],
+  "features": [
+    {
+      "name": "App Bootstrap",
+      "description": "Vite + React entry, global styles, and app mount.",
+      "files": [
+        "src/main.tsx",
+        "src/App.tsx",
+        "src/index.css",
+        "index.html"
+      ]
+    },
+    {
+      "name": "Routing & Layout",
+      "description": "Top-level layout, navigation, and shell components (sidebar, bottom nav).",
+      "files": [
+        "src/components/Layout.tsx",
+        "src/components/AppSidebar.tsx",
+        "src/components/BottomNav.tsx"
+      ]
+    },
+    {
+      "name": "Authentication Context",
+      "description": "App-wide auth state and route protection.",
+      "files": [
+        "src/contexts/AuthContext.tsx",
+        "src/components/RequireAuth.tsx"
+      ]
+    },
+    {
+      "name": "Location Context & Geolocation",
+      "description": "User location state, selectors, and near-me filters.",
+      "files": [
+        "src/contexts/LocationContext.tsx",
+        "src/components/LiveLocationButton.tsx",
+        "src/components/LocationSelector.tsx",
+        "src/components/CityAreaPincodeSelector.tsx",
+        "src/components/NearMeFilter.tsx",
+        "src/components/MapFilters.tsx"
+      ]
+    },
+    {
+      "name": "Listings & Properties",
+      "description": "Listing cards, galleries, pricing markers, and promoted listings.",
+      "files": [
+        "src/components/PropertyCard.tsx",
+        "src/components/ListingGallery.tsx",
+        "src/components/PriceMarker.tsx",
+        "src/components/PromotedListingCard.tsx",
+        "src/data/properties.ts",
+        "src/data/propertyTypes.ts"
+      ]
+    },
+    {
+      "name": "Search & Filters",
+      "description": "Enhanced search UX with autocomplete and advanced filters.",
+      "files": [
+        "src/components/EnhancedSearchBar.tsx",
+        "src/components/SearchBar.tsx",
+        "src/components/MapFilters.tsx",
+        "src/hooks/useAdvancedSearch.tsx",
+        "src/hooks/useAutocomplete.tsx"
+      ]
+    },
+    {
+      "name": "Reviews",
+      "description": "User reviews, forms, and dialogs for writing reviews.",
+      "files": [
+        "src/components/ReviewCard.tsx",
+        "src/components/ReviewsList.tsx",
+        "src/components/ReviewForm.tsx",
+        "src/components/WriteReviewDialog.tsx"
+      ]
+    },
+    {
+      "name": "Lead Capture & Campaigns",
+      "description": "Lead dialogs and campaign creation, analytics, and CRM hooks.",
+      "files": [
+        "src/components/LeadCaptureDialog.tsx",
+        "src/components/CampaignLeadsSection.tsx",
+        "src/components/CreateCampaignDialog.tsx",
+        "src/hooks/useLeads.tsx",
+        "src/hooks/useAdCampaigns.tsx",
+        "src/hooks/useCampaignAnalytics.tsx",
+        "src/hooks/useCRM.tsx"
+      ]
+    },
+    {
+      "name": "Favorites & Notifications",
+      "description": "Favoriting and notification state management hooks.",
+      "files": [
+        "src/hooks/useFavorites.tsx",
+        "src/hooks/useNotifications.tsx"
+      ]
+    },
+    {
+      "name": "Messaging",
+      "description": "Real-time or in-app messaging hooks.",
+      "files": [
+        "src/hooks/useMessages.tsx"
+      ]
+    },
+    {
+      "name": "Admin Features",
+      "description": "Admin checks and dashboards for users, properties, reports, and stats.",
+      "files": [
+        "src/hooks/useAdminCheck.tsx",
+        "src/hooks/useAdminUsers.tsx",
+        "src/hooks/useAdminProperties.tsx",
+        "src/hooks/useAdminReports.tsx",
+        "src/hooks/useAdminStats.tsx"
+      ]
+    },
+    {
+      "name": "Nearby & Map Clustering",
+      "description": "Hooks for nearby properties and map cluster management.",
+      "files": [
+        "src/hooks/useNearbyProperties.tsx",
+        "src/hooks/useMapClusters.tsx"
+      ]
+    },
+    {
+      "name": "Images & Uploads",
+      "description": "Optimized images, upload with compression, and preloading.",
+      "files": [
+        "src/components/ImageUploadWithCompression.tsx",
+        "src/components/OptimizedImage.tsx",
+        "src/hooks/useImagePreload.tsx"
+      ]
+    },
+    {
+      "name": "UI Library",
+      "description": "Shared UI components based on Radix + Tailwind.",
+      "files": [
+        "src/components/ui"
+      ]
+    },
+    {
+      "name": "SEO & Schema",
+      "description": "Structured data and crawler configuration.",
+      "files": [
+        "src/components/SEOSchema.tsx",
+        "public/robots.txt",
+        "public/sitemap.xml"
+      ]
+    },
+    {
+      "name": "PWA & Manifest",
+      "description": "Web app manifest and base HTML shell.",
+      "files": [
+        "public/manifest.json",
+        "index.html"
+      ]
+    },
+    {
+      "name": "Supabase Integration",
+      "description": "Supabase setup and migrations; client usage across hooks/services.",
+      "files": [
+        "supabase/config.toml",
+        "supabase/migrations",
+        "supabase/templates"
+      ]
+    },
+    {
+      "name": "Data Sources",
+      "description": "Static data and location datasets.",
+      "files": [
+        "src/data/indianLocations.ts",
+        "src/data/properties.ts",
+        "src/data/propertyTypes.ts"
+      ]
+    },
+    {
+      "name": "Utilities, Types & Schemas",
+      "description": "Shared utils, type definitions, and Zod schemas.",
+      "files": [
+        "src/utils",
+        "src/types",
+        "src/schemas"
+      ]
+    },
+    {
+      "name": "Branding & Assets",
+      "description": "Logos, app icons, and icon generation script.",
+      "files": [
+        "src/components/Logo.tsx",
+        "src/components/AppIcon.tsx",
+        "generate-icons.sh",
+        "src/assets"
+      ]
+    },
+    {
+      "name": "Reporting & Safety",
+      "description": "Report user dialog and related flows.",
+      "files": [
+        "src/components/ReportUserDialog.tsx"
+      ]
+    },
+    {
+      "name": "Mobile (Capacitor)",
+      "description": "Capacitor configuration and native platform projects.",
+      "files": [
+        "capacitor.config.ts",
+        "android/",
+        "ios/"
+      ]
+    },
+    {
+      "name": "Build & Tooling",
+      "description": "Vite, Tailwind, ESLint, TypeScript, and PostCSS configuration.",
+      "files": [
+        "vite.config.ts",
+        "tailwind.config.ts",
+        "postcss.config.js",
+        "eslint.config.js",
+        "tsconfig.json",
+        "tsconfig.app.json",
+        "tsconfig.node.json",
+        "package.json"
+      ]
+    },
+    {
+      "name": "Public Docs & Guides",
+      "description": "Static public HTML guides and debug pages.",
+      "files": [
+        "public/chat-features-guide.html",
+        "public/debug-delete.html"
+      ]
+    }
+  ]
+}

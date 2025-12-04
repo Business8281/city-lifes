@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import BottomNav from '@/components/BottomNav';
 import { Card } from '@/components/ui/card';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { Star, CheckCircle2, XCircle, Trash2, AlertTriangle } from 'lucide-react';
+import { Star, CheckCircle2, XCircle, Trash2 } from 'lucide-react';
 import { Review } from '@/hooks/useReviews';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -17,7 +17,7 @@ export default function ReviewModeration() {
   const [filter, setFilter] = useState<'all' | 'verified' | 'unverified'>('all');
   const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     try {
       setLoading(true);
       let query = supabase
@@ -44,7 +44,7 @@ export default function ReviewModeration() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
 
   const handleDelete = async () => {
     if (!deletingReviewId) return;
@@ -84,7 +84,7 @@ export default function ReviewModeration() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [filter]);
+  }, [fetchReviews]);
 
   return (
     <>
@@ -143,11 +143,10 @@ export default function ReviewModeration() {
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star
                           key={i}
-                          className={`h-4 w-4 ${
-                            i < review.rating
+                          className={`h-4 w-4 ${i < review.rating
                               ? 'fill-yellow-400 text-yellow-400'
                               : 'text-muted-foreground'
-                          }`}
+                            }`}
                         />
                       ))}
                     </div>

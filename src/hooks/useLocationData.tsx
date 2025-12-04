@@ -79,7 +79,7 @@ export const usePincodes = (areaId: string | null) => {
 
 export const useResolveLocation = () => {
   const resolveLocation = async (lat: number, lng: number) => {
-    // @ts-ignore - RPC function not yet in generated types
+    // @ts-expect-error - Fix type error - RPC function not yet in generated types
     const { data, error } = await supabase.rpc("resolve_location_from_coords", {
       lat,
       lng,

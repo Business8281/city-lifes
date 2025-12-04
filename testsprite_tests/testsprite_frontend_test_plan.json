@@ -1,0 +1,670 @@
+[
+  {
+    "id": "TC001",
+    "title": "User Registration with Email and Password",
+    "description": "Verify that a new user can register successfully using a valid email and password and completes profile setup.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to registration page."
+      },
+      {
+        "type": "action",
+        "description": "Input a valid email address and password."
+      },
+      {
+        "type": "action",
+        "description": "Submit registration form."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm user receives email verification prompt."
+      },
+      {
+        "type": "action",
+        "description": "Complete email verification."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm user is prompted to complete profile setup."
+      },
+      {
+        "type": "action",
+        "description": "Complete profile fields with valid data."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify successful registration completion and user is redirected to homepage."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "User Login with Google OAuth",
+    "description": "Verify that a user can login successfully using Google OAuth.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to login page."
+      },
+      {
+        "type": "action",
+        "description": "Click on Google OAuth login button."
+      },
+      {
+        "type": "action",
+        "description": "Authenticate via Google OAuth popup."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm user is logged in and redirected to homepage."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Login Failure with Incorrect Credentials",
+    "description": "Verify that login fails with incorrect email or password and appropriate error message is shown.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to login page."
+      },
+      {
+        "type": "action",
+        "description": "Input incorrect email or password."
+      },
+      {
+        "type": "action",
+        "description": "Click login button."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login failure and error message is displayed."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Search Listings with Location and Category Filters",
+    "description": "Verify that the search returns correct listings filtered by user-selected location, category, and price range.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to homepage or search page."
+      },
+      {
+        "type": "action",
+        "description": "Enter search keywords and select category."
+      },
+      {
+        "type": "action",
+        "description": "Set location filter via location selector."
+      },
+      {
+        "type": "action",
+        "description": "Set price range filter."
+      },
+      {
+        "type": "action",
+        "description": "Submit search query."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify search results only include listings matching filters and correct pagination is applied."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Search with 'Near Me' Radius Filter Using Geolocation",
+    "description": "Verify that the 'Near Me' filter returns listings within the specified radius based on user geolocation using Haversine distance.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Allow geolocation permission for the app."
+      },
+      {
+        "type": "action",
+        "description": "Select 'Near Me' filter and set radius (e.g., 5 km)."
+      },
+      {
+        "type": "action",
+        "description": "Submit search."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify returned listings are within the specified radius according to computed geolocation distance."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Create New Listing with Category-Specific Form Fields",
+    "description": "Verify that a listing owner can create a new listing with required fields tailored to the selected category (property, vehicle, electronics, business).",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as listing owner."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to create listing page."
+      },
+      {
+        "type": "action",
+        "description": "Select category (e.g., vehicle)."
+      },
+      {
+        "type": "action",
+        "description": "Fill in all required form fields specific to the category."
+      },
+      {
+        "type": "action",
+        "description": "Upload images with compression."
+      },
+      {
+        "type": "action",
+        "description": "Submit listing."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify listing creation success, with all fields correctly saved and images compressed."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Fail Listing Creation with Invalid Data Inputs",
+    "description": "Verify that the create listing form validates inputs using Zod schemas and shows real-time validation errors for invalid or missing required data.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to create listing page."
+      },
+      {
+        "type": "action",
+        "description": "Select category."
+      },
+      {
+        "type": "action",
+        "description": "Enter invalid data or leave required fields blank."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that validation messages appear for incorrect or missing fields in real-time."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to submit form."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm submission is blocked and errors persist."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "View Listing Details Including Images, Pricing, and Reviews",
+    "description": "Verify a user can view listing details including image gallery, pricing markers, verified badges, and aggregated reviews.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Browse to a listing details page."
+      },
+      {
+        "type": "assertion",
+        "description": "Check images are displayed with gallery navigation and optimized loading."
+      },
+      {
+        "type": "assertion",
+        "description": "Check pricing markers are clear and accurate."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify presence of verified listing badges if applicable."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify reviews are displayed with ratings and user comments."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Add Listing to Favorites and Remove",
+    "description": "Verify that logged-in users can add listings to their favorites and remove them successfully.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as user."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to a listing."
+      },
+      {
+        "type": "action",
+        "description": "Click 'Add to Favorites' button."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify listing is added to favorites list."
+      },
+      {
+        "type": "action",
+        "description": "Remove the listing from favorites."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify listing is removed from favorites list."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Contact Listing Owner and Lead Creation Verification",
+    "description": "Verify that when a user contacts a listing owner (via chat or call), a new lead is auto-created and linked correctly on the owner's dashboard.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as user."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to a listing."
+      },
+      {
+        "type": "action",
+        "description": "Initiate contact via chat or call."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that a new lead is created and owner receives notification."
+      },
+      {
+        "type": "action",
+        "description": "Login as listing owner."
+      },
+      {
+        "type": "action",
+        "description": "Open lead management dashboard."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the new lead is present with accurate details."
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Update Lead Status and Add Notes",
+    "description": "Verify listing owners can update lead statuses and add notes in the CRM system and changes are properly saved and displayed.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as listing owner."
+      },
+      {
+        "type": "action",
+        "description": "Open lead management dashboard."
+      },
+      {
+        "type": "action",
+        "description": "Select a lead and update status to a different stage."
+      },
+      {
+        "type": "action",
+        "description": "Add notes to the lead."
+      },
+      {
+        "type": "action",
+        "description": "Save updates."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify lead status and notes are updated and persist on reload."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Create and Manage Ad Campaign with Analytics Tracking",
+    "description": "Verify listing owners can create an ad campaign with custom parameters and track impressions and clicks accurately through real-time analytics.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as listing owner."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to campaign creation page."
+      },
+      {
+        "type": "action",
+        "description": "Fill campaign form with valid details and submit."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify campaign is created successfully and visible in campaigns dashboard."
+      },
+      {
+        "type": "action",
+        "description": "Simulate user clicks and impressions on sponsored listings."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify campaign analytics reflect real-time updated impressions and clicks."
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Write Eligible Review and Enforce One Review per User",
+    "description": "Verify that only eligible users can write reviews after interaction, and only one review per user per listing/business is allowed with moderation.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as eligible user who completed interaction with listing."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to write a review for a listing."
+      },
+      {
+        "type": "action",
+        "description": "Submit a valid review."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify review submission is successful and displayed after moderation."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to submit a second review for the same listing."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify submission is blocked and an error message is shown."
+      },
+      {
+        "type": "action",
+        "description": "Login as ineligible user without prior interaction."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to submit a review."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user is prevented from submitting a review with an eligibility error."
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Report Listings and Users with Admin Moderation Workflow",
+    "description": "Verify users can report listings and users, admins receive and review these reports and enforce actions (warnings, suspensions, bans).",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as user."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to listing or user profile to report."
+      },
+      {
+        "type": "action",
+        "description": "Submit a report with valid details."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify report is logged in system."
+      },
+      {
+        "type": "action",
+        "description": "Login as admin."
+      },
+      {
+        "type": "action",
+        "description": "Open admin reports dashboard."
+      },
+      {
+        "type": "action",
+        "description": "Review report and take enforcement action."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify user/listing status is updated accordingly (warning, suspension, ban)."
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Real-Time Chat Messaging with Lead Linkage",
+    "description": "Verify users and listing owners can communicate through real-time chat that maintains history and correctly links messages to leads.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as user."
+      },
+      {
+        "type": "action",
+        "description": "Initiate chat with listing owner."
+      },
+      {
+        "type": "action",
+        "description": "Send message in chat."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify message appears in real-time on owner side."
+      },
+      {
+        "type": "action",
+        "description": "Login as listing owner."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify chat history is visible and linked to corresponding lead."
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Admin Dashboard Role-Based Access Control",
+    "description": "Verify that admin users have access only to allowed management features based on their roles and permissions.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as admin user with limited permissions."
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access various admin dashboard modules (users, listings, reports, campaigns)."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is granted only to permitted modules."
+      },
+      {
+        "type": "action",
+        "description": "Login as super admin."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify full access to all dashboard areas."
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Mobile App Location, Camera, and Sharing Permissions and Features",
+    "description": "Verify that the mobile app correctly requests and handles native permissions for GPS, camera, and sharing features and integrates with Capacitor.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Install and launch mobile app."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify app requests permission for location access."
+      },
+      {
+        "type": "action",
+        "description": "Grant location permission."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify app can access and display user location."
+      },
+      {
+        "type": "action",
+        "description": "Navigate to listing image upload feature."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify app requests camera and gallery access permissions."
+      },
+      {
+        "type": "action",
+        "description": "Capture or select image and upload."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify image is compressed and uploaded successfully."
+      },
+      {
+        "type": "action",
+        "description": "Use sharing feature on a listing."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify native sharing dialog appears and shares listing link."
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Performance Benchmark Testing with Lighthouse",
+    "description": "Verify that the web application meets performance benchmarks with Lighthouse scores of at least 90 for Performance, SEO, Accessibility and load time less than 2 seconds.",
+    "category": "performance",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Run Lighthouse performance audit on homepage."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify Performance score ≥ 90."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify SEO score ≥ 90."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify Accessibility score ≥ 90."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify load time is under 2 seconds on standard network."
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Security Enforcement of Row Level Security on APIs and Data",
+    "description": "Verify that row level security policies and appropriate data access control are enforced across database tables and APIs preventing unauthorized data access.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Attempt to access listings and leads as an unauthenticated user."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify unauthorized access is denied."
+      },
+      {
+        "type": "action",
+        "description": "Login as normal user and attempt to access another user's leads or private data."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access to other users' private data is denied."
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Map View with Zillow-Style Clustering and Price Markers",
+    "description": "Verify map view displays clustered listings with accurate price markers and updates in real-time as filters are changed.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to map view page."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify listings are displayed as price markers with clustering when zoomed out."
+      },
+      {
+        "type": "action",
+        "description": "Apply filters such as category and price range."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify map updates listings and clusters accordingly in real-time."
+      },
+      {
+        "type": "action",
+        "description": "Zoom in and out on map."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify clusters dynamically update based on zoom level."
+      }
+    ]
+  }
+]

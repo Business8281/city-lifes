@@ -19,7 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 
 const menuItems = [
-  { title: "Home", url: "/", icon: Home },
+  { title: "Home", url: "/", icon: Map },
   { title: "Map View", url: "/map", icon: Map },
   { title: "Messages", url: "/messages", icon: MessageCircle },
   { title: "Favorites", url: "/favorites", icon: Heart },
@@ -33,7 +33,8 @@ const actionItems = [
   { title: "CRM", url: "/crm", icon: Users },
   { title: "Lead Management", url: "/leads", icon: ClipboardList },
   { title: "My Reports", url: "/my-reports", icon: Flag },
-  { title: "My Reviews", url: "/my-reviews", icon: Star },
+
+  { title: "Pricing", url: "/pricing", icon: FileText },
 ];
 
 const adminItems = [
@@ -52,25 +53,25 @@ export function AppSidebar() {
   useEffect(() => {
     const loadProfile = async () => {
       if (!user) return;
-      
+
       try {
         const { data, error } = await supabase
           .from('profiles')
           .select('full_name, phone')
           .eq('id', user.id)
           .single();
-        
+
         if (error && error.code !== 'PGRST116') {
           console.error('Error loading profile:', error);
           return;
         }
-        
+
         setProfile(data);
       } catch (error) {
         console.error('Error loading profile:', error);
       }
     };
-    
+
     loadProfile();
   }, [user]);
 

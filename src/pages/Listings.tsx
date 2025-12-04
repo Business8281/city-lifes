@@ -24,6 +24,7 @@ import {
 import { useProperties } from "@/hooks/useProperties";
 import { useLocation } from "@/contexts/LocationContext";
 import { useSponsoredProperties } from "@/hooks/useSponsoredProperties";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 const Listings = () => {
   const [searchParams] = useSearchParams();
@@ -95,7 +96,7 @@ const Listings = () => {
     let matchesLocation = true;
     if (location.method && location.value) {
       const searchValue = location.value.toLowerCase();
-      
+
       switch (location.method) {
         case 'city':
           matchesLocation = property.city?.toLowerCase().includes(searchValue);
@@ -176,8 +177,8 @@ const Listings = () => {
           </div>
 
           {/* Location Selector Button - Hidden */}
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="hidden w-full justify-start gap-2"
             onClick={() => setLocationDialogOpen(true)}
           >
@@ -224,18 +225,18 @@ const Listings = () => {
           </div>
 
           <div className="flex items-center justify-between gap-3">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               className="flex items-center gap-2 px-3 h-auto py-2 hover:bg-accent"
               onClick={() => setLocationDialogOpen(true)}
             >
               <MapPin className="h-5 w-5 text-primary" />
               <span className="font-semibold text-base">
-                {location.method === 'live' && location.coordinates 
-                  ? 'Live Location' 
-                  : location.value 
-                  ? location.value 
-                  : 'All cities'}
+                {location.method === 'live' && location.coordinates
+                  ? 'Live Location'
+                  : location.value
+                    ? location.value
+                    : 'All cities'}
               </span>
             </Button>
             <Select value={sortBy} onValueChange={setSortBy}>
@@ -249,7 +250,7 @@ const Listings = () => {
               </SelectContent>
             </Select>
           </div>
-          
+
           <p className="text-sm text-muted-foreground px-1">
             {loading ? 'Loading...' : `Showing ${displayedProperties.length} of ${sortedProperties.length} properties`}
           </p>
@@ -258,8 +259,8 @@ const Listings = () => {
 
       {/* Properties Grid */}
       <div className="max-w-7xl mx-auto px-4 py-6 overflow-x-hidden space-y-6">
-        {/* Sponsored Ads Section - Carousel - Only show for business category */}
-        {selectedType === "business" && !sponsoredLoading && sponsoredProperties.length > 0 && (
+        {/* Sponsored Ads Section - Carousel - Show for all categories */}
+        {!sponsoredLoading && sponsoredProperties.length > 0 && (
           <div className="space-y-3 bg-amber-50/50 dark:bg-amber-950/10 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -285,7 +286,7 @@ const Listings = () => {
               <CarouselContent className="-ml-2 md:-ml-4">
                 {sponsoredProperties.map((property) => (
                   <CarouselItem key={property.id} className="pl-2 md:pl-4 basis-[280px] sm:basis-[300px] md:basis-1/3 lg:basis-1/4">
-                    <div 
+                    <div
                       ref={(el) => property.campaign_id && setSponsoredRef(el, property.campaign_id)}
                       data-campaign-id={property.campaign_id}
                       className="bg-white dark:bg-gray-900 rounded-lg h-full"
@@ -325,12 +326,12 @@ const Listings = () => {
         {/* Regular Properties Grid */}
         {loading ? (
           <div className="flex justify-center py-20">
-            <div className="text-muted-foreground">Loading properties...</div>
+            <LoadingSpinner size={40} />
           </div>
         ) : displayedProperties.length > 0 ? (
-            <div>
+          <div>
             <h2 className="text-lg font-semibold mb-3">All Properties</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 max-w-full">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 max-w-full">
               {displayedProperties.map((property) => (
                 <PropertyCard
                   key={property.id}
@@ -351,11 +352,11 @@ const Listings = () => {
                 />
               ))}
             </div>
-            
+
             {/* Load More Trigger */}
             {displayedCount < sortedProperties.length && (
-              <div ref={loadMoreRef} className="py-8 text-center">
-                <div className="text-muted-foreground">Loading more properties...</div>
+              <div ref={loadMoreRef} className="py-8 text-center flex justify-center">
+                <LoadingSpinner size={24} />
               </div>
             )}
           </div>

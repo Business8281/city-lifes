@@ -10,17 +10,18 @@ import { LeadCaptureDialog } from '@/components/LeadCaptureDialog';
 import { ReviewsList } from '@/components/ReviewsList';
 import { useReviews } from '@/hooks/useReviews';
 import BottomNav from '@/components/BottomNav';
-import { 
-  ArrowLeft, 
-  Phone, 
-  MessageCircle, 
-  Share2, 
+import {
+  ArrowLeft,
+  Phone,
+  MessageCircle,
+  Share2,
   Star,
   MapPin,
   Calendar,
   Edit,
   Flag,
-  UserPlus
+  UserPlus,
+  LayoutDashboard
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -31,14 +32,14 @@ export default function UserProfile() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile, properties, loading: profileLoading } = useUserProfile(userId);
-  const { 
-    reviews, 
+  const {
+    reviews,
     userReview,
-    stats, 
-    loading: reviewsLoading, 
+    stats,
+    loading: reviewsLoading,
     canReview,
     deleteReview,
-    refetch: refetchReviews 
+    refetch: refetchReviews
   } = useReviews(userId, 'profile');
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
@@ -111,20 +112,20 @@ export default function UserProfile() {
   return (
     <>
       <div className="min-h-screen bg-background pb-20 md:pb-0">
-      {/* Header */}
-      <div className="bg-card border-b sticky top-0 z-10 shadow-sm">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="shrink-0 h-9 w-9"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="font-semibold text-base sm:text-lg truncate">User Profile</h1>
+        {/* Header */}
+        <div className="bg-card border-b sticky top-0 z-10 shadow-sm">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="shrink-0 h-9 w-9"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="font-semibold text-base sm:text-lg truncate">User Profile</h1>
+          </div>
         </div>
-      </div>
 
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
           {/* Profile Card */}
@@ -171,21 +172,29 @@ export default function UserProfile() {
                   </div>
                 )}
 
-                {/* Action Buttons */}
                 <div className="flex flex-wrap gap-2 pt-2">
-                  {!isOwnProfile && (
+                  {isOwnProfile ? (
+                    <Button
+                      size="sm"
+                      onClick={() => navigate('/dashboard')}
+                      className="gap-1.5 sm:gap-2 text-xs sm:text-sm h-8 sm:h-10 px-3 sm:px-4 w-full sm:w-auto"
+                    >
+                      <LayoutDashboard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      Dashboard
+                    </Button>
+                  ) : (
                     <>
-                      <Button 
-                        size="sm" 
-                        onClick={() => setContactDialogOpen(true)} 
+                      <Button
+                        size="sm"
+                        onClick={() => setContactDialogOpen(true)}
                         className="gap-1.5 sm:gap-2 text-xs sm:text-sm h-8 sm:h-10 px-3 sm:px-4 w-full sm:w-auto"
                       >
                         <UserPlus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         📤 Contact Owner
                       </Button>
-                      <Button 
-                        size="sm" 
-                        onClick={handleCall} 
+                      <Button
+                        size="sm"
+                        onClick={handleCall}
                         variant="outline"
                         className="gap-1.5 sm:gap-2 text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
                         disabled={!profile.phone}
@@ -193,10 +202,10 @@ export default function UserProfile() {
                         <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         Call
                       </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={handleChat} 
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={handleChat}
                         className="gap-1.5 sm:gap-2 text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
                       >
                         <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -234,10 +243,10 @@ export default function UserProfile() {
                       </Button>
                     </>
                   )}
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={handleShare} 
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleShare}
                     className="gap-1.5 sm:gap-2 text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
                   >
                     <Share2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />

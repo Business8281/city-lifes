@@ -3,12 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  ChevronDown, 
-  ChevronUp, 
-  Phone, 
-  MessageCircle, 
-  Mail, 
+import {
+  ChevronDown,
+  ChevronUp,
+  Phone,
+  MessageCircle,
+  Mail,
   Calendar,
   Users
 } from 'lucide-react';
@@ -32,7 +32,7 @@ const CampaignLeadsSection = ({ campaignId, campaignTitle, initialLeadCount = 0 
 
   const fetchCampaignLeads = async () => {
     if (!expanded) return;
-    
+
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -117,7 +117,7 @@ const CampaignLeadsSection = ({ campaignId, campaignTitle, initialLeadCount = 0 
       new: 'bg-blue-500',
       contacted: 'bg-yellow-500',
       interested: 'bg-green-500',
-      not_interested: 'bg-gray-500',
+      lost: 'bg-gray-500',
       closed: 'bg-purple-500'
     };
     return <Badge className={variants[status]}>{status.replace('_', ' ')}</Badge>;
@@ -142,6 +142,39 @@ const CampaignLeadsSection = ({ campaignId, campaignTitle, initialLeadCount = 0 
 
       {expanded && (
         <div className="mt-4 space-y-4">
+          {/* Lead Source Breakdown */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <Card className="bg-orange-50/50 border-orange-200">
+              <CardContent className="p-3 text-center">
+                <div className="text-lg font-bold text-orange-600">
+                  {leads.filter(l => l.source === 'call').length}
+                </div>
+                <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                  <Phone className="h-3 w-3" /> Calls
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-cyan-50/50 border-cyan-200">
+              <CardContent className="p-3 text-center">
+                <div className="text-lg font-bold text-cyan-600">
+                  {leads.filter(l => l.source === 'chat' || l.source === 'whatsapp').length}
+                </div>
+                <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                  <MessageCircle className="h-3 w-3" /> Chats
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="bg-purple-50/50 border-purple-200">
+              <CardContent className="p-3 text-center">
+                <div className="text-lg font-bold text-purple-600">
+                  {leads.filter(l => l.source === 'listing').length}
+                </div>
+                <div className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                  <Mail className="h-3 w-3" /> Forms
+                </div>
+              </CardContent>
+            </Card>
+          </div>
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">
               Loading campaign leads...
@@ -198,41 +231,14 @@ const CampaignLeadsSection = ({ campaignId, campaignTitle, initialLeadCount = 0 
                     </div>
                   )}
 
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleCall(lead.phone)}
-                    >
-                      <Phone className="h-3 w-3 mr-2" />
-                      Call
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleChat(lead)}
-                      disabled={!lead.user_id}
-                    >
-                      <MessageCircle className="h-3 w-3 mr-2" />
-                      {lead.user_id ? 'Chat' : 'User Not Registered'}
-                    </Button>
-                    <Select
-                      value={lead.status}
-                      onValueChange={(value) => updateLeadStatus(lead.id, value as Lead['status'])}
-                    >
-                      <SelectTrigger className="flex-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="new">🆕 New</SelectItem>
-                        <SelectItem value="contacted">📞 Contacted</SelectItem>
-                        <SelectItem value="interested">✅ Interested</SelectItem>
-                        <SelectItem value="not_interested">❌ Not Interested</SelectItem>
-                        <SelectItem value="closed">🔒 Closed</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div
+                    className="flex flex-col sm:flex-row gap-2 cursor-pointer hover:bg-accent/50 p-2 rounded-md transition-colors"
+                    onClick={() => navigate(`/leads?search=${lead.phone}`)}
+                  >
+                    <div className="flex-1 text-sm text-muted-foreground flex items-center gap-2">
+                      <span>Click to view details in Lead Management</span>
+                      <ChevronDown className="h-4 w-4 rotate-[-90deg]" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>

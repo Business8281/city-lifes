@@ -31,8 +31,22 @@ export function useAdvancedSearch(filters: SearchFilters, enabled = true) {
   return useQuery({
     queryKey: ["advanced-search", filters] as const,
     queryFn: async () => {
-      // @ts-ignore - RPC function not in generated types yet
-      const { data, error } = await supabase.rpc("search_properties", {
+      // Choose RPC based on whether we have bounds or just general search
+      const rpcName = (filters.minLat && filters.minLng && filters.maxLat && filters.maxLng)
+        ? 'search_properties_in_view'
+        : 'search_properties';
+
+      const rpcParams = rpcName === 'search_properties_in_view' ? {
+        min_lat: filters.minLat,
+        min_lng: filters.minLng,
+        max_lat: filters.maxLat,
+        max_lng: filters.maxLng,
+        property_type_filter: filters.category || null,
+        min_price: filters.minPrice || null,
+        max_price: filters.maxPrice || null,
+        user_lat: filters.userLat || null,
+        user_lng: filters.userLng || null,
+      } : {
         query_text: filters.query || null,
         category_filter: filters.category || null,
         city_filter: filters.city || null,
@@ -43,13 +57,12 @@ export function useAdvancedSearch(filters: SearchFilters, enabled = true) {
         user_lat: filters.userLat || null,
         user_lng: filters.userLng || null,
         radius_km: filters.radiusKm || null,
-        min_lat: filters.minLat || null,
-        min_lng: filters.minLng || null,
-        max_lat: filters.maxLat || null,
-        max_lng: filters.maxLng || null,
         page_number: filters.page || 1,
         page_size: filters.pageSize || 20,
-      });
+      };
+
+      // @ts-expect-error - Fix type error - RPC function not in generated types yet
+      const { data, error } = await supabase.rpc(rpcName, rpcParams);
 
       if (error) {
         console.error("Search error:", error);

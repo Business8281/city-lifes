@@ -26,7 +26,7 @@ export function useMapClusters(bounds: MapBounds | null, enabled = true) {
         return [] as MapCluster[];
       }
 
-      // @ts-ignore - RPC function not in generated types yet
+      // @ts-expect-error - Fix type error - RPC function not in generated types yet
       const { data, error } = await supabase.rpc("get_map_clusters", {
         min_lat: bounds.minLat,
         min_lng: bounds.minLng,
@@ -41,7 +41,13 @@ export function useMapClusters(bounds: MapBounds | null, enabled = true) {
         throw error;
       }
 
-      return (data ?? []) as unknown as MapCluster[];
+      return ((data as any[]) ?? []).map((cluster: any) => ({
+        ...cluster,
+        cluster_lat: Number(cluster.cluster_lat),
+        cluster_lng: Number(cluster.cluster_lng),
+        property_count: Number(cluster.property_count),
+        avg_price: Number(cluster.avg_price),
+      })) as MapCluster[];
     },
     enabled: enabled && bounds !== null,
     staleTime: 60 * 1000, // 1 minute

@@ -5,26 +5,31 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { 
-  Phone, 
-  Mail, 
-  MessageSquare, 
+import {
+  Phone,
+  Mail,
+  MessageSquare,
   Calendar,
   Trash2,
   Search,
   Filter,
-  MessageCircle
+  MessageCircle,
+  Users,
+  TrendingUp
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { useSearchParams } from 'react-router-dom';
+
 const Leads = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { leads, loading, updateLeadStatus, deleteLead } = useLeads();
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [leadTypeFilter, setLeadTypeFilter] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
   const handleCall = (phone: string) => {
     window.location.href = `tel:${phone}`;
@@ -41,7 +46,7 @@ const Leads = () => {
   const filteredLeads = leads.filter(lead => {
     const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
     const matchesLeadType = leadTypeFilter === 'all' || lead.lead_type === leadTypeFilter;
-    const matchesSearch = 
+    const matchesSearch =
       lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (lead.email && lead.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
       lead.phone.includes(searchQuery);
@@ -53,7 +58,7 @@ const Leads = () => {
       new: 'bg-blue-500',
       contacted: 'bg-yellow-500',
       interested: 'bg-green-500',
-      not_interested: 'bg-gray-500',
+      lost: 'bg-gray-500',
       closed: 'bg-purple-500'
     };
     return <Badge className={variants[status]}>{status.replace('_', ' ')}</Badge>;
@@ -69,28 +74,12 @@ const Leads = () => {
     return <span className="text-sm">{icons[source]} {source}</span>;
   };
 
-  // Business listing leads
-  const businessLeads = leads.filter(l => 
-    l.category === 'business' || 
-    l.properties?.property_type === 'business'
-  );
-
   const leadStats = {
     total: leads.length,
     new: leads.filter(l => l.status === 'new').length,
     contacted: leads.filter(l => l.status === 'contacted').length,
     interested: leads.filter(l => l.status === 'interested').length,
     closed: leads.filter(l => l.status === 'closed').length
-  };
-
-  // Business listing specific stats
-  const businessStats = {
-    total: businessLeads.length,
-    organic: businessLeads.filter(l => !l.campaign_id).length,
-    paid: businessLeads.filter(l => l.campaign_id).length,
-    contactOwner: businessLeads.filter(l => l.source === 'listing').length,
-    phone: businessLeads.filter(l => l.source === 'call').length,
-    chat: businessLeads.filter(l => l.source === 'chat').length
   };
 
   return (
@@ -137,55 +126,103 @@ const Leads = () => {
       </div>
 
       {/* Business Listing Stats */}
-      {businessStats.total > 0 && (
-        <>
-          <div className="mb-4">
-            <h2 className="text-xl font-semibold mb-1">Business Listing Leads</h2>
-            <p className="text-sm text-muted-foreground">
-              Real-time breakdown of all business listing inquiries
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-2xl font-bold">{businessStats.total}</div>
-                <p className="text-sm text-muted-foreground">Total Business</p>
-              </CardContent>
-            </Card>
-            <Card className="border-green-200 bg-green-50/50">
-              <CardContent className="pt-6">
-                <div className="text-2xl font-bold text-green-600">🌱 {businessStats.organic}</div>
-                <p className="text-sm text-muted-foreground">Organic</p>
-              </CardContent>
-            </Card>
-            <Card className="border-blue-200 bg-blue-50/50">
-              <CardContent className="pt-6">
-                <div className="text-2xl font-bold text-blue-600">💰 {businessStats.paid}</div>
-                <p className="text-sm text-muted-foreground">Paid Ads</p>
-              </CardContent>
-            </Card>
-            <Card className="border-purple-200 bg-purple-50/50">
-              <CardContent className="pt-6">
-                <div className="text-2xl font-bold text-purple-600">📝 {businessStats.contactOwner}</div>
-                <p className="text-sm text-muted-foreground">Contact Form</p>
-              </CardContent>
-            </Card>
-            <Card className="border-orange-200 bg-orange-50/50">
-              <CardContent className="pt-6">
-                <div className="text-2xl font-bold text-orange-600">📞 {businessStats.phone}</div>
-                <p className="text-sm text-muted-foreground">Phone Calls</p>
-              </CardContent>
-            </Card>
-            <Card className="border-cyan-200 bg-cyan-50/50">
-              <CardContent className="pt-6">
-                <div className="text-2xl font-bold text-cyan-600">💬 {businessStats.chat}</div>
-                <p className="text-sm text-muted-foreground">Chats</p>
-              </CardContent>
-            </Card>
-          </div>
-        </>
-      )}
+      {/* Lead Sources & Types Stats */}
+      <div className="mb-4">
+        <h2 className="text-xl font-semibold mb-1">Lead Analytics</h2>
+        <p className="text-sm text-muted-foreground">
+          Real-time breakdown of lead sources and types
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 sm:mb-8">
+        {/* Organic Leads Breakdown */}
+        <Card className="border-green-200 bg-green-50/50">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <div className="text-2xl font-bold text-green-600">
+                  🌱 {leads.filter(l => !l.campaign_id).length}
+                </div>
+                <p className="text-sm text-muted-foreground">Organic Leads</p>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                <Users className="h-5 w-5 text-green-600" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 pt-4 border-t border-green-200/60">
+              <div className="text-center">
+                <div className="text-lg font-semibold text-green-700">
+                  {leads.filter(l => !l.campaign_id && l.source === 'call').length}
+                </div>
+                <div className="text-xs text-green-600 flex items-center justify-center gap-1">
+                  <Phone className="h-3 w-3" /> Calls
+                </div>
+              </div>
+              <div className="text-center border-l border-green-200/60">
+                <div className="text-lg font-semibold text-green-700">
+                  {leads.filter(l => !l.campaign_id && (l.source === 'chat' || l.source === 'whatsapp')).length}
+                </div>
+                <div className="text-xs text-green-600 flex items-center justify-center gap-1">
+                  <MessageCircle className="h-3 w-3" /> Chats
+                </div>
+              </div>
+              <div className="text-center border-l border-green-200/60">
+                <div className="text-lg font-semibold text-green-700">
+                  {leads.filter(l => !l.campaign_id && l.source === 'listing').length}
+                </div>
+                <div className="text-xs text-green-600 flex items-center justify-center gap-1">
+                  <Mail className="h-3 w-3" /> Forms
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Paid Leads Breakdown */}
+        <Card className="border-blue-200 bg-blue-50/50">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <div className="text-2xl font-bold text-blue-600">
+                  💰 {leads.filter(l => !!l.campaign_id).length}
+                </div>
+                <p className="text-sm text-muted-foreground">Paid Leads</p>
+              </div>
+              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 pt-4 border-t border-blue-200/60">
+              <div className="text-center">
+                <div className="text-lg font-semibold text-blue-700">
+                  {leads.filter(l => !!l.campaign_id && l.source === 'call').length}
+                </div>
+                <div className="text-xs text-blue-600 flex items-center justify-center gap-1">
+                  <Phone className="h-3 w-3" /> Calls
+                </div>
+              </div>
+              <div className="text-center border-l border-blue-200/60">
+                <div className="text-lg font-semibold text-blue-700">
+                  {leads.filter(l => !!l.campaign_id && (l.source === 'chat' || l.source === 'whatsapp')).length}
+                </div>
+                <div className="text-xs text-blue-600 flex items-center justify-center gap-1">
+                  <MessageCircle className="h-3 w-3" /> Chats
+                </div>
+              </div>
+              <div className="text-center border-l border-blue-200/60">
+                <div className="text-lg font-semibold text-blue-700">
+                  {leads.filter(l => !!l.campaign_id && l.source === 'listing').length}
+                </div>
+                <div className="text-xs text-blue-600 flex items-center justify-center gap-1">
+                  <Mail className="h-3 w-3" /> Forms
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Filters */}
       <Card className="mb-4 sm:mb-6">
@@ -210,7 +247,7 @@ const Leads = () => {
                 <SelectItem value="new">New</SelectItem>
                 <SelectItem value="contacted">Contacted</SelectItem>
                 <SelectItem value="interested">Interested</SelectItem>
-                <SelectItem value="not_interested">Not Interested</SelectItem>
+                <SelectItem value="lost">Not Interested</SelectItem>
                 <SelectItem value="closed">Closed</SelectItem>
               </SelectContent>
             </Select>
@@ -273,17 +310,17 @@ const Leads = () => {
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <span>{formatDistanceToNow(new Date(lead.created_at), { addSuffix: true })}</span>
                     </div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline">
-                          {lead.lead_type === 'paid' ? '💰 Paid Lead' : '🌱 Organic Lead'}
-                        </Badge>
-                        {lead.category && (
-                          <Badge variant="secondary">{lead.category}</Badge>
-                        )}
-                        {getSourceBadge(lead.source)}
-                      </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant="outline">
+                        {lead.lead_type === 'paid' ? '💰 Paid Lead' : '🌱 Organic Lead'}
+                      </Badge>
+                      {lead.category && (
+                        <Badge variant="secondary">{lead.category}</Badge>
+                      )}
+                      {getSourceBadge(lead.source)}
+                    </div>
                   </div>
-                  
+
                   {lead.message && (
                     <div className="flex gap-2 p-3 bg-muted rounded-lg">
                       <MessageSquare className="h-4 w-4 text-muted-foreground mt-0.5" />
@@ -327,7 +364,7 @@ const Leads = () => {
                         <SelectItem value="new">🆕 New</SelectItem>
                         <SelectItem value="contacted">📞 Contacted</SelectItem>
                         <SelectItem value="interested">✅ Interested</SelectItem>
-                        <SelectItem value="not_interested">❌ Not Interested</SelectItem>
+                        <SelectItem value="lost">❌ Not Interested</SelectItem>
                         <SelectItem value="closed">🔒 Closed</SelectItem>
                       </SelectContent>
                     </Select>

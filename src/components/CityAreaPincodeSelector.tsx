@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { MapPin, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -12,7 +10,7 @@ import {
 import { useCities, useAreas, usePincodes, useResolveLocation } from "@/hooks/useLocationData";
 import { toast } from "sonner";
 import { LiveLocationButton } from "@/components/LiveLocationButton";
-import { reverseGeocode } from "@/utils/geocoding";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CityAreaPincodeSelectorProps {
   onLocationChange: (location: {
@@ -44,7 +42,6 @@ export const CityAreaPincodeSelector = ({
   const [selectedPincode, setSelectedPincode] = useState<string | null>(
     defaultValues?.pincode || null
   );
-  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
   const { data: cities, isLoading: citiesLoading } = useCities();
   const { data: areas, isLoading: areasLoading } = useAreas(selectedCityId);
@@ -91,16 +88,21 @@ export const CityAreaPincodeSelector = ({
 
       if (matchedCity) {
         setSelectedCityId(matchedCity.id);
-        
+
         // Try to match area
-        const cityAreas = await useAreas(matchedCity.id).data;
-        const matchedArea = cityAreas?.find(
+        const { data: cityAreas } = await supabase
+          .from("areas")
+          .select("*")
+          .eq("city_id", matchedCity.id)
+          .order("name");
+
+        const matchedArea = (cityAreas as any[])?.find(
           (a) => a.name.toLowerCase() === location.area.toLowerCase()
         );
 
         if (matchedArea) {
           setSelectedAreaId(matchedArea.id);
-          
+
           // Try to match pincode
           if (location.pincode) {
             setSelectedPincode(location.pincode);

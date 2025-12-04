@@ -19,6 +19,8 @@ interface LeadCaptureDialogProps {
   campaignId?: string;
   category?: string;
   subcategory?: string;
+  onSuccess?: () => void;
+  source?: string;
 }
 
 export const LeadCaptureDialog = ({
@@ -31,7 +33,9 @@ export const LeadCaptureDialog = ({
   sourcePage = 'listing_page',
   campaignId,
   category,
-  subcategory
+  subcategory,
+  onSuccess,
+  source = 'listing'
 }: LeadCaptureDialogProps) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -61,24 +65,24 @@ export const LeadCaptureDialog = ({
           .select('full_name, phone')
           .eq('id', user.id)
           .maybeSingle();
-        
+
         const { data: profile, error: profileError } = profileResponse;
 
         // Build comprehensive fallback data
         const emailName = user.email ? user.email.split('@')[0] : '';
-        
+
         // Google users: user_metadata might have full_name, name, or display_name
         // Email users: user_metadata might have full_name or name
-        const metadataName = 
-          user.user_metadata?.full_name || 
-          user.user_metadata?.name || 
+        const metadataName =
+          user.user_metadata?.full_name ||
+          user.user_metadata?.name ||
           user.user_metadata?.display_name ||
           emailName;
 
-        const metadataPhone = 
-          user.user_metadata?.phone || 
+        const metadataPhone =
+          user.user_metadata?.phone ||
           user.user_metadata?.phone_number ||
-          user.phone || 
+          user.phone ||
           '';
 
         // Prefer database profile, fallback to metadata
@@ -92,16 +96,16 @@ export const LeadCaptureDialog = ({
       } catch (error) {
         console.error('Profile fetch error:', error);
         // Final fallback using whatever we can extract
-        const fallbackName = 
-          user.user_metadata?.full_name || 
-          user.user_metadata?.name || 
+        const fallbackName =
+          user.user_metadata?.full_name ||
+          user.user_metadata?.name ||
           user.user_metadata?.display_name ||
           (user.email ? user.email.split('@')[0] : '');
-        
-        const fallbackPhone = 
-          user.user_metadata?.phone || 
+
+        const fallbackPhone =
+          user.user_metadata?.phone ||
           user.user_metadata?.phone_number ||
-          user.phone || 
+          user.phone ||
           '';
 
         setFormData({
@@ -122,9 +126,9 @@ export const LeadCaptureDialog = ({
           .insert(data)
           .select()
           .single();
-        
+
         const { data: result, error } = response;
-        
+
         if (error) {
           console.error('Supabase error:', error);
           // If it's the last retry, throw the error
@@ -138,7 +142,7 @@ export const LeadCaptureDialog = ({
           });
           continue;
         }
-        
+
         return { data: result, error: null };
       } catch (err) {
         console.error('Submit error:', err);
@@ -162,15 +166,15 @@ export const LeadCaptureDialog = ({
     if (e && typeof e.stopPropagation === 'function') {
       e.stopPropagation();
     }
-    
+
     // Safari: Prevent any potential form navigation
     if (typeof window !== 'undefined' && window.event) {
       window.event.returnValue = false;
     }
-    
+
     const trimmedName = formData.name.trim();
     const trimmedPhone = formData.phone.trim();
-    
+
     // Validation
     if (!trimmedName || trimmedName.length < 2) {
       toast.error('Please enter a valid name (minimum 2 characters)');
@@ -194,9 +198,9 @@ export const LeadCaptureDialog = ({
       toast.error('Invalid listing - please try again');
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       // Verify Supabase client is initialized
       if (!supabase) {
@@ -205,7 +209,7 @@ export const LeadCaptureDialog = ({
 
       // Get current session to ensure auth state is fresh
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
+
       if (sessionError) {
         console.warn('Session check error:', sessionError);
       }
@@ -220,7 +224,7 @@ export const LeadCaptureDialog = ({
         email: session?.user?.email || user?.email || null,
         message: null,
         status: 'new',
-        source: 'listing',
+        source: source,
         lead_type: leadType,
         source_page: sourcePage,
         campaign_id: campaignId || null,
@@ -228,7 +232,7 @@ export const LeadCaptureDialog = ({
         subcategory: subcategory || null
       };
 
-      console.log('📤 Submitting lead:', { 
+      console.log('📤 Submitting lead:', {
         listing_id: leadData.listing_id,
         owner_id: leadData.owner_id,
         has_user_id: !!leadData.user_id,
@@ -239,39 +243,40 @@ export const LeadCaptureDialog = ({
 
       // Submit with retry logic
       const result = await submitWithRetry(leadData);
-      
+
       if (result?.data) {
         console.log('✅ Lead submitted successfully:', result.data.id);
-        
+
         // Show prominent success message
         toast.success('✅ Inquiry Sent Successfully!', {
           description: `The owner will contact you at ${trimmedPhone}`,
           duration: 5000,
         });
-        
+
         // Reset form
         setFormData({ name: '', phone: '' });
-        
+
         // Close dialog after short delay to ensure user sees success message
         setTimeout(() => {
           onOpenChange(false);
+          if (onSuccess) onSuccess();
         }, 300);
       } else {
         throw new Error('Failed to submit inquiry - no data returned');
       }
     } catch (error: any) {
       console.error('❌ Lead submission error:', error);
-      console.error('Error details:', { 
-        code: error?.code, 
-        message: error?.message, 
+      console.error('Error details:', {
+        code: error?.code,
+        message: error?.message,
         details: error?.details,
-        hint: error?.hint 
+        hint: error?.hint
       });
-      
+
       // User-friendly error messages with clear icons
       let errorMessage = '❌ Failed to submit inquiry';
       let errorDescription = 'Please try again or contact support if the issue persists.';
-      
+
       if (error?.message?.includes('network') || error?.message?.includes('fetch') || error?.message?.includes('Failed to fetch')) {
         errorMessage = '🌐 Network Error';
         errorDescription = 'Please check your internet connection and try again.';
@@ -290,7 +295,7 @@ export const LeadCaptureDialog = ({
       } else if (error?.message) {
         errorDescription = error.message;
       }
-      
+
       toast.error(errorMessage, {
         description: errorDescription,
         duration: 7000,
@@ -321,16 +326,16 @@ export const LeadCaptureDialog = ({
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div className="space-y-2">
             <Label htmlFor="lead-name" className="text-sm font-medium">Full Name *</Label>
-            <Input 
-              id="lead-name" 
+            <Input
+              id="lead-name"
               name="name"
               type="text"
               autoComplete="name"
-              required 
+              required
               minLength={2}
               maxLength={100}
-              value={formData.name} 
-              onChange={e => setFormData({ ...formData, name: e.target.value })} 
+              value={formData.name}
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
               placeholder="Enter your name"
               disabled={loading}
               className="w-full"
@@ -338,16 +343,16 @@ export const LeadCaptureDialog = ({
           </div>
           <div className="space-y-2">
             <Label htmlFor="lead-phone" className="text-sm font-medium">Phone Number *</Label>
-            <Input 
-              id="lead-phone" 
+            <Input
+              id="lead-phone"
               name="phone"
-              type="tel" 
+              type="tel"
               autoComplete="tel"
-              required 
+              required
               minLength={10}
               maxLength={15}
-              value={formData.phone} 
-              onChange={e => setFormData({ ...formData, phone: e.target.value })} 
+              value={formData.phone}
+              onChange={e => setFormData({ ...formData, phone: e.target.value })}
               placeholder="Enter your phone number"
               disabled={loading}
               className="w-full"
@@ -357,18 +362,18 @@ export const LeadCaptureDialog = ({
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handleClose} 
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleClose}
               className="w-full sm:flex-1 order-2 sm:order-1"
               disabled={loading}
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={loading || !formData.name.trim() || !formData.phone.trim()} 
+            <Button
+              type="submit"
+              disabled={loading || !formData.name.trim() || !formData.phone.trim()}
               className="w-full sm:flex-1 order-1 sm:order-2"
             >
               {loading ? (

@@ -116,7 +116,7 @@ export function useReports() {
     }
 
     try {
-      // @ts-ignore - Using insert with proper typing
+      // @ts-expect-error - Fix type error - Using insert with proper typing
       const { data, error } = await supabase
         .from('reports')
         .insert({

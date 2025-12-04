@@ -12,7 +12,7 @@ export interface Lead {
   phone: string;
   email: string | null;
   message: string | null;
-  status: 'new' | 'contacted' | 'interested' | 'not_interested' | 'closed';
+  status: 'new' | 'contacted' | 'interested' | 'lost' | 'closed';
   source: 'listing' | 'chat' | 'whatsapp' | 'call';
   lead_type?: 'organic' | 'paid';
   category?: string | null;
@@ -43,7 +43,7 @@ export const useLeads = () => {
       setLoading(false);
       return;
     }
-    
+
     try {
       // Fetch all organic leads including business listings
       const { data, error } = await supabase
@@ -112,7 +112,7 @@ export const useLeads = () => {
       if (!leadData.phone?.trim()) {
         throw new Error('Please enter your phone number');
       }
-      
+
       // Sanitize and format data
       const sanitizedData = {
         listing_id: leadData.listing_id || null,
@@ -130,7 +130,7 @@ export const useLeads = () => {
         source_page: leadData.source_page || 'listing_page',
         campaign_id: leadData.campaign_id || null,
       };
-      
+
       const { data, error } = await supabase
         .from('leads')
         .insert(sanitizedData as any)
@@ -145,16 +145,16 @@ export const useLeads = () => {
         }
         throw new Error(error.message || 'Failed to submit inquiry');
       }
-      
+
       if (!data) {
         throw new Error('Failed to save inquiry');
       }
-      
+
       // Refresh leads if user is the owner
       if (user?.id === leadData.owner_id) {
         fetchLeads();
       }
-      
+
       return data;
     } catch (error: any) {
       console.error('Create lead error:', error);
@@ -165,7 +165,7 @@ export const useLeads = () => {
   const updateLeadStatus = async (leadId: string, status: Lead['status']) => {
     try {
       console.log('🔄 updateLeadStatus called:', { leadId, status, userId: user?.id });
-      
+
       // Verify user is authenticated
       if (!user) {
         console.error('❌ No user found');
@@ -174,9 +174,9 @@ export const useLeads = () => {
       }
 
       // Optimistic UI update
-      setLeads(prevLeads => 
-        prevLeads.map(lead => 
-          lead.id === leadId 
+      setLeads(prevLeads =>
+        prevLeads.map(lead =>
+          lead.id === leadId
             ? { ...lead, status, updated_at: new Date().toISOString() }
             : lead
         )
@@ -187,25 +187,31 @@ export const useLeads = () => {
       // Update in database
       const { data, error } = await supabase
         .from('leads')
-        .update({ 
-          status, 
-          updated_at: new Date().toISOString() 
+        .update({
+          status,
+          updated_at: new Date().toISOString()
         })
         .eq('id', leadId)
-        .eq('owner_id', user.id)
         .select()
         .single();
 
       console.log('📥 Supabase response:', { data, error });
 
       if (error) {
-        console.error('❌ Update error:', error);
-        fetchLeads(); // Revert
-        
+        // Revert optimistic update
+        setLeads(prevLeads =>
+          prevLeads.map(lead =>
+            lead.id === leadId
+              ? { ...lead, status: prevLeads.find(l => l.id === leadId)?.status as Lead['status'] }
+              : lead
+          )
+        );
+
+        console.error('Error updating lead status:', error);
         if (error.code === 'PGRST116') {
           toast.error('Lead not found or you do not have permission to update it');
         } else {
-          toast.error(`Failed to update: ${error.message}`);
+          toast.error(`Failed to update status: ${error.message}`);
         }
         return;
       }
@@ -221,7 +227,7 @@ export const useLeads = () => {
       toast.success(`Status changed to "${status.replace('_', ' ')}"`, {
         duration: 2000,
       });
-      
+
     } catch (error: any) {
       console.error('❌ Unexpected error:', error);
       fetchLeads(); // Revert

@@ -1,30 +1,56 @@
 import { useState, useRef, useEffect } from "react";
 import { Search, MapPin, Building2, Home, Hash, X } from "lucide-react";
 import { Input } from "./ui/input";
-import { useAutocomplete, type AutocompleteResult } from "@/hooks/useAutocomplete";
+import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import { cn } from "@/lib/utils";
 
 interface EnhancedSearchBarProps {
   value: string;
   onChange: (value: string) => void;
-  onSelect?: (result: AutocompleteResult) => void;
+  onSelect?: (result: any) => void;
   placeholder?: string;
   className?: string;
 }
 
-const EnhancedSearchBar = ({ 
-  value, 
-  onChange, 
+const EnhancedSearchBar = ({
+  value,
+  onChange,
   onSelect,
   placeholder = "Search by city, area or PIN code (e.g., Hyderabad, Banjara Hills, 500072)",
-  className 
+  className
 }: EnhancedSearchBarProps) => {
   const [isFocused, setIsFocused] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
-  const { data: suggestions = [], isLoading } = useAutocomplete(value, isFocused);
+
+  const placesLib = useMapsLibrary('places');
+  const [autocompleteService, setAutocompleteService] = useState<google.maps.places.AutocompleteService | null>(null);
+  const [placesService, setPlacesService] = useState<google.maps.places.PlacesService | null>(null);
+
+  useEffect(() => {
+    if (!placesLib) return;
+    setAutocompleteService(new placesLib.AutocompleteService());
+    setPlacesService(new placesLib.PlacesService(document.createElement('div')));
+  }, [placesLib]);
+
+  useEffect(() => {
+    if (!autocompleteService || !value || value.length < 2) {
+      setPredictions([]);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      autocompleteService.getPlacePredictions(
+        { input: value, componentRestrictions: { country: 'in' } },
+        (results) => {
+          setPredictions(results || []);
+        }
+      );
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [value, autocompleteService]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -41,31 +67,25 @@ const EnhancedSearchBar = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!suggestions.length) return;
-
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSelectedIndex((prev) => 
-        prev < suggestions.length - 1 ? prev + 1 : prev
-      );
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
-    } else if (e.key === "Enter" && selectedIndex >= 0) {
-      e.preventDefault();
-      handleSelect(suggestions[selectedIndex]);
-    } else if (e.key === "Escape") {
-      setIsFocused(false);
-      setSelectedIndex(-1);
-    }
-  };
-
-  const handleSelect = (result: AutocompleteResult) => {
-    onChange(result.label);
-    onSelect?.(result);
+  const handleSelect = (prediction: google.maps.places.AutocompletePrediction) => {
+    onChange(prediction.description);
     setIsFocused(false);
-    setSelectedIndex(-1);
+
+    if (placesService && onSelect) {
+      placesService.getDetails(
+        { placeId: prediction.place_id, fields: ['geometry', 'formatted_address'] },
+        (place, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && place?.geometry?.location) {
+            onSelect({
+              label: prediction.description,
+              type: 'place',
+              latitude: place.geometry.location.lat(),
+              longitude: place.geometry.location.lng()
+            });
+          }
+        }
+      );
+    }
   };
 
   const handleClear = () => {
@@ -73,22 +93,7 @@ const EnhancedSearchBar = ({
     inputRef.current?.focus();
   };
 
-  const getIcon = (type: string) => {
-    switch (type) {
-      case "city":
-        return <Building2 className="h-4 w-4 text-primary" />;
-      case "area":
-        return <MapPin className="h-4 w-4 text-primary" />;
-      case "pincode":
-        return <Hash className="h-4 w-4 text-primary" />;
-      case "category":
-        return <Home className="h-4 w-4 text-primary" />;
-      default:
-        return <MapPin className="h-4 w-4 text-primary" />;
-    }
-  };
-
-  const showDropdown = isFocused && (suggestions.length > 0 || isLoading);
+  const showDropdown = isFocused && predictions.length > 0;
 
   return (
     <div className={cn("relative w-full", className)}>
@@ -100,7 +105,6 @@ const EnhancedSearchBar = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setIsFocused(true)}
-          onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className="pl-10 pr-10 h-12 bg-muted border-0 focus-visible:ring-primary w-full"
         />
@@ -120,33 +124,24 @@ const EnhancedSearchBar = ({
           ref={dropdownRef}
           className="absolute z-50 w-full mt-2 bg-card border border-border rounded-lg shadow-lg max-h-[400px] overflow-y-auto"
         >
-          {isLoading ? (
-            <div className="p-4 text-center text-muted-foreground">
-              Searching...
-            </div>
-          ) : suggestions.length > 0 ? (
-            <ul className="py-2">
-              {suggestions.map((result, index) => (
-                <li key={`${result.type}-${result.label}-${index}`}>
-                  <button
-                    onClick={() => handleSelect(result)}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-accent transition-colors",
-                      selectedIndex === index && "bg-accent"
-                    )}
-                  >
-                    {getIcon(result.type)}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{result.label}</p>
-                      <p className="text-xs text-muted-foreground capitalize">
-                        {result.type}
-                      </p>
-                    </div>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
+          <ul className="py-2">
+            {predictions.map((prediction) => (
+              <li key={prediction.place_id}>
+                <button
+                  onClick={() => handleSelect(prediction)}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-accent transition-colors"
+                >
+                  <MapPin className="h-4 w-4 text-primary shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{prediction.structured_formatting.main_text}</p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {prediction.structured_formatting.secondary_text}
+                    </p>
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

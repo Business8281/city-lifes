@@ -1,0 +1,16 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://127.0.0.1:8080",
+  "executionArgs": {
+    "projectName": "city-lifes-1",
+    "projectPath": "/Users/praneeth/city-lifes-1",
+    "testIds": [],
+    "additionalInstruction": "",
+    "envs": {
+      "API_KEY": "sk-user-g2CZBO5ZOBbWRuokicDorZIUwCdrhQ7ugUimlTtxCeW3R13oa9Lp-g1m90N5AlFXPoUuQ2HCH_ooKVLxPHnSwj4U-OqXvXQzkDgAX3A-nN-SokC6hpo0MW8HxTUsL1e2WNk"
+    }
+  },
+  "proxy": "http://5d5b1d25-3e9b-4ac2-b150-ad44beeeef51:lIHNuAbHqkRRB9EM2zh0hiMtOKOanBmd@tun.testsprite.com:8080"
+}

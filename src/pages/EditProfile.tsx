@@ -15,21 +15,15 @@ import { profileSchema } from "@/schemas/validationSchemas";
 
 const EditProfile = () => {
   const navigate = useNavigate();
-  const { user, changeEmail, verifyEmailChangeOTP, updatePhone } = useAuth();
+  const { user, updatePhone } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: user?.email || "",
     phone: "",
   });
-
-  const [showEmailChange, setShowEmailChange] = useState(false);
-  const [newEmail, setNewEmail] = useState("");
-  const [emailChanging, setEmailChanging] = useState(false);
-  const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const [emailOtp, setEmailOtp] = useState("");
 
   const [showPhoneChange, setShowPhoneChange] = useState(false);
   const [newPhone, setNewPhone] = useState("");
@@ -40,18 +34,18 @@ const EditProfile = () => {
   useEffect(() => {
     const loadProfile = async () => {
       if (!user) return;
-      
+
       try {
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
           .single();
-        
+
         if (error && error.code !== 'PGRST116') {
           throw error;
         }
-        
+
         if (data) {
           setFormData({
             fullName: data.full_name || "",
@@ -66,13 +60,13 @@ const EditProfile = () => {
         setLoading(false);
       }
     };
-    
+
     loadProfile();
   }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) {
       toast.error("You must be logged in to update your profile");
       return;
@@ -107,77 +101,6 @@ const EditProfile = () => {
       toast.error("Failed to update profile");
     } finally {
       setSubmitting(false);
-    }
-  };
-
-  const handleEmailChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    
-    if (!newEmail || newEmail === user?.email) {
-      setError("Please enter a different email address");
-      return;
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(newEmail)) {
-      setError("Please enter a valid email address");
-      return;
-    }
-
-    setEmailChanging(true);
-    const { error } = await changeEmail(newEmail);
-    setEmailChanging(false);
-
-    if (error) {
-      const errorMsg = (error as { message?: string })?.message || "Failed to send verification code";
-      setError(errorMsg);
-      toast.error("Failed to send verification code");
-      return;
-    }
-
-    setEmailOtpSent(true);
-    toast.success("Verification code sent to your current email. Please check your inbox.");
-  };
-
-  const handleEmailOtpVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    if (!emailOtp || emailOtp.length !== 6) {
-      setError("Please enter the 6-digit verification code");
-      return;
-    }
-
-    setEmailChanging(true);
-    const { error } = await verifyEmailChangeOTP(emailOtp);
-    setEmailChanging(false);
-
-    if (error) {
-      const errorMsg = (error as { message?: string })?.message || "Invalid verification code";
-      setError(errorMsg);
-      toast.error("Invalid verification code");
-      return;
-    }
-
-    toast.success("Email changed successfully!");
-    setNewEmail("");
-    setEmailOtp("");
-    setEmailOtpSent(false);
-    setShowEmailChange(false);
-    
-    // Reload profile data
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user?.id)
-      .single();
-    
-    if (data) {
-      setFormData(prev => ({
-        ...prev,
-        email: data.email || user?.email || ""
-      }));
     }
   };
 
@@ -266,7 +189,7 @@ const EditProfile = () => {
               <Label htmlFor="email">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
-                  Current Email
+                  Email
                 </div>
               </Label>
               <Input
@@ -276,13 +199,16 @@ const EditProfile = () => {
                 disabled
                 className="bg-muted"
               />
+              <p className="text-xs text-muted-foreground">
+                Email is managed by Google Sign-In
+              </p>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="phone">
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
-                  Current Phone Number
+                  Phone Number
                 </div>
               </Label>
               <Input
@@ -306,112 +232,6 @@ const EditProfile = () => {
             <div className="flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
               <h2 className="text-lg font-semibold">Security Settings</h2>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">Change Email</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Update your email address
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setShowEmailChange(!showEmailChange);
-                    setError("");
-                  }}
-                >
-                  {showEmailChange ? "Cancel" : "Change"}
-                </Button>
-              </div>
-
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              {showEmailChange && !emailOtpSent && (
-                <form onSubmit={handleEmailChange} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="newEmail">New Email Address</Label>
-                    <Input
-                      id="newEmail"
-                      type="email"
-                      placeholder="newemail@example.com"
-                      value={newEmail}
-                      onChange={(e) => setNewEmail(e.target.value)}
-                      required
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      A verification code will be sent to your current email
-                    </p>
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={emailChanging}
-                  >
-                    {emailChanging ? "Sending..." : "Send Verification Code"}
-                  </Button>
-                </form>
-              )}
-
-              {emailOtpSent && (
-                <form onSubmit={handleEmailOtpVerify} className="space-y-4">
-                  <Alert>
-                    <Mail className="h-4 w-4" />
-                    <AlertDescription>
-                      We've sent a 6-digit verification code to your current email address ({formData.email}). Please enter it below.
-                    </AlertDescription>
-                  </Alert>
-                  <div className="space-y-2">
-                    <Label htmlFor="emailOtp">Verification Code</Label>
-                    <Input
-                      id="emailOtp"
-                      type="text"
-                      value={emailOtp}
-                      onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      placeholder="000000"
-                      maxLength={6}
-                      className="text-center text-2xl tracking-widest"
-                      required
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Enter the 6-digit code from your email
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="submit"
-                      className="flex-1"
-                      disabled={emailChanging || emailOtp.length !== 6}
-                    >
-                      {emailChanging ? "Verifying..." : "Verify & Change Email"}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setEmailOtpSent(false);
-                        setEmailOtp("");
-                        setNewEmail("");
-                        setShowEmailChange(false);
-                        setError("");
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </form>
-              )}
             </div>
 
             <Separator />
@@ -478,27 +298,6 @@ const EditProfile = () => {
                   </Button>
                 </form>
               )}
-            </div>
-
-            <Separator />
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">Change Password</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Update your password
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate("/forgot-password")}
-                >
-                  Change
-                </Button>
-              </div>
             </div>
           </div>
         </Card>

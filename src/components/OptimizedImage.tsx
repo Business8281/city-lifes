@@ -19,18 +19,18 @@ interface OptimizedImageProps {
 // Helper to generate Supabase Storage transformation URLs
 const getOptimizedUrl = (src: string, width?: number, quality: number = 70): string => {
   if (!src) return '';
-  
+
   // If already a data URL, return as-is
   if (src.startsWith('data:')) {
     return src;
   }
-  
-  // For Supabase Storage URLs, return as-is (transformations can be added later if needed)
-  // Supabase automatically serves images, no need to modify URLs
-  if (src.startsWith('http://') || src.startsWith('https://')) {
-    return src;
+
+  // For Supabase Storage URLs, append transformation parameters
+  if (src.includes('supabase.co/storage/v1/object/public/')) {
+    const separator = src.includes('?') ? '&' : '?';
+    return `${src}${separator}width=${width || 800}&quality=${quality}&format=webp`;
   }
-  
+
   // If it's a relative path, return as-is
   return src;
 };
@@ -80,7 +80,7 @@ export const OptimizedImage = ({
   const srcSet = generateSrcSet(src, quality);
 
   return (
-    <div 
+    <div
       className={cn(
         'relative overflow-hidden bg-muted',
         aspectRatio === 'square' ? 'aspect-square' : aspectClass,
@@ -88,11 +88,11 @@ export const OptimizedImage = ({
         className
       )}
       style={
-        aspectRatio === 'square' 
+        aspectRatio === 'square'
           ? { aspectRatio: '1 / 1', width: '100%' }
-          : width && height 
-          ? { aspectRatio: `${width}/${height}` } 
-          : undefined
+          : width && height
+            ? { aspectRatio: `${width}/${height}` }
+            : undefined
       }
     >
       {/* Shimmer loading placeholder */}
@@ -101,7 +101,7 @@ export const OptimizedImage = ({
           <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         </div>
       )}
-      
+
       {/* Error fallback */}
       {error && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted text-muted-foreground">
@@ -110,7 +110,7 @@ export const OptimizedImage = ({
           </svg>
         </div>
       )}
-      
+
       {!error && (
         <img
           ref={imgRef}

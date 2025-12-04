@@ -78,7 +78,7 @@ export function useAdminReports() {
 
   const fetchStats = async () => {
     try {
-      // @ts-ignore - RPC function not yet in types
+      // @ts-expect-error - Fix type error - RPC function not yet in types
       const { data, error } = await supabase.rpc('get_report_stats');
       if (error) throw error;
       setStats(data as any as ReportStats);
@@ -96,7 +96,7 @@ export function useAdminReports() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
-      // @ts-ignore - RPC function not yet in types
+      // @ts-expect-error - Fix type error - RPC function not yet in types
       const { error } = await supabase.rpc('apply_admin_action', {
         p_report_id: reportId,
         p_admin_id: user.id,

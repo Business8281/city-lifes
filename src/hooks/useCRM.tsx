@@ -98,10 +98,10 @@ export const useCRM = () => {
 
   const updateClientStage = async (clientId: string, stage: CRMClient['stage']) => {
     try {
-      // @ts-ignore - Table types will be generated after migration
+      // @ts-expect-error - Fix type error - Table types will be generated after migration
       const { error } = await supabase
         .from('crm_clients')
-        // @ts-ignore
+        // @ts-expect-error - Fix type error
         .update({ stage })
         .eq('id', clientId);
 
@@ -116,10 +116,10 @@ export const useCRM = () => {
 
   const updateClient = async (clientId: string, updates: any) => {
     try {
-      // @ts-ignore - Table types will be generated after migration
+      // @ts-expect-error - Fix type error - Table types will be generated after migration
       const { error } = await supabase
         .from('crm_clients')
-        // @ts-ignore
+        // @ts-expect-error - Fix type error
         .update(updates)
         .eq('id', clientId);
 
@@ -233,10 +233,10 @@ export const useCRMTasks = (clientId?: string) => {
 
   const updateTask = async (taskId: string, updates: any) => {
     try {
-      // @ts-ignore - Table types will be generated after migration
+      // @ts-expect-error - Fix type error - Table types will be generated after migration
       const { error } = await supabase
         .from('crm_tasks')
-        // @ts-ignore
+        // @ts-expect-error - Fix type error
         .update(updates)
         .eq('id', taskId);
 

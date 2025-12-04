@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import BottomNav from "@/components/BottomNav";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { User, Home, TrendingUp, Settings, Shield, ChevronRight, LogOut, Users, ClipboardList, AlertCircle } from "lucide-react";
+import { User, Home, TrendingUp, Settings, Shield, ChevronRight, LogOut, Users, ClipboardList, AlertCircle, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { useMyListings } from "@/hooks/useProperties";
@@ -22,25 +22,25 @@ const Profile = () => {
   useEffect(() => {
     const loadProfile = async () => {
       if (!user) return;
-      
+
       try {
         const { data, error } = await supabase
           .from('profiles')
           .select('full_name, phone')
           .eq('id', user.id)
           .single();
-        
+
         if (error && error.code !== 'PGRST116') {
           console.error('Error loading profile:', error);
           return;
         }
-        
+
         setProfile(data);
       } catch (error) {
         console.error('Error loading profile:', error);
       }
     };
-    
+
     loadProfile();
 
     // Subscribe to live changes to this user's profile so the UI stays fresh
@@ -59,8 +59,9 @@ const Profile = () => {
       };
     }
   }, [user]);
-  
+
   const menuItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
     { icon: User, label: "Edit Profile", path: "/profile/edit" },
     { icon: Home, label: "My Listings", path: "/my-listings" },
     { icon: TrendingUp, label: "Ad Campaign", path: "/ad-campaign" },
@@ -115,7 +116,7 @@ const Profile = () => {
             if (item.path === '/admin-dashboard' && !isAdmin) {
               return null;
             }
-            
+
             const Icon = item.icon;
             return (
               <Card

@@ -21,7 +21,7 @@ export function useNearbyProperties(
         return [] as NearbyProperty[];
       }
 
-      // @ts-ignore - RPC function not in generated types yet
+      // @ts-expect-error - Fix type error - RPC function not in generated types yet
       const { data, error } = await supabase.rpc("search_properties_nearby", {
         user_lat: latitude,
         user_lng: longitude,

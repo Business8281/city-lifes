@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import EnhancedSearchBar from "@/components/EnhancedSearchBar";
-import { APIProvider, Map, AdvancedMarker, InfoWindow, useMap } from "@vis.gl/react-google-maps";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Navigation, List, SlidersHorizontal } from "lucide-react";
@@ -13,9 +12,16 @@ import { useMapClusters, type MapBounds } from "@/hooks/useMapClusters";
 import type { AutocompleteResult } from "@/hooks/useAutocomplete";
 import { propertyTypes } from "@/data/propertyTypes";
 import PropertyCard from "@/components/PropertyCard";
-import PriceMarker from "@/components/PriceMarker";
 import MapFilters from "@/components/MapFilters";
 import { OptimizedImage } from "@/components/OptimizedImage";
+import { GoogleMap } from '@/components/GoogleMap';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const MapView = () => {
   const navigate = useNavigate();
@@ -27,9 +33,12 @@ const MapView = () => {
   const [showList, setShowList] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({});
-  
+
   const { data: searchResults = [], isLoading } = useAdvancedSearch(searchFilters, true);
-  const { data: clusters = [] } = useMapClusters(mapBounds, mapBounds?.zoom ? mapBounds.zoom <= 13 : false);
+  const { data: clusters = [] } = useMapClusters(
+    mapBounds ? { ...mapBounds, category: searchFilters.category } : null,
+    mapBounds?.zoom ? mapBounds.zoom <= 13 : false
+  );
 
   useEffect(() => {
     if (location.coordinates?.lat && location.coordinates?.lng) {
@@ -50,7 +59,7 @@ const MapView = () => {
     await getCurrentLocation();
   };
 
-  const handleSearchSelect = (result: AutocompleteResult) => {
+  const handleSearchSelect = (result: any) => {
     if (result.latitude && result.longitude) {
       setMapCenter({ lat: result.latitude, lng: result.longitude });
       setSearchFilters(prev => ({
@@ -58,6 +67,10 @@ const MapView = () => {
         userLat: result.latitude,
         userLng: result.longitude,
         radiusKm: 5,
+        // Clear other filters when searching by location
+        city: undefined,
+        area: undefined,
+        pincode: undefined
       }));
     } else {
       setSearchFilters(prev => ({
@@ -73,7 +86,7 @@ const MapView = () => {
     if (bounds) {
       const ne = bounds.getNorthEast();
       const sw = bounds.getSouthWest();
-      
+
       setMapBounds({
         minLat: sw.lat(),
         minLng: sw.lng(),
@@ -90,241 +103,110 @@ const MapView = () => {
         maxLng: ne.lng(),
       }));
     }
-  }, []);
+    // Convert bounds to min/max lat/lng
+    const ne = bounds.toJSON ? { lat: bounds.toJSON().north, lng: bounds.toJSON().east } : bounds.getNorthEast();
+    const sw = bounds.toJSON ? { lat: bounds.toJSON().south, lng: bounds.toJSON().west } : bounds.getSouthWest();
+
+    setSearchFilters(prev => ({
+      ...prev,
+      minLat: sw.lat,
+      minLng: sw.lng,
+      maxLat: ne.lat,
+      maxLng: ne.lng,
+      // Only update user location if we're not in bounds mode (optional, but good for relevance)
+      userLat: location.coordinates?.lat,
+      userLng: location.coordinates?.lng,
+    }));
+  }, [location.coordinates]);
 
   const formatPrice = (price: number, priceType: string) => {
     return `₹${price.toLocaleString("en-IN")}${priceType === "monthly" ? "/mo" : priceType === "daily" ? "/day" : ""}`;
   };
 
-  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-  if (!apiKey) {
-    return (
-      <div className="min-h-screen bg-background pb-20 md:pb-0 flex items-center justify-center">
-        <Card className="max-w-md mx-4">
-          <CardContent className="pt-6">
-            <MapPin className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <p className="text-center text-muted-foreground">
-              Google Maps API key is not configured. Please add it to your environment variables.
-            </p>
-          </CardContent>
-        </Card>
-        <BottomNav />
-      </div>
-    );
-  }
-
-  const MapController = () => {
-    const map = useMap();
-    
-    useEffect(() => {
-      if (!map) return;
-      
-      const boundsListener = map.addListener('bounds_changed', () => {
-        const bounds = map.getBounds();
-        const zoom = map.getZoom() || 12;
-        handleMapBoundsChange(bounds, zoom);
-      });
-      
-      return () => {
-        google.maps.event.removeListener(boundsListener);
-      };
-    }, [map]);
-    
-    return null;
-  };
-
   return (
-    <div className="relative h-screen w-full pb-16 md:pb-0">
-      {/* Search Bar & Controls */}
-      <div className="absolute top-4 left-4 right-4 z-20 flex gap-2">
-        <div className="flex-1">
+    <div className="flex h-screen w-full overflow-hidden bg-background">
+      {/* Left Side - List View (Desktop) */}
+      <div className="hidden md:flex w-[400px] lg:w-[450px] flex-col border-r border-border h-full bg-background z-10 shadow-xl">
+        <div className="p-4 border-b border-border space-y-4">
           <EnhancedSearchBar
             value={searchQuery}
             onChange={setSearchQuery}
             onSelect={handleSearchSelect}
           />
-        </div>
-        <Button
-          size="icon"
-          variant="secondary"
-          className="shrink-0 h-12 w-12 bg-background shadow-lg"
-          onClick={() => setShowFilters(!showFilters)}
-        >
-          <SlidersHorizontal className="h-5 w-5" />
-        </Button>
-        <Button
-          size="icon"
-          variant="secondary"
-          className="shrink-0 h-12 w-12 bg-background shadow-lg"
-          onClick={() => setShowList(!showList)}
-        >
-          <List className="h-5 w-5" />
-        </Button>
-      </div>
-
-      {/* Filters Panel */}
-      {showFilters && (
-        <div className="absolute top-20 left-4 z-20 w-80 max-sm:w-[calc(100%-2rem)]">
-          <MapFilters
-            category={searchFilters.category}
-            minPrice={searchFilters.minPrice}
-            maxPrice={searchFilters.maxPrice}
-            onCategoryChange={(value) => setSearchFilters(prev => ({ ...prev, category: value || undefined }))}
-            onMinPriceChange={(value) => setSearchFilters(prev => ({ ...prev, minPrice: value }))}
-            onMaxPriceChange={(value) => setSearchFilters(prev => ({ ...prev, maxPrice: value }))}
-            onPriceTypeChange={(value) => setSearchFilters(prev => ({ ...prev, priceType: value || undefined }))}
-            onClear={() => setSearchFilters(prev => ({ 
-              ...prev, 
-              category: undefined, 
-              minPrice: undefined, 
-              maxPrice: undefined 
-            }))}
-          />
-        </div>
-      )}
-
-      {/* Map */}
-      <APIProvider apiKey={apiKey}>
-        <Map
-          defaultZoom={12}
-          center={mapCenter}
-          mapId="citylifes-map"
-          className="w-full h-full"
-          gestureHandling="greedy"
-          disableDefaultUI={false}
-          zoomControl={true}
-          fullscreenControl={false}
-          streetViewControl={false}
-        >
-          <MapController />
-          
-          {/* User location marker */}
-          {location.coordinates && (
-            <AdvancedMarker
-              position={{ lat: location.coordinates.lat, lng: location.coordinates.lng }}
-              title="Your Location"
-            >
-              <div className="bg-primary rounded-full p-3 shadow-lg border-4 border-background">
-                <Navigation className="h-5 w-5 text-primary-foreground" />
-              </div>
-            </AdvancedMarker>
-          )}
-
-          {/* Clusters for zoomed out view */}
-          {clusters.map((cluster, idx) => (
-            <AdvancedMarker
-              key={`cluster-${idx}`}
-              position={{ lat: cluster.cluster_lat, lng: cluster.cluster_lng }}
-              onClick={() => {
-                setMapCenter({ lat: cluster.cluster_lat, lng: cluster.cluster_lng });
-              }}
-            >
-              <div className="bg-primary text-primary-foreground rounded-full w-12 h-12 flex items-center justify-center shadow-lg border-2 border-background font-bold cursor-pointer hover:scale-110 transition-transform">
-                {cluster.property_count}
-              </div>
-            </AdvancedMarker>
-          ))}
-
-          {/* Individual property markers with prices for zoomed in view */}
-          {searchResults.length > 0 && searchResults.slice(0, 100).map((property) => (
-            property.latitude && property.longitude && (
-              <AdvancedMarker
-                key={property.id}
-                position={{ lat: property.latitude, lng: property.longitude }}
-                onClick={() => setSelectedProperty(property)}
-              >
-                <PriceMarker
-                  price={property.price}
-                  priceType={property.price_type || undefined}
-                  isSelected={selectedProperty?.id === property.id}
-                />
-              </AdvancedMarker>
-            )
-          ))}
-
-          {/* Info window for selected property */}
-          {selectedProperty && selectedProperty.latitude && selectedProperty.longitude && (
-            <InfoWindow
-              position={{
-                lat: selectedProperty.latitude,
-                lng: selectedProperty.longitude,
-              }}
-              onCloseClick={() => setSelectedProperty(null)}
-            >
-              <Card className="border-0 shadow-none max-w-xs">
-                <CardContent className="p-3">
-                  {selectedProperty.images?.[0] && (
-                    <div className="w-full rounded-lg mb-2 overflow-hidden">
-                      <OptimizedImage
-                        src={selectedProperty.images[0]}
-                        alt={selectedProperty.title}
-                        aspectRatio="square"
-                        width={400}
-                        quality={75}
-                      />
-                    </div>
-                  )}
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <h3 className="font-semibold text-sm line-clamp-2">
-                      {selectedProperty.title}
-                    </h3>
-                    {selectedProperty.verified && (
-                      <Badge variant="secondary" className="text-xs shrink-0">
-                        Verified
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-primary font-bold text-lg mb-1">
-                    {formatPrice(selectedProperty.price, selectedProperty.price_type)}
-                  </p>
-                  <p className="text-xs text-muted-foreground mb-3">
-                    {selectedProperty.area}, {selectedProperty.city}
-                  </p>
-                  {selectedProperty.distance_km && (
-                    <p className="text-xs text-muted-foreground mb-2">
-                      {selectedProperty.distance_km.toFixed(1)}km away
-                    </p>
-                  )}
-                  <Button
-                    size="sm"
-                    className="w-full"
-                    onClick={() => navigate(`/property/${selectedProperty.id}`)}
-                  >
-                    View Details
-                  </Button>
-                </CardContent>
-              </Card>
-            </InfoWindow>
-          )}
-        </Map>
-      </APIProvider>
-
-      {/* Location button */}
-      <Button
-        size="icon"
-        className="absolute bottom-24 right-4 z-10 rounded-full shadow-lg"
-        onClick={handleGetLocation}
-      >
-        <Navigation className="h-4 w-4" />
-      </Button>
-
-      {/* List View Sidebar */}
-      {showList && (
-        <div className="absolute left-4 top-20 bottom-20 w-96 bg-background rounded-lg shadow-xl overflow-hidden z-10 flex flex-col max-sm:left-0 max-sm:w-full max-sm:bottom-16">
-          <div className="p-4 border-b border-border">
-            <h2 className="font-semibold">
-              {isLoading ? 'Loading...' : `${searchResults.length} properties found`}
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-lg">
+              {isLoading ? 'Loading...' : `${searchResults.length} Properties`}
             </h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center gap-2"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Filters
+            </Button>
           </div>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {searchResults.map((property) => (
-              <div key={property.id} className="cursor-pointer" onClick={() => {
-                if (property.latitude && property.longitude) {
-                  setMapCenter({ lat: property.latitude, lng: property.longitude });
-                  setSelectedProperty(property);
-                }
-              }}>
+
+          {/* Filters Panel (Inline for Desktop) */}
+          {showFilters && (
+            <div className="pt-2 animate-in slide-in-from-top-2">
+              <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
+                <Select
+                  value={searchFilters.radiusKm?.toString() || "5"}
+                  onValueChange={(value) => setSearchFilters(prev => ({ ...prev, radiusKm: Number(value) }))}
+                >
+                  <SelectTrigger className="w-[100px] bg-background">
+                    <SelectValue placeholder="Radius" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 km</SelectItem>
+                    <SelectItem value="3">3 km</SelectItem>
+                    <SelectItem value="5">5 km</SelectItem>
+                    <SelectItem value="10">10 km</SelectItem>
+                    <SelectItem value="20">20 km</SelectItem>
+                    <SelectItem value="50">50 km</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <MapFilters
+                category={searchFilters.category}
+                minPrice={searchFilters.minPrice}
+                maxPrice={searchFilters.maxPrice}
+                onCategoryChange={(value) => setSearchFilters(prev => ({ ...prev, category: value === "all" ? undefined : value }))}
+                onMinPriceChange={(value) => setSearchFilters(prev => ({ ...prev, minPrice: value }))}
+                onMaxPriceChange={(value) => setSearchFilters(prev => ({ ...prev, maxPrice: value }))}
+                onPriceTypeChange={(value) => setSearchFilters(prev => ({ ...prev, priceType: value || undefined }))}
+                onClear={() => setSearchFilters(prev => ({
+                  ...prev,
+                  category: undefined,
+                  minPrice: undefined,
+                  maxPrice: undefined
+                }))}
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {searchResults.length === 0 && !isLoading ? (
+            <div className="text-center py-10 text-muted-foreground">
+              <p>No properties found in this area.</p>
+              <p className="text-sm">Try moving the map or changing filters.</p>
+            </div>
+          ) : (
+            searchResults.map((property) => (
+              <div
+                key={property.id}
+                className={`cursor-pointer transition-all duration-200 ${selectedProperty?.id === property.id ? 'ring-2 ring-primary rounded-lg' : ''}`}
+                onClick={() => {
+                  if (property.latitude && property.longitude) {
+                    setMapCenter({ lat: property.latitude, lng: property.longitude });
+                    setSelectedProperty(property);
+                  }
+                }}
+                onMouseEnter={() => setSelectedProperty(property)}
+              >
                 <PropertyCard
                   id={property.id}
                   image={property.images[0] || '/placeholder.svg'}
@@ -340,15 +222,155 @@ const MapView = () => {
                   verified={property.verified}
                   distance={property.distance_km}
                   userId={property.user_id}
-                  onClick={() => navigate(`/property/${property.id}`)}
+                  className="hover:shadow-md"
                 />
               </div>
-            ))}
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Right Side - Map (Full width on mobile, remaining width on desktop) */}
+      <div className="flex-1 relative h-full">
+        {/* Mobile Search Bar Overlay */}
+        <div className="md:hidden absolute top-4 left-4 right-4 z-20 flex gap-2">
+          <div className="flex-1">
+            <EnhancedSearchBar
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onSelect={handleSearchSelect}
+            />
+          </div>
+          <Button
+            size="icon"
+            variant="secondary"
+            className="shrink-0 h-10 w-10 bg-background shadow-lg"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <SlidersHorizontal className="h-5 w-5" />
+          </Button>
+        </div>
+
+        {/* Mobile Filters Overlay */}
+        {showFilters && (
+          <div className="md:hidden absolute top-16 left-4 right-4 z-20 bg-background p-4 rounded-lg shadow-xl animate-in fade-in zoom-in-95">
+            <MapFilters
+              category={searchFilters.category}
+              minPrice={searchFilters.minPrice}
+              maxPrice={searchFilters.maxPrice}
+              onCategoryChange={(value) => setSearchFilters(prev => ({ ...prev, category: value || undefined }))}
+              onMinPriceChange={(value) => setSearchFilters(prev => ({ ...prev, minPrice: value }))}
+              onMaxPriceChange={(value) => setSearchFilters(prev => ({ ...prev, maxPrice: value }))}
+              onPriceTypeChange={(value) => setSearchFilters(prev => ({ ...prev, priceType: value || undefined }))}
+              onClear={() => setSearchFilters(prev => ({
+                ...prev,
+                category: undefined,
+                minPrice: undefined,
+                maxPrice: undefined
+              }))}
+            />
+          </div>
+        )}
+
+        {/* Search as I move Toggle */}
+        <div className="absolute top-20 md:top-4 left-1/2 -translate-x-1/2 z-10">
+          <div className="bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-md flex items-center gap-2 border border-border">
+            <input
+              type="checkbox"
+              id="search-move"
+              className="accent-primary h-4 w-4"
+              defaultChecked={true}
+              onChange={(e) => {
+                // Logic to enable/disable search on move
+                // For now, we'll just use the existing behavior which is always search on move
+                // But we could add a state for this
+              }}
+            />
+            <label htmlFor="search-move" className="text-sm font-medium cursor-pointer select-none">
+              Search as I move map
+            </label>
           </div>
         </div>
-      )}
 
-      <BottomNav />
+        <GoogleMap
+          apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+          center={mapCenter}
+          zoom={mapBounds?.zoom || 12}
+          properties={clusters.length > 0 ? [] : searchResults}
+          clusters={clusters}
+          onBoundsChange={(bounds, zoom) => {
+            // Google Maps bounds
+            const ne = bounds.getNorthEast();
+            const sw = bounds.getSouthWest();
+            const minLat = sw.lat();
+            const minLng = sw.lng();
+            const maxLat = ne.lat();
+            const maxLng = ne.lng();
+
+            handleMapBoundsChange({
+              getNorthEast: () => ({ lat: () => maxLat, lng: () => maxLng }),
+              getSouthWest: () => ({ lat: () => minLat, lng: () => minLng }),
+              toJSON: () => ({ south: minLat, west: minLng, north: maxLat, east: maxLng })
+            }, zoom);
+          }}
+          userLocation={location.coordinates}
+          onUserLocationClick={handleGetLocation}
+          selectedPropertyId={selectedProperty?.id}
+          onPropertySelect={(property) => setSelectedProperty(property)}
+        />
+
+        {/* Mobile List View Drawer Trigger */}
+        <div className="md:hidden absolute bottom-20 left-1/2 -translate-x-1/2 z-10">
+          <Button
+            className="rounded-full shadow-xl px-6"
+            onClick={() => setShowList(true)}
+          >
+            <List className="mr-2 h-4 w-4" />
+            List View
+          </Button>
+        </div>
+
+        {/* Mobile List Drawer (Overlay) */}
+        {showList && (
+          <div className="md:hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" onClick={() => setShowList(false)}>
+            <div
+              className="absolute bottom-0 left-0 right-0 h-[60vh] bg-background rounded-t-xl shadow-2xl flex flex-col animate-in slide-in-from-bottom"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="p-4 border-b border-border flex items-center justify-between">
+                <h3 className="font-semibold">{searchResults.length} Properties</h3>
+                <Button variant="ghost" size="sm" onClick={() => setShowList(false)}>Close</Button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {searchResults.map((property) => (
+                  <PropertyCard
+                    key={property.id}
+                    id={property.id}
+                    image={property.images[0] || '/placeholder.svg'}
+                    title={property.title}
+                    type={propertyTypes.find(t => t.type === property.property_type)?.icon || '🏠'}
+                    propertyType={property.property_type}
+                    price={`₹${property.price.toLocaleString()}`}
+                    priceType={property.price_type}
+                    location={`${property.area}, ${property.city}`}
+                    bedrooms={property.bedrooms || undefined}
+                    bathrooms={property.bathrooms || undefined}
+                    area={property.area_sqft ? `${property.area_sqft} sq.ft` : undefined}
+                    verified={property.verified}
+                    distance={property.distance_km}
+                    userId={property.user_id}
+                    onClick={() => navigate(`/property/${property.id}`)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="md:hidden">
+        <BottomNav />
+      </div>
     </div>
   );
 };

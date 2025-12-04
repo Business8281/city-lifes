@@ -20,7 +20,7 @@ export function useAutocomplete(query: string, enabled = true) {
         return [] as AutocompleteResult[];
       }
 
-      // @ts-ignore - RPC function not in generated types yet
+      // @ts-expect-error - Fix type error - RPC function not in generated types yet
       const { data, error } = await supabase.rpc("autocomplete_search", {
         query_text: query,
         limit_count: 10,

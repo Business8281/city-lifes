@@ -39,75 +39,76 @@ import { propertySchema } from "@/schemas/validationSchemas";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { BusinessProfileForm } from "@/components/BusinessProfileForm";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const categoryConfigs = {
-  house: { 
+  house: {
     amenities: ["Garden", "Parking", "Security", "Power Backup", "Water Supply", "Modular Kitchen", "Servant Quarter"],
     fields: ["bedrooms", "bathrooms", "area"],
     hasTargetAudience: true as const
   },
-  apartment: { 
+  apartment: {
     amenities: ["Parking", "Gym", "Swimming Pool", "Security", "Lift", "Power Backup", "Garden", "Club House", "Water Supply", "Maintenance Staff"],
     fields: ["bedrooms", "bathrooms", "area"],
     hasTargetAudience: true as const
   },
-  flat: { 
+  flat: {
     amenities: ["Parking", "Lift", "Security", "Water Supply", "Maintenance Staff", "Power Backup"],
     fields: ["bedrooms", "bathrooms", "area"],
     hasTargetAudience: true as const
   },
-  commercial: { 
+  commercial: {
     amenities: ["Parking", "Security", "Water Supply", "Power Backup", "Loading Area", "Washrooms"],
     fields: ["area"],
     hasTargetAudience: false as const
   },
-  office: { 
+  office: {
     amenities: ["Parking", "Cafeteria", "Conference Room", "High-Speed Internet", "Security", "AC", "Power Backup"],
     fields: ["area"],
     hasTargetAudience: false as const
   },
-  farmland: { 
+  farmland: {
     amenities: ["Water Supply", "Power Backup", "Bore Well", "Fencing", "Irrigation System"],
     fields: ["area"],
     hasTargetAudience: false as const
   },
-  pg: { 
+  pg: {
     amenities: ["WiFi", "Parking", "Security", "Laundry", "Meals", "AC", "Water Supply", "Power Backup", "Housekeeping"],
     fields: ["bedrooms", "bathrooms"],
     hasPGType: true as const,
     hasTargetAudience: false as const
   },
-  hotels: { 
+  hotels: {
     amenities: ["Parking", "Gym", "Swimming Pool", "Security", "Lift", "Power Backup", "Restaurant", "Conference Room", "Room Service", "WiFi"],
     fields: ["rooms", "area"],
     hasTargetAudience: false as const
   },
-  restaurant: { 
+  restaurant: {
     amenities: ["Parking", "Kitchen Equipment", "Dining Area", "AC", "Water Supply", "Power Backup", "Washrooms"],
     fields: ["area", "seatingCapacity"],
     hasTargetAudience: false as const
   },
-  cafe: { 
+  cafe: {
     amenities: ["WiFi", "Parking", "AC", "Outdoor Seating", "Coffee Machine", "Water Supply", "Power Backup"],
     fields: ["area", "seatingCapacity"],
     hasTargetAudience: false as const
   },
-  farmhouse: { 
+  farmhouse: {
     amenities: ["Garden", "Parking", "Swimming Pool", "Security", "Power Backup", "Water Supply", "BBQ Area", "Lawn"],
     fields: ["bedrooms", "bathrooms", "area"],
     hasTargetAudience: false as const
   },
-  warehouse: { 
+  warehouse: {
     amenities: ["Loading Dock", "Security", "Power Backup", "Fire Safety", "Parking", "Storage Racks"],
     fields: ["area"],
     hasTargetAudience: false as const
   },
-  cars: { 
+  cars: {
     amenities: [],
     fields: ["brand", "model", "year", "fuelType", "transmission", "kmDriven", "owners"],
     hasTargetAudience: false as const
   },
-  bikes: { 
+  bikes: {
     amenities: [],
     fields: ["brand", "model", "year", "fuelType", "kmDriven", "owners"],
     hasTargetAudience: false as const
@@ -211,6 +212,7 @@ const AddProperty = () => {
   // const { toast } = useToast(); // unused
   const { location } = useLocation();
   const { user } = useAuth();
+  const { checkLimit } = useSubscription();
   const [searchParams] = useSearchParams();
   const editPropertyId = searchParams.get('edit');
   const [step, setStep] = useState(1);
@@ -302,7 +304,7 @@ const AddProperty = () => {
   useEffect(() => {
     const loadProperty = async () => {
       if (!editPropertyId || !user) return;
-      
+
       try {
         setLoading(true);
         const { data, error } = await supabase
@@ -311,9 +313,9 @@ const AddProperty = () => {
           .eq('id', editPropertyId)
           .eq('user_id', user.id)
           .single();
-        
+
         if (error) throw error;
-        
+
         if (data) {
           setFormData({
             title: data.title || "",
@@ -364,7 +366,7 @@ const AddProperty = () => {
             gstNumber: "",
           });
           setImages(data.images || []);
-          
+
           // Load business metadata if it's a business listing
           if (data.property_type === 'business' && (data as any).business_metadata) {
             const metadata = (data as any).business_metadata;
@@ -404,7 +406,7 @@ const AddProperty = () => {
               foodPreference: metadata.foodPreference || 'veg',
             });
           }
-          
+
           // Load electronics data if it's an electronics listing
           if (data.property_type === 'electronics' && (data as any).business_metadata) {
             const metadata = (data as any).business_metadata;
@@ -427,14 +429,14 @@ const AddProperty = () => {
         setLoading(false);
       }
     };
-    
+
     loadProperty();
   }, [editPropertyId, user, navigate]);
 
   // Pre-fill location data from context
   useEffect(() => {
     if (editPropertyId) return; // Don't override when editing
-    
+
     if (location.method === 'city' && location.value) {
       setFormData(prev => ({ ...prev, city: location.value }));
     } else if (location.method === 'area' && location.value) {
@@ -442,8 +444,8 @@ const AddProperty = () => {
     } else if (location.method === 'pincode' && location.value) {
       setFormData(prev => ({ ...prev, pinCode: location.value }));
     } else if (location.method === 'live' && location.coordinates) {
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData(prev => ({
+        ...prev,
         latitude: location.coordinates!.lat.toString(),
         longitude: location.coordinates!.lng.toString()
       }));
@@ -454,19 +456,19 @@ const AddProperty = () => {
   useEffect(() => {
     const loadUserProfile = async () => {
       if (!user || editPropertyId) return; // Don't override when editing
-      
+
       try {
         const { data, error } = await supabase
           .from('profiles')
           .select('full_name, phone')
           .eq('id', user.id)
           .single();
-        
+
         if (error && error.code !== 'PGRST116') {
           console.error('Error loading profile:', error);
           return;
         }
-        
+
         if (data) {
           setFormData(prev => ({
             ...prev,
@@ -485,7 +487,7 @@ const AddProperty = () => {
         console.error('Error loading profile:', error);
       }
     };
-    
+
     loadUserProfile();
   }, [user, editPropertyId]);
 
@@ -542,12 +544,12 @@ const AddProperty = () => {
         img.onload = () => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-          
+
           // Calculate new dimensions (max 1920px width/height)
           let width = img.width;
           let height = img.height;
           const maxDimension = 1920;
-          
+
           if (width > maxDimension || height > maxDimension) {
             if (width > height) {
               height = (height / width) * maxDimension;
@@ -557,11 +559,11 @@ const AddProperty = () => {
               height = maxDimension;
             }
           }
-          
+
           canvas.width = width;
           canvas.height = height;
           ctx?.drawImage(img, 0, 0, width, height);
-          
+
           canvas.toBlob(
             (blob) => {
               if (blob) {
@@ -619,52 +621,58 @@ const AddProperty = () => {
       return;
     }
 
+    if (!editPropertyId && !checkLimit('listings')) {
+      sonnerToast.error("You have reached your listing limit. Please upgrade your plan.");
+      navigate("/pricing");
+      return;
+    }
+
     try {
       setSubmitting(true);
 
       // Upload new images to Supabase Storage in parallel for faster processing
       let uploadedImageUrls: string[] = [];
-      
+
       if (imageFiles.length > 0) {
         setUploadProgress(0);
         sonnerToast.info(`Uploading ${imageFiles.length} image${imageFiles.length > 1 ? 's' : ''}...`);
-        
+
         // Upload all images in parallel using Promise.all for maximum speed
         let completedUploads = 0;
         const uploadPromises = imageFiles.map(async (file, i) => {
           const fileExt = file.name.split('.').pop();
           const fileName = `${user.id}/${Date.now()}_${i}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-          
+
           const { data, error: uploadError } = await supabase.storage
             .from('property-images')
             .upload(fileName, file, {
               cacheControl: '31536000', // 1 year cache for better performance
               upsert: false
             });
-          
+
           if (uploadError) {
             console.error('Upload error:', uploadError);
             throw new Error(`Failed to upload image ${i + 1}`);
           }
-          
+
           // Get public URL
           const { data: { publicUrl } } = supabase.storage
             .from('property-images')
             .getPublicUrl(data.path);
-          
+
           // Update progress
           completedUploads++;
           setUploadProgress(Math.round((completedUploads / imageFiles.length) * 100));
-          
+
           return publicUrl;
         });
-        
+
         // Wait for all uploads to complete simultaneously
         uploadedImageUrls = await Promise.all(uploadPromises);
         setUploadProgress(100);
         sonnerToast.success("All images uploaded successfully!");
       }
-      
+
       // Keep existing images (when editing) and add new ones
       const allImageUrls = [
         ...images.filter(img => img.startsWith('http')), // Keep existing uploaded images
@@ -673,11 +681,11 @@ const AddProperty = () => {
 
       // Clean phone number - remove all non-digit characters
       const cleanedPhone = formData.ownerPhone.replace(/\D/g, '').slice(-10);
-      
+
       // Determine price_type based on listing type
       let validationPriceType: 'monthly' | 'yearly' | 'fixed' | undefined = undefined;
       let dbPriceType = 'monthly';
-      
+
       if (formData.type === 'roommate') {
         validationPriceType = undefined;
         dbPriceType = 'monthly';
@@ -691,7 +699,7 @@ const AddProperty = () => {
         validationPriceType = 'fixed';
         dbPriceType = 'daily';
       }
-      
+
       // Validate form data using zod
       const validationData = {
         title: formData.title,
@@ -733,7 +741,7 @@ const AddProperty = () => {
       // For business category, append business details to description
       let finalDescription = formData.description;
       let businessMetadata = null;
-      
+
       if (formData.type === 'business') {
         // Create comprehensive business metadata
         businessMetadata = {
@@ -752,19 +760,19 @@ const AddProperty = () => {
           gstNumber: formData.gstNumber,
           operatingHours: operatingHours,
         };
-        
+
         // Create a formatted description
         const businessDetails = [
           formData.businessCategory ? `Category: ${formData.businessCategory}` : '',
           formData.yearEstablished ? `Established: ${formData.yearEstablished}` : '',
           formData.employees ? `Team Size: ${formData.employees}` : '',
         ].filter(Boolean).join(' | ');
-        
+
         const operatingHoursText = Object.entries(operatingHours)
           .filter(([_, hours]: any) => hours.isOpen)
           .map(([day, hours]: any) => `${day.charAt(0).toUpperCase() + day.slice(1)}: ${hours.open} - ${hours.close}`)
           .join('\n');
-        
+
         finalDescription = [
           businessDetails,
           formData.services ? `\n\nServices: ${formData.services}` : '',
@@ -772,7 +780,7 @@ const AddProperty = () => {
           formData.description ? `\n\n${formData.description}` : '',
         ].filter(Boolean).join('');
       }
-      
+
       // For properties with target audience, save it in business_metadata
       if (categoryConfigs[formData.type as keyof typeof categoryConfigs]?.hasTargetAudience && formData.targetAudience) {
         businessMetadata = {
@@ -780,7 +788,7 @@ const AddProperty = () => {
           targetAudience: formData.targetAudience,
         };
       }
-      
+
       // For PG properties, save pgType in business_metadata
       if (formData.type === 'pg' && formData.pgType) {
         businessMetadata = {
@@ -788,7 +796,7 @@ const AddProperty = () => {
           pgType: formData.pgType,
         };
       }
-      
+
       // For Hotels, save rooms in business_metadata
       if (formData.type === 'hotels' && formData.rooms) {
         businessMetadata = {
@@ -796,7 +804,7 @@ const AddProperty = () => {
           rooms: parseInt(formData.rooms),
         };
       }
-      
+
       // For Restaurants and Cafes, save seatingCapacity in business_metadata
       if ((formData.type === 'restaurant' || formData.type === 'cafe') && formData.seatingCapacity) {
         businessMetadata = {
@@ -804,7 +812,7 @@ const AddProperty = () => {
           seatingCapacity: parseInt(formData.seatingCapacity),
         };
       }
-      
+
       // For cars/bikes, append vehicle details to description
       if ((formData.type === 'cars' || formData.type === 'bikes') && formData.brand) {
         const vehicleMetadata = {
@@ -820,7 +828,7 @@ const AddProperty = () => {
           ...businessMetadata,
           ...vehicleMetadata,
         };
-        
+
         const vehicleDetails = [
           `Brand: ${formData.brand}`,
           `Model: ${formData.model}`,
@@ -830,12 +838,12 @@ const AddProperty = () => {
           `KM Driven: ${formData.kmDriven}`,
           `Owners: ${formData.owners}`,
         ].filter(Boolean).join(' | ');
-        
-        finalDescription = finalDescription 
+
+        finalDescription = finalDescription
           ? `${vehicleDetails}\n\n${formData.description}`
           : vehicleDetails;
       }
-      
+
       // For electronics, create metadata and append details to description
       if (formData.type === 'electronics' && formData.brand) {
         const electronicsData = {
@@ -850,7 +858,7 @@ const AddProperty = () => {
           ...businessMetadata,
           ...electronicsData,
         };
-        
+
         const electronicsDetails = [
           `Type: ${formData.electronicsType}`,
           `Brand: ${formData.brand}`,
@@ -859,12 +867,12 @@ const AddProperty = () => {
           formData.warranty ? `Warranty: ${formData.warranty}` : '',
           formData.year ? `Year: ${formData.year}` : ''
         ].filter(Boolean).join(' | ');
-        
-        finalDescription = finalDescription 
+
+        finalDescription = finalDescription
           ? `${electronicsDetails}\n\n${formData.description}`
           : electronicsDetails;
       }
-      
+
       // For roommate, create roommate metadata
       if (formData.type === 'roommate') {
         businessMetadata = {
@@ -872,9 +880,9 @@ const AddProperty = () => {
           ...roommateData,
         };
       }
-      
+
       // Determine price_type based on category and listing type (dbPriceType already set earlier)
-      
+
       const propertyData = {
         user_id: user.id,
         title: formData.title,
@@ -914,7 +922,7 @@ const AddProperty = () => {
           .eq('user_id', user.id);
 
         if (error) throw error;
-        
+
         // Show success and navigate immediately (optimistic UI)
         sonnerToast.success("Property updated successfully!");
         navigate("/my-listings");
@@ -925,7 +933,7 @@ const AddProperty = () => {
           .insert([propertyData]);
 
         if (error) throw error;
-        
+
         // Show success and navigate immediately (optimistic UI)
         sonnerToast.success("Property published successfully! 🎉", {
           description: "Your listing is now live and visible to users"
@@ -944,47 +952,47 @@ const AddProperty = () => {
   };
 
   const isStep1Valid = true; // Images are optional
-  
+
   // Step 2 validation: Basic fields + category-specific required fields
   const isStep2Valid = (() => {
     if (!formData.title || !formData.type) return false;
-    
+
     // Listing type is required for all properties except roommate and business
     if (formData.type !== 'roommate' && formData.type !== 'business' && !formData.listingType) return false;
-    
+
     // Price is required for all properties except roommate and business
     if (formData.type !== 'roommate' && formData.type !== 'business' && !formData.price) return false;
-    
+
     // Target audience validation
     if (categoryConfigs[formData.type as keyof typeof categoryConfigs]?.hasTargetAudience && !formData.targetAudience) return false;
-    
+
     // PG Type validation
     if (formData.type === 'pg' && !formData.pgType) return false;
-    
+
     // Additional validation for cars/bikes
     if (formData.type === 'cars' || formData.type === 'bikes') {
       if (!formData.brand || !formData.model || !formData.year || !formData.fuelType || !formData.kmDriven || !formData.owners) return false;
       if (formData.type === 'cars' && !formData.transmission) return false;
     }
-    
+
     // Additional validation for roommate
     if (formData.type === 'roommate') {
       if (!roommateData.availableFrom || !roommateData.monthlyRent || !roommateData.occupation) return false;
     }
-    
+
     // Additional validation for electronics
     if (formData.type === 'electronics') {
       if (!formData.brand || !formData.model || !formData.electronicsType || !formData.condition) return false;
     }
-    
+
     // Additional validation for business
     if (formData.type === 'business') {
       if (!formData.businessCategory) return false;
     }
-    
+
     return true;
   })();
-  
+
   const isStep3Valid = formData.city && formData.area && formData.pinCode && formData.description;
   const isStep4Valid = formData.ownerName && formData.ownerPhone;
 
@@ -1026,9 +1034,8 @@ const AddProperty = () => {
           {[1, 2, 3, 4].map((s) => (
             <div
               key={s}
-              className={`flex-1 h-2 rounded-full ${
-                s <= step ? "bg-primary" : "bg-muted"
-              }`}
+              className={`flex-1 h-2 rounded-full ${s <= step ? "bg-primary" : "bg-muted"
+                }`}
             />
           ))}
         </div>
@@ -1082,6 +1089,7 @@ const AddProperty = () => {
               </div>
 
               <Button
+                id="next-button-step-1"
                 onClick={() => setStep(2)}
                 className="w-full"
                 disabled={!isStep1Valid}
@@ -1119,15 +1127,15 @@ const AddProperty = () => {
                   <SelectTrigger className="w-full h-11">
                     <SelectValue placeholder="Select property type" />
                   </SelectTrigger>
-                  <SelectContent 
+                  <SelectContent
                     position="popper"
                     sideOffset={4}
                     align="start"
                     className="max-h-[min(400px,80vh)]"
                   >
                     {propertyTypes.map((type) => (
-                      <SelectItem 
-                        key={type.type} 
+                      <SelectItem
+                        key={type.type}
                         value={type.type}
                         className="cursor-pointer py-3 px-2"
                       >
@@ -1154,7 +1162,7 @@ const AddProperty = () => {
                     <SelectTrigger className="w-full h-11">
                       <SelectValue placeholder="Select listing type" />
                     </SelectTrigger>
-                    <SelectContent 
+                    <SelectContent
                       position="popper"
                       sideOffset={4}
                     >
@@ -1183,7 +1191,7 @@ const AddProperty = () => {
                     <SelectTrigger className="w-full h-11">
                       <SelectValue placeholder="Select target audience" />
                     </SelectTrigger>
-                    <SelectContent 
+                    <SelectContent
                       position="popper"
                       sideOffset={4}
                     >
@@ -1224,17 +1232,17 @@ const AddProperty = () => {
               {formData.type !== "roommate" && formData.type !== "business" && formData.listingType && (
                 <div className="space-y-2">
                   <Label htmlFor="price">
-                    {formData.listingType === "sale" ? "Sale Price" : 
-                     formData.listingType === "daily_rent" ? "Daily Rent" :
-                     formData.listingType === "rent" ? "Monthly Rent" : "Price"} *
+                    {formData.listingType === "sale" ? "Sale Price" :
+                      formData.listingType === "daily_rent" ? "Daily Rent" :
+                        formData.listingType === "rent" ? "Monthly Rent" : "Price"} *
                   </Label>
                   <Input
                     id="price"
                     type="number"
                     placeholder={
-                      formData.listingType === "sale" ? "₹75,00,000" : 
-                      formData.listingType === "daily_rent" ? "₹2,000" :
-                      "₹25,000"
+                      formData.listingType === "sale" ? "₹75,00,000" :
+                        formData.listingType === "daily_rent" ? "₹2,000" :
+                          "₹25,000"
                     }
                     value={formData.price}
                     onChange={(e) =>
@@ -1570,7 +1578,7 @@ const AddProperty = () => {
                   {formData.type === "roommate" && (
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold">Roommate Details</h3>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="availableFrom">Available From *</Label>
@@ -1675,7 +1683,7 @@ const AddProperty = () => {
                       </div>
 
                       <h3 className="text-lg font-semibold mt-6">Lifestyle & Preferences</h3>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="smoking">Do you smoke?</Label>
@@ -1751,6 +1759,7 @@ const AddProperty = () => {
                   Back
                 </Button>
                 <Button
+                  id="next-button-step-2"
                   onClick={() => setStep(3)}
                   className="flex-1"
                   disabled={!isStep2Valid}
@@ -1882,6 +1891,7 @@ const AddProperty = () => {
                   Back
                 </Button>
                 <Button
+                  id="next-button-step-3"
                   onClick={() => setStep(4)}
                   className="flex-1"
                   disabled={!isStep3Valid}
@@ -1939,6 +1949,7 @@ const AddProperty = () => {
                   Back
                 </Button>
                 <Button
+                  id="publish-button"
                   onClick={handleSubmit}
                   className="flex-1 relative"
                   disabled={!isStep4Valid || submitting}
