@@ -174,7 +174,7 @@ Create the fastest, most comprehensive hyperlocal marketplace in India that beat
 
 #### `messages`
 ```sql
-- id (uuid, PK)
+- id (uuid, PK)  
 - sender_id (uuid, FK → profiles)
 - receiver_id (uuid, FK → profiles)
 - property_id (uuid, FK → properties, nullable)

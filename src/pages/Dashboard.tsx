@@ -5,13 +5,14 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
-import { Users, FileText, Eye, MessageSquare, Heart, TrendingUp, ShieldAlert, UserPlus, DollarSign } from 'lucide-react';
+import { Users, FileText, Eye, MessageSquare, Heart, TrendingUp, ShieldAlert, UserPlus, DollarSign, Crown, Calendar, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lead } from '@/types/database';
-import { format } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Lead, Message, Property } from '@/types/database';
+import { format, formatDistanceToNow } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
 
 interface DashboardStats {
     active_listings: number;
@@ -24,10 +25,12 @@ interface DashboardStats {
 export default function Dashboard() {
     const { user } = useAuth();
     const { isAdmin } = useAdminCheck();
-    const { isPro, isBusiness } = useSubscription();
+    const { plan, subscription, isPro, isBusiness } = useSubscription();
     const navigate = useNavigate();
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [recentLeads, setRecentLeads] = useState<Lead[]>([]);
+    const [recentMessages, setRecentMessages] = useState<Message[]>([]);
+    const [topProperties, setTopProperties] = useState<Property[]>([]);
     const [loading, setLoading] = useState(true);
 
     const fetchStats = async () => {
@@ -40,17 +43,38 @@ export default function Dashboard() {
 
             // Fetch recent leads for owners
             if (isPro || isBusiness || isAdmin) {
-                const { data: leadsData, error: leadsError } = await supabase
+                const { data: leadsData } = await supabase
                     .from('leads' as any)
                     .select('*, profiles(full_name, email)')
                     .eq('owner_id', user.id)
                     .order('created_at', { ascending: false })
                     .limit(5);
 
-                if (!leadsError) {
-                    setRecentLeads(leadsData as unknown as Lead[]);
-                }
+                if (leadsData) setRecentLeads(leadsData as unknown as Lead[]);
             }
+
+            // Fetch recent messages
+            const { data: messagesData } = await supabase
+                .from('messages')
+                .select('*, sender:profiles!sender_id(full_name, email, avatar_url)')
+                .eq('receiver_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(5);
+
+            if (messagesData) setRecentMessages(messagesData as unknown as Message[]);
+
+            // Fetch top properties
+            if (isPro || isBusiness || (stats?.active_listings || 0) > 0) {
+                const { data: propertiesData } = await supabase
+                    .from('properties')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('views', { ascending: false })
+                    .limit(3);
+
+                if (propertiesData) setTopProperties(propertiesData as unknown as Property[]);
+            }
+
         } catch (error) {
             console.error('Error fetching dashboard stats:', error);
             toast.error('Failed to load dashboard stats');
@@ -94,7 +118,7 @@ export default function Dashboard() {
         return <div className="flex justify-center items-center h-screen">Loading dashboard...</div>;
     }
 
-    const isOwner = isPro || isBusiness || stats?.active_listings > 0;
+    const isOwner = isPro || isBusiness || (stats?.active_listings || 0) > 0;
 
     return (
         <DashboardLayout
@@ -171,19 +195,83 @@ export default function Dashboard() {
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
                 {/* Main Content Area */}
-                <div className="col-span-4">
+                <div className="col-span-4 space-y-4">
+
+                    {/* Subscription Card */}
+                    <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+                        <CardHeader className="pb-2">
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="flex items-center gap-2 text-lg">
+                                    <Crown className="h-5 w-5 text-primary" />
+                                    Current Plan: {plan?.name || 'Free'}
+                                </CardTitle>
+                                <Badge variant={subscription?.status === 'active' ? 'default' : 'secondary'}>
+                                    {subscription?.status === 'active' ? 'Active' : (subscription?.status || 'No Plan')}
+                                </Badge>
+                            </div>
+                            <CardDescription>
+                                {subscription?.trial_end && new Date(subscription.trial_end) > new Date()
+                                    ? `Trial ends ${formatDistanceToNow(new Date(subscription.trial_end), { addSuffix: true })}`
+                                    : subscription?.current_period_end
+                                        ? `Renews on ${format(new Date(subscription.current_period_end), 'MMM d, yyyy')}`
+                                        : 'Upgrade to unlock more features'}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex gap-4 text-sm">
+                                <div className="flex items-center gap-1">
+                                    <FileText className="h-4 w-4 text-muted-foreground" />
+                                    <span>{plan?.listing_limit === -1 ? 'Unlimited' : plan?.listing_limit || 0} Listings</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                                    <span>{plan?.boost_limit === -1 ? 'Unlimited' : plan?.boost_limit || 0} Boosts</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                        {!isBusiness && (
+                            <CardFooter>
+                                <Button size="sm" className="w-full" onClick={() => navigate('/pricing')}>
+                                    Upgrade Plan <ArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
+                            </CardFooter>
+                        )}
+                    </Card>
+
                     {isOwner ? (
                         <Card className="h-full">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <TrendingUp className="h-5 w-5" />
-                                    Performance Overview
+                                    Top Performing Properties
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="h-[300px] flex items-center justify-center text-muted-foreground bg-muted/20 rounded-md">
-                                    Analytics Chart Component Coming Soon
-                                </div>
+                                {topProperties.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {topProperties.map(property => (
+                                            <div key={property.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border">
+                                                <div className="flex items-center gap-3">
+                                                    {property.images?.[0] && (
+                                                        <img src={property.images[0]} alt={property.title} className="w-12 h-12 rounded-md object-cover" />
+                                                    )}
+                                                    <div>
+                                                        <p className="font-medium text-sm line-clamp-1">{property.title}</p>
+                                                        <p className="text-xs text-muted-foreground">{property.city}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <p className="font-bold text-sm">{property.views}</p>
+                                                    <p className="text-xs text-muted-foreground">Views</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="h-[200px] flex items-center justify-center text-muted-foreground bg-muted/20 rounded-md">
+                                        No properties yet
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     ) : (
@@ -237,7 +325,7 @@ export default function Dashboard() {
                         </Card>
                     )}
 
-                    {/* Recent Activity for Everyone */}
+                    {/* Recent Messages for Everyone */}
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -246,10 +334,33 @@ export default function Dashboard() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-sm text-muted-foreground text-center py-4">
-                                No new messages.
-                            </div>
-                            <Button variant="outline" className="w-full" onClick={() => navigate('/messages')}>Go to Inbox</Button>
+                            {recentMessages.length > 0 ? (
+                                <div className="space-y-4">
+                                    {recentMessages.map((msg) => (
+                                        <div key={msg.id} className="flex items-start gap-3 border-b pb-3 last:border-0">
+                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-xs font-bold text-primary">
+                                                {(msg.sender?.full_name || 'U').substring(0, 2).toUpperCase()}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <p className="text-sm font-medium truncate">{msg.sender?.full_name || 'Unknown'}</p>
+                                                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                                        {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+                                                    {msg.content}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <Button variant="outline" className="w-full" onClick={() => navigate('/messages')}>Go to Inbox</Button>
+                                </div>
+                            ) : (
+                                <div className="text-sm text-muted-foreground text-center py-4">
+                                    No new messages.
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

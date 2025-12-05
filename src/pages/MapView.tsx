@@ -14,7 +14,7 @@ import { propertyTypes } from "@/data/propertyTypes";
 import PropertyCard from "@/components/PropertyCard";
 import MapFilters from "@/components/MapFilters";
 import { OptimizedImage } from "@/components/OptimizedImage";
-import { GoogleMap } from '@/components/GoogleMap';
+import { LeafletMap } from '@/components/LeafletMap';
 import {
   Select,
   SelectContent,
@@ -33,6 +33,7 @@ const MapView = () => {
   const [showList, setShowList] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({});
+  const [searchAsMove, setSearchAsMove] = useState(true);
 
   const { data: searchResults = [], isLoading } = useAdvancedSearch(searchFilters, true);
   const { data: clusters = [] } = useMapClusters(
@@ -83,41 +84,30 @@ const MapView = () => {
   };
 
   const handleMapBoundsChange = useCallback((bounds: any, zoom: number) => {
-    if (bounds) {
-      const ne = bounds.getNorthEast();
-      const sw = bounds.getSouthWest();
+    if (!searchAsMove) return; // Only search if toggle is enabled
 
-      setMapBounds({
-        minLat: sw.lat(),
-        minLng: sw.lng(),
-        maxLat: ne.lat(),
-        maxLng: ne.lng(),
-        zoom,
-      });
-
-      setSearchFilters(prev => ({
-        ...prev,
-        minLat: sw.lat(),
-        minLng: sw.lng(),
-        maxLat: ne.lat(),
-        maxLng: ne.lng(),
-      }));
-    }
     // Convert bounds to min/max lat/lng
     const ne = bounds.toJSON ? { lat: bounds.toJSON().north, lng: bounds.toJSON().east } : bounds.getNorthEast();
     const sw = bounds.toJSON ? { lat: bounds.toJSON().south, lng: bounds.toJSON().west } : bounds.getSouthWest();
 
+    setMapBounds({
+      minLat: typeof sw.lat === 'function' ? sw.lat() : sw.lat,
+      minLng: typeof sw.lng === 'function' ? sw.lng() : sw.lng,
+      maxLat: typeof ne.lat === 'function' ? ne.lat() : ne.lat,
+      maxLng: typeof ne.lng === 'function' ? ne.lng() : ne.lng,
+      zoom,
+    });
+
     setSearchFilters(prev => ({
       ...prev,
-      minLat: sw.lat,
-      minLng: sw.lng,
-      maxLat: ne.lat,
-      maxLng: ne.lng,
-      // Only update user location if we're not in bounds mode (optional, but good for relevance)
+      minLat: typeof sw.lat === 'function' ? sw.lat() : sw.lat,
+      minLng: typeof sw.lng === 'function' ? sw.lng() : sw.lng,
+      maxLat: typeof ne.lat === 'function' ? ne.lat() : ne.lat,
+      maxLng: typeof ne.lng === 'function' ? ne.lng() : ne.lng,
       userLat: location.coordinates?.lat,
       userLng: location.coordinates?.lng,
     }));
-  }, [location.coordinates]);
+  }, [location.coordinates, searchAsMove]);
 
   const formatPrice = (price: number, priceType: string) => {
     return `₹${price.toLocaleString("en-IN")}${priceType === "monthly" ? "/mo" : priceType === "daily" ? "/day" : ""}`;
@@ -272,40 +262,42 @@ const MapView = () => {
           </div>
         )}
 
-        {/* Search as I move Toggle */}
-        <div className="absolute top-20 md:top-4 left-1/2 -translate-x-1/2 z-10">
-          <div className="bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-md flex items-center gap-2 border border-border">
-            <input
-              type="checkbox"
-              id="search-move"
-              className="accent-primary h-4 w-4"
-              defaultChecked={true}
-              onChange={(e) => {
-                // Logic to enable/disable search on move
-                // For now, we'll just use the existing behavior which is always search on move
-                // But we could add a state for this
-              }}
-            />
-            <label htmlFor="search-move" className="text-sm font-medium cursor-pointer select-none">
-              Search as I move map
-            </label>
+        {/* Search as I move Toggle & Property Count */}
+        <div className="absolute top-20 md:top-4 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2">
+          <div className="bg-white shadow-lg px-4 py-2.5 rounded-full flex items-center gap-3 border-2 border-gray-200 hover:border-primary/50 transition-colors">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="search-move"
+                className="accent-primary h-4 w-4 cursor-pointer"
+                checked={searchAsMove}
+                onChange={(e) => setSearchAsMove(e.target.checked)}
+              />
+              <label htmlFor="search-move" className="text-sm font-semibold cursor-pointer select-none text-gray-700">
+                Search as I move map
+              </label>
+            </div>
+            {!isLoading && (
+              <Badge variant="secondary" className="ml-2 bg-primary/10 text-primary font-bold">
+                {searchResults.length} {searchResults.length === 1 ? 'property' : 'properties'}
+              </Badge>
+            )}
           </div>
         </div>
 
-        <GoogleMap
-          apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+        <LeafletMap
           center={mapCenter}
           zoom={mapBounds?.zoom || 12}
           properties={clusters.length > 0 ? [] : searchResults}
           clusters={clusters}
           onBoundsChange={(bounds, zoom) => {
-            // Google Maps bounds
+            // Leaflet bounds
             const ne = bounds.getNorthEast();
             const sw = bounds.getSouthWest();
-            const minLat = sw.lat();
-            const minLng = sw.lng();
-            const maxLat = ne.lat();
-            const maxLng = ne.lng();
+            const minLat = typeof sw.lat === 'function' ? sw.lat() : sw.lat;
+            const minLng = typeof sw.lng === 'function' ? sw.lng() : sw.lng;
+            const maxLat = typeof ne.lat === 'function' ? ne.lat() : ne.lat;
+            const maxLng = typeof ne.lng === 'function' ? ne.lng() : ne.lng;
 
             handleMapBoundsChange({
               getNorthEast: () => ({ lat: () => maxLat, lng: () => maxLng }),
@@ -317,6 +309,7 @@ const MapView = () => {
           onUserLocationClick={handleGetLocation}
           selectedPropertyId={selectedProperty?.id}
           onPropertySelect={(property) => setSelectedProperty(property)}
+          isLoading={isLoading}
         />
 
         {/* Mobile List View Drawer Trigger */}

@@ -2,6 +2,7 @@ import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/s
 import { AppSidebar } from "./AppSidebar";
 import BottomNav from "./BottomNav";
 import { Outlet } from "react-router-dom";
+import { UserStatusAlert } from "./UserStatusAlert";
 
 export function Layout() {
   return (
@@ -13,12 +14,13 @@ export function Layout() {
         </div>
 
         {/* Main Content */}
-  <SidebarInset className="flex-1 flex flex-col overflow-hidden">
+        <SidebarInset className="flex-1 flex flex-col overflow-hidden">
           {/* Page Content - scrollable */}
           <div
             className="flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain touch-pan-y px-safe-edge pt-safe-edge mobile-page"
             style={{ WebkitOverflowScrolling: 'touch' }}
           >
+            <UserStatusAlert />
             <Outlet />
           </div>
         </SidebarInset>

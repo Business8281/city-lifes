@@ -47,15 +47,38 @@ import {
   Laptop,
   GripVertical,
   MoreHorizontal,
-  Search
+  Search,
+  Pencil,
+  ArrowRight,
+  X
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
+  DropdownMenuLabel
+} from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
 
 // --- Components ---
 
-const ClientCard = ({ client, isOverlay = false, onClick }: { client: CRMClient; isOverlay?: boolean; onClick?: () => void }) => {
+interface ClientCardProps {
+  client: CRMClient;
+  isOverlay?: boolean;
+  onClick?: () => void;
+  onEdit?: (client: CRMClient) => void;
+  onDelete?: (clientId: string) => void;
+  onStageChange?: (clientId: string, stage: CRMClient['stage']) => void;
+}
+
+const ClientCard = ({ client, isOverlay = false, onClick, onEdit, onDelete, onStageChange }: ClientCardProps) => {
   const {
     setNodeRef,
     attributes,
@@ -86,6 +109,8 @@ const ClientCard = ({ client, isOverlay = false, onClick }: { client: CRMClient;
     );
   }
 
+  const stages: CRMClient['stage'][] = ['prospect', 'hot', 'warm', 'cold', 'closed'];
+
   return (
     <div
       ref={setNodeRef}
@@ -108,9 +133,42 @@ const ClientCard = ({ client, isOverlay = false, onClick }: { client: CRMClient;
             <span className="text-[10px] text-muted-foreground">{formatDistanceToNow(new Date(client.created_at), { addSuffix: true })}</span>
           </div>
         </div>
-        <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
-          <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
-        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => e.stopPropagation()} // Prevent card click
+            >
+              <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem onClick={(e) => {
+              e.stopPropagation();
+              onEdit?.(client);
+            }}>
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit Details
+            </DropdownMenuItem>
+
+
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="text-destructive focus:text-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete?.(client.id);
+              }}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Client
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="space-y-2">
@@ -140,7 +198,21 @@ const ClientCard = ({ client, isOverlay = false, onClick }: { client: CRMClient;
   );
 };
 
-const StageColumn = ({ stage, clients, id }: { stage: string; clients: CRMClient[]; id: string }) => {
+const StageColumn = ({
+  stage,
+  clients,
+  id,
+  onEdit,
+  onDelete,
+  onStageChange
+}: {
+  stage: string;
+  clients: CRMClient[];
+  id: string;
+  onEdit: (client: CRMClient) => void;
+  onDelete: (clientId: string) => void;
+  onStageChange: (clientId: string, stage: CRMClient['stage']) => void;
+}) => {
   const { setNodeRef } = useSortable({
     id: id,
     data: {
@@ -172,7 +244,13 @@ const StageColumn = ({ stage, clients, id }: { stage: string; clients: CRMClient
         <div ref={setNodeRef} className="flex flex-col gap-3 min-h-[150px] pb-4">
           <SortableContext items={clients.map(c => c.id)} strategy={verticalListSortingStrategy}>
             {clients.map((client) => (
-              <ClientCard key={client.id} client={client} />
+              <ClientCard
+                key={client.id}
+                client={client}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onStageChange={onStageChange}
+              />
             ))}
           </SortableContext>
         </div>
@@ -184,13 +262,14 @@ const StageColumn = ({ stage, clients, id }: { stage: string; clients: CRMClient
 // --- Main Page ---
 
 const CRM = () => {
-  const { clients, loading, updateClientStage, createClient, deleteClient } = useCRM();
+  const { clients, loading, updateClientStage, createClient, updateClient, deleteClient } = useCRM();
   const { leads } = useLeads();
   const [leadSearch, setLeadSearch] = useState('');
   const { tasks, createTask, updateTask, deleteTask } = useCRMTasks();
   const { isPro, isBusiness } = useSubscription();
   const [selectedClient, setSelectedClient] = useState<CRMClient | null>(null);
   const [newClientDialog, setNewClientDialog] = useState(false);
+  const [editingClient, setEditingClient] = useState<CRMClient | null>(null);
   const [newTaskDialog, setNewTaskDialog] = useState(false);
   const [selectedTaskClientId, setSelectedTaskClientId] = useState<string>('');
 
@@ -284,6 +363,12 @@ const CRM = () => {
         },
       },
     }),
+  };
+
+  const handleDeleteClient = async (clientId: string) => {
+    if (confirm('Are you sure you want to delete this client? This action cannot be undone.')) {
+      await deleteClient(clientId);
+    }
   };
 
   if (!isDesktop) {
@@ -421,6 +506,41 @@ const CRM = () => {
                 </Tabs>
               </DialogContent>
             </Dialog>
+
+            {/* Edit Client Dialog */}
+            <Dialog open={!!editingClient} onOpenChange={(open) => !open && setEditingClient(null)}>
+              <DialogContent className="sm:max-w-[600px]">
+                <DialogHeader>
+                  <DialogTitle>Edit Client</DialogTitle>
+                </DialogHeader>
+                {editingClient && (
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    await updateClient(editingClient.id, {
+                      name: formData.get('name') as string,
+                      phone: formData.get('phone') as string,
+                      email: formData.get('email') as string,
+                    });
+                    setEditingClient(null);
+                  }} className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-name">Name</Label>
+                      <Input id="edit-name" name="name" defaultValue={editingClient.name} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-phone">Phone</Label>
+                      <Input id="edit-phone" name="phone" type="tel" defaultValue={editingClient.phone} required />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="edit-email">Email</Label>
+                      <Input id="edit-email" name="email" type="email" defaultValue={editingClient.email} required />
+                    </div>
+                    <Button type="submit" className="w-full">Update Client</Button>
+                  </form>
+                )}
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>
@@ -445,6 +565,9 @@ const CRM = () => {
                     id={stage}
                     stage={stage}
                     clients={clientsByStage[stage]}
+                    onEdit={setEditingClient}
+                    onDelete={handleDeleteClient}
+                    onStageChange={updateClientStage}
                   />
                 ))}
               </div>

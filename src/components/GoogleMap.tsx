@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import { Button } from './ui/button';
-import { Navigation } from 'lucide-react';
+import { Navigation, Layers } from 'lucide-react';
 import { OptimizedImage } from './OptimizedImage';
 import { Badge } from './ui/badge';
 import { useNavigate } from 'react-router-dom';
+import { PropertyMarker } from './PropertyMarker';
 
 interface GoogleMapProps {
     apiKey: string;
@@ -71,16 +72,38 @@ const GoogleMapContent = ({
     const map = useMap();
     const navigate = useNavigate();
     const [hoveredPropertyId, setHoveredPropertyId] = useState<string | null>(null);
+    const [hoveredClusterId, setHoveredClusterId] = useState<number | null>(null);
+    const [mapTypeId, setMapTypeId] = useState<'roadmap' | 'satellite'>('roadmap');
+
+    const toggleMapType = () => {
+        setMapTypeId(prev => prev === 'roadmap' ? 'satellite' : 'roadmap');
+        if (map) {
+            map.setMapTypeId(mapTypeId === 'roadmap' ? 'satellite' : 'roadmap');
+        }
+    };
+
+    const formatPrice = (price: number) => {
+        if (price >= 10000000) return `₹${(price / 10000000).toFixed(2)}Cr`;
+        if (price >= 100000) return `₹${(price / 100000).toFixed(2)}L`;
+        return `₹${(price / 1000).toFixed(0)}K`;
+    };
 
     return (
         <div className="relative h-full w-full">
             <Map
-                mapId="DEMO_MAP_ID"
                 defaultCenter={center}
                 defaultZoom={zoom}
                 gestureHandling={'greedy'}
                 disableDefaultUI={true}
+                mapTypeId={mapTypeId}
                 className="h-full w-full"
+                styles={[
+                    {
+                        featureType: "poi",
+                        elementType: "labels",
+                        stylers: [{ visibility: "off" }]
+                    }
+                ]}
             >
                 <MapEvents onBoundsChange={onBoundsChange} />
                 <MapUpdater center={center} zoom={zoom} />
@@ -98,24 +121,42 @@ const GoogleMapContent = ({
                 {/* Clusters */}
                 {clusters
                     .filter(c => !isNaN(Number(c.cluster_lat)) && !isNaN(Number(c.cluster_lng)))
-                    .map((cluster, index) => (
-                        <AdvancedMarker
-                            key={`cluster-${index}`}
-                            position={{ lat: Number(cluster.cluster_lat), lng: Number(cluster.cluster_lng) }}
-                            onClick={() => {
-                                if (map) {
-                                    map.setCenter({ lat: Number(cluster.cluster_lat), lng: Number(cluster.cluster_lng) });
-                                    map.setZoom((map.getZoom() || 10) + 2);
-                                }
-                            }}
-                        >
-                            <div className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full border-2 border-white shadow-lg font-bold hover:scale-110 transition-transform cursor-pointer">
-                                {cluster.property_count}
-                            </div>
-                        </AdvancedMarker>
-                    ))}
+                    .map((cluster, index) => {
+                        const isHovered = hoveredClusterId === index;
+                        return (
+                            <AdvancedMarker
+                                key={`cluster-${index}`}
+                                position={{ lat: Number(cluster.cluster_lat), lng: Number(cluster.cluster_lng) }}
+                                onClick={() => {
+                                    if (map) {
+                                        map.setCenter({ lat: Number(cluster.cluster_lat), lng: Number(cluster.cluster_lng) });
+                                        map.setZoom((map.getZoom() || 10) + 2);
+                                    }
+                                }}
+                            >
+                                <div
+                                    className={`
+                                        flex flex-col items-center justify-center rounded-full
+                                        border-4 border-white shadow-xl font-bold cursor-pointer
+                                        transition-all duration-200
+                                        ${isHovered
+                                            ? 'w-16 h-16 bg-primary text-primary-foreground scale-110'
+                                            : 'w-12 h-12 bg-primary/90 text-primary-foreground'
+                                        }
+                                    `}
+                                    onMouseEnter={() => setHoveredClusterId(index)}
+                                    onMouseLeave={() => setHoveredClusterId(null)}
+                                >
+                                    <span className="text-lg">{cluster.property_count}</span>
+                                    {isHovered && (
+                                        <span className="text-[10px] font-normal">properties</span>
+                                    )}
+                                </div>
+                            </AdvancedMarker>
+                        );
+                    })}
 
-                {/* Properties */}
+                {/* Properties with new PropertyMarker component */}
                 {properties
                     .filter(p => p.latitude && p.longitude && !isNaN(Number(p.latitude)) && !isNaN(Number(p.longitude)))
                     .map((property) => {
@@ -128,28 +169,50 @@ const GoogleMapContent = ({
                                 key={property.id}
                                 position={{ lat: Number(property.latitude), lng: Number(property.longitude) }}
                                 onClick={() => onPropertySelect?.(property)}
-                                zIndex={isSelected ? 100 : 1}
+                                zIndex={isSelected ? 1000 : isHovered ? 999 : 1}
                             >
                                 <div
                                     className="relative group"
                                     onMouseEnter={() => setHoveredPropertyId(property.id)}
                                     onMouseLeave={() => setHoveredPropertyId(null)}
                                 >
-                                    {/* Price Tag Marker */}
-                                    <div className={`
-                                        px-2 py-1 rounded-full border shadow-md text-xs font-bold transition-all duration-200
-                                        ${isSelected
-                                            ? 'bg-green-600 text-white border-green-700 scale-110'
-                                            : 'bg-white text-gray-900 border-gray-200 hover:scale-105 hover:border-green-500 hover:text-green-600'
-                                        }
-                                    `}>
-                                        ₹{(property.price / 1000).toFixed(1)}k
+                                    {/* Zillow-style Price Tag Marker */}
+                                    <div
+                                        className={`
+                                            px-3 py-1.5 rounded-full font-bold text-sm shadow-lg
+                                            transition-all duration-200 cursor-pointer
+                                            ${isSelected
+                                                ? 'bg-primary text-primary-foreground scale-110 ring-2 ring-primary/50'
+                                                : isHovered
+                                                    ? 'bg-primary/90 text-primary-foreground scale-105'
+                                                    : 'bg-white text-gray-900 border-2 border-gray-300 hover:border-primary'
+                                            }
+                                        `}
+                                    >
+                                        {formatPrice(property.price)}
                                     </div>
+
+                                    {/* Arrow pointer */}
+                                    <div
+                                        className={`
+                                            absolute left-1/2 -translate-x-1/2 w-0 h-0
+                                            border-l-[6px] border-l-transparent
+                                            border-r-[6px] border-r-transparent
+                                            border-t-[8px] transition-all duration-200
+                                            ${isSelected
+                                                ? 'border-t-primary'
+                                                : isHovered
+                                                    ? 'border-t-primary/90'
+                                                    : 'border-t-white'
+                                            }
+                                        `}
+                                        style={{ bottom: '-7px' }}
+                                    />
 
                                     {/* Hover/Select Popup */}
                                     {showDetails && (
-                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-[240px] bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
-                                            <div className="relative h-32 w-full">
+                                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-[280px] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden z-[1001] animate-in fade-in zoom-in-95 duration-200">
+                                            <div className="relative h-40 w-full">
                                                 <OptimizedImage
                                                     src={property.images?.[0] || '/placeholder.svg'}
                                                     alt={property.title}
@@ -157,30 +220,38 @@ const GoogleMapContent = ({
                                                 />
                                                 {property.verified && (
                                                     <Badge className="absolute top-2 left-2 bg-green-500/90 hover:bg-green-600/90 backdrop-blur-sm">
-                                                        Verified
+                                                        ✓ Verified
                                                     </Badge>
                                                 )}
+                                                <Badge className="absolute top-2 right-2 bg-black/60 hover:bg-black/70 backdrop-blur-sm text-white">
+                                                    {property.property_type}
+                                                </Badge>
                                             </div>
-                                            <div className="p-3">
-                                                <h3 className="font-semibold text-sm line-clamp-1 mb-1">{property.title}</h3>
-                                                <div className="flex items-baseline gap-1 mb-1">
-                                                    <span className="text-lg font-bold text-green-600">₹{property.price.toLocaleString()}</span>
-                                                    <span className="text-xs text-muted-foreground">
-                                                        {property.price_type === 'monthly' ? '/mo' : ''}
+                                            <div className="p-4">
+                                                <h3 className="font-bold text-base line-clamp-1 mb-2">{property.title}</h3>
+                                                <div className="flex items-baseline gap-2 mb-2">
+                                                    <span className="text-2xl font-bold text-primary">{formatPrice(property.price)}</span>
+                                                    <span className="text-sm text-muted-foreground">
+                                                        {property.price_type === 'monthly' ? '/month' : ''}
                                                     </span>
                                                 </div>
-                                                <p className="text-xs text-muted-foreground line-clamp-1 mb-3">
-                                                    {property.area}, {property.city}
+                                                <p className="text-sm text-muted-foreground line-clamp-1 mb-1">
+                                                    📍 {property.area}, {property.city}
                                                 </p>
+                                                {property.bedrooms && (
+                                                    <p className="text-sm text-muted-foreground mb-3">
+                                                        🛏️ {property.bedrooms} Beds • 🚿 {property.bathrooms || 1} Baths
+                                                    </p>
+                                                )}
                                                 <Button
                                                     size="sm"
-                                                    className="w-full h-8 text-xs"
+                                                    className="w-full h-9 text-sm font-semibold"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         navigate(`/property/${property.id}`);
                                                     }}
                                                 >
-                                                    View Details
+                                                    View Details →
                                                 </Button>
                                             </div>
                                             {/* Arrow */}
@@ -194,11 +265,23 @@ const GoogleMapContent = ({
             </Map>
 
             {/* Custom Controls */}
-            <div className="absolute bottom-24 right-4 z-[1000]">
+            <div className="absolute bottom-24 right-4 z-[1000] flex flex-col gap-2">
+                {/* Map Type Toggle */}
                 <Button
                     size="icon"
-                    className="rounded-full shadow-lg bg-white hover:bg-gray-100 text-gray-900 h-10 w-10"
+                    className="rounded-full shadow-lg bg-white hover:bg-gray-100 text-gray-900 h-11 w-11"
+                    onClick={toggleMapType}
+                    title={mapTypeId === 'roadmap' ? 'Satellite View' : 'Map View'}
+                >
+                    <Layers className="h-5 w-5" />
+                </Button>
+
+                {/* User Location */}
+                <Button
+                    size="icon"
+                    className="rounded-full shadow-lg bg-white hover:bg-gray-100 text-gray-900 h-11 w-11"
                     onClick={onUserLocationClick}
+                    title="My Location"
                 >
                     <Navigation className="h-5 w-5" />
                 </Button>

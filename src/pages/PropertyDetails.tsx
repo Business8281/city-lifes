@@ -707,7 +707,24 @@ const PropertyDetails = () => {
       sourcePage="listing_page"
       category={property.property_type}
       source={leadSource}
-      onSuccess={() => {
+      onSuccess={async () => {
+        // If user is logged in, try to fetch contact info
+        if (user) {
+          try {
+            // @ts-expect-error - RPC not in types yet
+            const { data, error } = await supabase.rpc('reveal_contact_info', { p_property_id: id });
+            if (!error && data && (data as any[]).length > 0) {
+              const contact = (data as any[])[0];
+              // Update property object locally with revealed info
+              property.contact_phone = contact.contact_phone;
+              property.contact_email = contact.contact_email;
+              property.contact_name = contact.contact_name;
+            }
+          } catch (e) {
+            console.error("Failed to reveal contact info", e);
+          }
+        }
+
         if (pendingAction === 'call' && property.contact_phone) {
           window.location.href = `tel:${property.contact_phone}`;
         } else if (pendingAction === 'chat') {
