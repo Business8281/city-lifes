@@ -25,6 +25,8 @@ const MyListings = lazy(() => import("./pages/MyListings"));
 const Settings = lazy(() => import("./pages/Settings"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService.tsx"));
+const CancellationRefundPolicy = lazy(() => import("./pages/CancellationRefundPolicy.tsx"));
+const ContactPolicy = lazy(() => import("./pages/ContactPolicy.tsx"));
 const AdCampaign = lazy(() => import("./pages/AdCampaign"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Auth = lazy(() => import("./pages/Auth"));
@@ -78,6 +80,8 @@ const App = () => {
                     <Route path="settings" element={<RequireAuth><Settings /></RequireAuth>} />
                     <Route path="privacy-policy" element={<PrivacyPolicy />} />
                     <Route path="terms-of-service" element={<TermsOfService />} />
+                    <Route path="cancellation-refund-policy" element={<CancellationRefundPolicy />} />
+                    <Route path="contact-policy" element={<ContactPolicy />} />
                     <Route path="ad-campaign" element={<RequireAuth><AdCampaign /></RequireAuth>} />
                     <Route path="ad-campaign/:campaignId" element={<RequireAuth><CampaignAnalytics /></RequireAuth>} />
                     <Route path="leads" element={<RequireAuth><Leads /></RequireAuth>} />

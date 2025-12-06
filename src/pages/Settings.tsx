@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Globe, HelpCircle, LogOut, Shield, FileText, ImagePlus } from "lucide-react";
+import { ArrowLeft, Globe, HelpCircle, LogOut, Shield, FileText, ImagePlus, RefreshCcw, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -99,6 +99,21 @@ const Settings = () => {
               <FileText className="h-5 w-5 text-muted-foreground" />
               <span>Terms of Service</span>
             </button>
+            <button
+              className="flex items-center gap-3 w-full p-4 hover:bg-muted transition-colors text-left"
+              onClick={() => navigate("/cancellation-refund-policy")}
+            >
+              <RefreshCcw className="h-5 w-5 text-muted-foreground" />
+              <span>Cancellations and Refunds</span>
+            </button>
+            <button
+              className="flex items-center gap-3 w-full p-4 hover:bg-muted transition-colors text-left"
+              onClick={() => navigate("/contact-policy")}
+            >
+              <Phone className="h-5 w-5 text-muted-foreground" />
+              <span>Contact Us</span>
+            </button>
+
           </Card>
         </div>
 
