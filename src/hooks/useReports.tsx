@@ -116,7 +116,6 @@ export function useReports() {
     }
 
     try {
-      // @ts-expect-error - Fix type error - Using insert with proper typing
       const { data, error } = await supabase
         .from('reports')
         .insert({
@@ -126,7 +125,7 @@ export function useReports() {
           reason_type: input.reason_type,
           description: input.description,
           evidence_urls: input.evidence_urls || []
-        } as any)
+        })
         .select()
         .single();
 

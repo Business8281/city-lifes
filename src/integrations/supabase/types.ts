@@ -650,6 +650,48 @@ export type Database = {
           },
         ]
       }
+      plans: {
+        Row: {
+          analytics_level: string
+          boost_limit: number
+          created_at: string | null
+          features: string[] | null
+          id: string
+          listing_limit: number
+          name: string
+          price_monthly: number
+          price_yearly: number
+          priority_lead_access: boolean
+          team_member_limit: number
+        }
+        Insert: {
+          analytics_level?: string
+          boost_limit: number
+          created_at?: string | null
+          features?: string[] | null
+          id?: string
+          listing_limit: number
+          name: string
+          price_monthly: number
+          price_yearly: number
+          priority_lead_access?: boolean
+          team_member_limit?: number
+        }
+        Update: {
+          analytics_level?: string
+          boost_limit?: number
+          created_at?: string | null
+          features?: string[] | null
+          id?: string
+          listing_limit?: number
+          name?: string
+          price_monthly?: number
+          price_yearly?: number
+          priority_lead_access?: boolean
+          team_member_limit?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -698,6 +740,7 @@ export type Database = {
           available: boolean | null
           bathrooms: number | null
           bedrooms: number | null
+          boosted: boolean | null
           business_metadata: Json | null
           city: string
           contact_email: string | null
@@ -713,9 +756,11 @@ export type Database = {
           latitude: number | null
           location: unknown
           longitude: number | null
+          owner_plan_status: string | null
           pin_code: string
           price: number
           price_type: string | null
+          promoted_level: number | null
           property_type: string
           status: string | null
           title: string
@@ -732,6 +777,7 @@ export type Database = {
           available?: boolean | null
           bathrooms?: number | null
           bedrooms?: number | null
+          boosted?: boolean | null
           business_metadata?: Json | null
           city: string
           contact_email?: string | null
@@ -747,9 +793,11 @@ export type Database = {
           latitude?: number | null
           location?: unknown
           longitude?: number | null
+          owner_plan_status?: string | null
           pin_code: string
           price: number
           price_type?: string | null
+          promoted_level?: number | null
           property_type: string
           status?: string | null
           title: string
@@ -766,6 +814,7 @@ export type Database = {
           available?: boolean | null
           bathrooms?: number | null
           bedrooms?: number | null
+          boosted?: boolean | null
           business_metadata?: Json | null
           city?: string
           contact_email?: string | null
@@ -781,9 +830,11 @@ export type Database = {
           latitude?: number | null
           location?: unknown
           longitude?: number | null
+          owner_plan_status?: string | null
           pin_code?: string
           price?: number
           price_type?: string | null
+          promoted_level?: number | null
           property_type?: string
           status?: string | null
           title?: string
@@ -792,7 +843,15 @@ export type Database = {
           verified?: boolean | null
           views?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_properties_profiles"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       query_performance_logs: {
         Row: {
@@ -979,6 +1038,13 @@ export type Database = {
             referencedRelation: "properties"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       search_suggestions: {
@@ -1062,6 +1128,56 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          cashfree_subscription_id: string | null
+          created_at: string | null
+          end_date: string | null
+          id: string
+          last_payment_at: string | null
+          plan_id: string | null
+          renews_at: string | null
+          start_date: string | null
+          status: Database["public"]["Enums"]["subscription_status"] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cashfree_subscription_id?: string | null
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          last_payment_at?: string | null
+          plan_id?: string | null
+          renews_at?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cashfree_subscription_id?: string | null
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          last_payment_at?: string | null
+          plan_id?: string | null
+          renews_at?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["subscription_status"] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       support_ticket_attachments: {
         Row: {
           created_at: string
@@ -1127,6 +1243,86 @@ export type Database = {
         }
         Relationships: []
       }
+      team_members: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          role: string | null
+          status: string | null
+          team_id: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          role?: string | null
+          status?: string | null
+          team_id: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          role?: string | null
+          status?: string | null
+          team_id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teams_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       typing_indicators: {
         Row: {
           is_typing: boolean | null
@@ -1158,6 +1354,68 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      usage: {
+        Row: {
+          boosts_used: number | null
+          cycle_end: string | null
+          cycle_start: string | null
+          id: string
+          listings_count: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          boosts_used?: number | null
+          cycle_end?: string | null
+          cycle_start?: string | null
+          id?: string
+          listings_count?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          boosts_used?: number | null
+          cycle_end?: string | null
+          cycle_start?: string | null
+          id?: string
+          listings_count?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usage_limits: {
+        Row: {
+          boost_count: number | null
+          lead_priority_enabled: boolean | null
+          listing_count: number | null
+          refresh_date: string | null
+          user_id: string
+        }
+        Insert: {
+          boost_count?: number | null
+          lead_priority_enabled?: boolean | null
+          listing_count?: number | null
+          refresh_date?: string | null
+          user_id: string
+        }
+        Update: {
+          boost_count?: number | null
+          lead_priority_enabled?: boolean | null
+          listing_count?: number | null
+          refresh_date?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_actions: {
         Row: {
@@ -1572,6 +1830,7 @@ export type Database = {
         }[]
       }
       get_current_user_id: { Args: never; Returns: string }
+      get_dashboard_stats: { Args: { user_id: string }; Returns: Json }
       get_map_clusters: {
         Args: {
           category_filter?: string
@@ -1862,91 +2121,48 @@ export type Database = {
         Args: { p_property_id: string }
         Returns: Json
       }
-      search_properties:
-        | {
-            Args: {
-              area_filter?: string
-              category_filter?: string
-              city_filter?: string
-              max_lat?: number
-              max_lng?: number
-              max_price?: number
-              min_lat?: number
-              min_lng?: number
-              min_price?: number
-              page_number?: number
-              page_size?: number
-              pincode_filter?: string
-              query_text?: string
-              radius_km?: number
-              user_lat?: number
-              user_lng?: number
-            }
-            Returns: {
-              area: string
-              area_sqft: number
-              available: boolean
-              bathrooms: number
-              bedrooms: number
-              city: string
-              description: string
-              distance_km: number
-              id: string
-              images: string[]
-              latitude: number
-              longitude: number
-              pin_code: string
-              price: number
-              price_type: string
-              property_type: string
-              relevance_score: number
-              title: string
-              total_count: number
-              verified: boolean
-            }[]
-          }
-        | {
-            Args: {
-              area_filter?: string
-              category_filter?: string
-              city_filter?: string
-              max_lat?: number
-              max_lng?: number
-              max_price?: number
-              min_lat?: number
-              min_lng?: number
-              min_price?: number
-              page_number?: number
-              page_size?: number
-              pincode_filter?: string
-              query_text?: string
-              radius_km?: number
-              user_lat?: number
-              user_lng?: number
-            }
-            Returns: {
-              area: string
-              area_sqft: number
-              available: boolean
-              bathrooms: number
-              bedrooms: number
-              city: string
-              description: string
-              distance_km: number
-              id: string
-              images: string[]
-              latitude: number
-              longitude: number
-              pin_code: string
-              price: number
-              price_type: string
-              property_type: string
-              relevance_score: number
-              title: string
-              total_count: number
-              verified: boolean
-            }[]
-          }
+      search_properties: {
+        Args: {
+          area_filter?: string
+          category_filter?: string
+          city_filter?: string
+          max_lat?: number
+          max_lng?: number
+          max_price?: number
+          min_lat?: number
+          min_lng?: number
+          min_price?: number
+          page_number?: number
+          page_size?: number
+          pincode_filter?: string
+          query_text?: string
+          radius_km?: number
+          user_lat?: number
+          user_lng?: number
+        }
+        Returns: {
+          area: string
+          area_sqft: number
+          available: boolean
+          bathrooms: number
+          bedrooms: number
+          city: string
+          description: string
+          distance_km: number
+          id: string
+          images: string[]
+          latitude: number
+          longitude: number
+          pin_code: string
+          price: number
+          price_type: string
+          property_type: string
+          relevance_score: number
+          title: string
+          total_count: number
+          verified: boolean
+        }[]
+      }
       search_properties_by_location:
         | {
             Args: {
@@ -2012,6 +2228,50 @@ export type Database = {
               verified: boolean
             }[]
           }
+      search_properties_in_view: {
+        Args: {
+          max_lat: number
+          max_lng: number
+          max_price?: number
+          min_bathrooms?: number
+          min_bedrooms?: number
+          min_lat: number
+          min_lng: number
+          min_price?: number
+          property_type_filter?: string
+          user_lat?: number
+          user_lng?: number
+        }
+        Returns: {
+          address: string
+          amenities: string[]
+          area: string
+          area_sqft: number
+          available: boolean
+          bathrooms: number
+          bedrooms: number
+          city: string
+          created_at: string
+          description: string
+          distance_km: number
+          id: string
+          images: string[]
+          latitude: number
+          longitude: number
+          pin_code: string
+          price: number
+          price_type: string
+          property_type: string
+          relevance_score: number
+          status: string
+          title: string
+          total_count: number
+          updated_at: string
+          user_id: string
+          verified: boolean
+          views: number
+        }[]
+      }
       search_properties_nearby:
         | {
             Args: {
@@ -2690,6 +2950,7 @@ export type Database = {
         | "listing_removed"
         | "dismissed"
       app_role: "admin" | "moderator" | "user" | "manager" | "tech_team"
+      plan_tier: "basic" | "pro" | "business" | "enterprise"
       report_reason_type:
         | "fraud"
         | "cheating"
@@ -2699,6 +2960,13 @@ export type Database = {
         | "abuse"
         | "other"
       report_status: "new" | "in_review" | "action_taken" | "dismissed"
+      subscription_status:
+        | "active"
+        | "paused"
+        | "cancelled"
+        | "expired"
+        | "past_due"
+        | "pending"
     }
     CompositeTypes: {
       geometry_dump: {
@@ -2844,6 +3112,7 @@ export const Constants = {
         "dismissed",
       ],
       app_role: ["admin", "moderator", "user", "manager", "tech_team"],
+      plan_tier: ["basic", "pro", "business", "enterprise"],
       report_reason_type: [
         "fraud",
         "cheating",
@@ -2854,6 +3123,14 @@ export const Constants = {
         "other",
       ],
       report_status: ["new", "in_review", "action_taken", "dismissed"],
+      subscription_status: [
+        "active",
+        "paused",
+        "cancelled",
+        "expired",
+        "past_due",
+        "pending",
+      ],
     },
   },
 } as const
