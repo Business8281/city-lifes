@@ -481,7 +481,7 @@ const AdminDashboard = () => {
                             {report.description}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={report.status === 'resolved' ? 'default' : report.status === 'dismissed' ? 'secondary' : 'destructive'}>
+                            <Badge variant={report.status === 'action_taken' ? 'default' : report.status === 'dismissed' ? 'secondary' : 'destructive'}>
                               {report.status}
                             </Badge>
                           </TableCell>

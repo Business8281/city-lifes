@@ -238,10 +238,8 @@ export function useReviews(ownerId?: string, reviewType: 'business' | 'profile' 
     }
 
     try {
-      // @ts-expect-error - Fix type error - Types not yet generated for reviews table
-      const { data, error } = await supabase
-        .from('reviews')
-        // @ts-expect-error - Fix type error
+      const { data, error } = await (supabase
+        .from('reviews') as any)
         .update({
           rating: input.rating,
           title: input.title || null,
@@ -349,7 +347,6 @@ export function useMyReviews() {
 
     try {
       setLoading(true);
-      // @ts-expect-error - Fix type error - Types not yet generated for reviews table
       const { data, error } = await supabase
         .from('reviews')
         .select(`

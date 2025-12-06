@@ -4,6 +4,11 @@ import { AlertTriangle, Ban } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 
+interface ProfileStatus {
+    is_banned?: boolean | null;
+    suspended_until?: string | null;
+}
+
 export function UserStatusAlert() {
     const { user } = useAuth();
     const [status, setStatus] = useState<{
@@ -17,14 +22,16 @@ export function UserStatusAlert() {
         const fetchStatus = async () => {
             const { data } = await supabase
                 .from('profiles')
-                .select('is_banned, suspended_until')
+                .select('*')
                 .eq('id', user.id)
                 .single();
 
             if (data) {
+                // Cast to handle columns that may not be in TypeScript types yet
+                const profileData = data as unknown as ProfileStatus;
                 setStatus({
-                    isBanned: data.is_banned || false,
-                    suspendedUntil: data.suspended_until,
+                    isBanned: profileData.is_banned ?? false,
+                    suspendedUntil: profileData.suspended_until ?? null,
                 });
             }
         };
@@ -39,10 +46,10 @@ export function UserStatusAlert() {
                 table: 'profiles',
                 filter: `id=eq.${user.id}`
             }, (payload) => {
-                const newData = payload.new as any;
+                const newData = payload.new as ProfileStatus;
                 setStatus({
-                    isBanned: newData.is_banned || false,
-                    suspendedUntil: newData.suspended_until,
+                    isBanned: newData.is_banned ?? false,
+                    suspendedUntil: newData.suspended_until ?? null,
                 });
             })
             .subscribe();
