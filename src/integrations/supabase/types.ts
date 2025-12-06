@@ -2039,6 +2039,10 @@ export type Database = {
         Args: { _property_id: string; _user_id: string }
         Returns: boolean
       }
+      has_interaction_with_user: {
+        Args: { _profile_id: string; _viewer_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
