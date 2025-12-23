@@ -1,4 +1,4 @@
-# Vite/React SPA rewrite rules for Apache (Hostinger)
+# Vite/React SPA rewrite rules for Apache
 
 # Ensure index.html is served as the default file in directories
 DirectoryIndex index.html

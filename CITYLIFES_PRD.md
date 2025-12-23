@@ -1298,21 +1298,7 @@ VITE_GOOGLE_MAPS_API_KEY=<google_maps_key>
 
 ## 23. Deployment
 
-### 23.1 Web Deployment (Hostinger)
 
-**Build Command:**
-```bash
-npm run build
-```
-
-**Output:** `dist/` folder
-
-**Deployment:**
-- Upload `dist/` contents to Hostinger public_html
-- Configure `.htaccess` for SPA routing
-- Set cache headers for assets
-
-### 23.2 Mobile Deployment
 
 **iOS:**
 ```bash
