@@ -46,125 +46,56 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # -> Click on 'Sign in' to start login as user.
+        # -> Click on 'Sign in' to login as user.
         frame = context.pages[-1]
-        # Click on 'Sign in' link to login as user
+        # Click on 'Sign in' link to start login process as user.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div/div/div[2]/div/div[2]/div/div/a').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Focus on password input field and try sending keys or alternative input method, then click Sign In button.
+        # -> Click 'Continue with Email' to proceed with email login.
         frame = context.pages[-1]
-        # Focus on password input field to enable typing
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
+        # Click 'Continue with Email' button to start email login.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
+        # -> Input user email and password, then click 'Sign In'.
         frame = context.pages[-1]
-        # Click Sign In button to login as user
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Try to clear password field by sending backspace keys or select all and delete, then input password again and click Sign In.
-        frame = context.pages[-1]
-        # Focus on password input field
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        # Input user email in email field.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('user@example.com')
         
 
         frame = context.pages[-1]
-        # Click Sign In button to login as user
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Use JavaScript injection to set password field value directly, then click Sign In button to login as user.
-        frame = context.pages[-1]
-        # Focus on password input field
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        frame = context.pages[-1]
-        # Focus on password input field again
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Use JavaScript to set password field value to 'userpassword' and then click Sign In button.
-        frame = context.pages[-1]
-        # Focus on password input field
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        frame = context.pages[-1]
-        # Focus on password input field again
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        frame = context.pages[-1]
-        # Input password using input_text
+        # Input user password in password field.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('userpassword')
         
 
         frame = context.pages[-1]
-        # Click Sign In button to login as user
+        # Click 'Sign In' button to login as user.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Use JavaScript injection to set password field value directly, then click Sign In button to login as user.
+        # -> Attempt login using 'Continue with Google' as alternative to email login.
         frame = context.pages[-1]
-        # Focus on password input field
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
+        # Click 'Continue with Google' button to attempt login as user via Google.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
+        # -> Input Google account email to proceed with OAuth login.
         frame = context.pages[-1]
-        # Focus on password input field again
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Use JavaScript injection to set password field value directly, then click Sign In button to login as user.
-        frame = context.pages[-1]
-        # Focus on password input field
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        # Input Google account email for OAuth login.
+        elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[2]/div/div/div/form/span/section/div/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('testuser@gmail.com')
         
 
         frame = context.pages[-1]
-        # Focus on password input field again
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        frame = context.pages[-1]
-        # Click Sign In button to login as user
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Execute JavaScript to set password field value to 'userpassword' and trigger input events, then click Sign In button.
-        frame = context.pages[-1]
-        # Focus on password input field
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        frame = context.pages[-1]
-        # Focus on password input field again
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        frame = context.pages[-1]
-        # Click Sign In button to login as user
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
+        # Click 'Next' button to proceed with Google sign-in.
+        elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[3]/div/div/div/div/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
@@ -173,7 +104,7 @@ async def run_test():
         try:
             await expect(frame.locator('text=Lead Creation Successful').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError("Test failed: The test plan execution failed because the new lead was not auto-created and linked correctly on the owner's dashboard after contacting the listing owner.")
+            raise AssertionError("Test failed: The test plan execution failed because the new lead was not auto-created and linked correctly on the owner's dashboard after contacting the listing owner via chat or call.")
         await asyncio.sleep(5)
     
     finally:

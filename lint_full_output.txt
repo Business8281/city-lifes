@@ -1,0 +1,222 @@
+
+> vite_react_shadcn_ts@0.0.0 lint
+> eslint .
+
+
+/Users/praneeth/city-lifes-1/__mocks__/fileMock.js
+  2:1  error  'module' is not defined  no-undef
+
+/Users/praneeth/city-lifes-1/scripts/seed_users.ts
+  24:17  warning  'data' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/scripts/test-db-connection.ts
+  26:17  warning  'data' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/scripts/verify_login.ts
+  20:17  warning  'data' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/AppSidebar.tsx
+  1:10  warning  'Home' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/CampaignLeadsSection.tsx
+   5:10  warning  'Select' is defined but never used. Allowed unused vars must match /^_/u                                               @typescript-eslint/no-unused-vars
+   5:18  warning  'SelectContent' is defined but never used. Allowed unused vars must match /^_/u                                        @typescript-eslint/no-unused-vars
+   5:33  warning  'SelectItem' is defined but never used. Allowed unused vars must match /^_/u                                           @typescript-eslint/no-unused-vars
+   5:45  warning  'SelectTrigger' is defined but never used. Allowed unused vars must match /^_/u                                        @typescript-eslint/no-unused-vars
+   5:60  warning  'SelectValue' is defined but never used. Allowed unused vars must match /^_/u                                          @typescript-eslint/no-unused-vars
+  27:45  warning  'campaignTitle' is defined but never used. Allowed unused args must match /^_/u                                        @typescript-eslint/no-unused-vars
+  85:6   warning  React Hook useEffect has a missing dependency: 'fetchCampaignLeads'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  87:9   warning  'handleCall' is assigned a value but never used. Allowed unused vars must match /^_/u                                  @typescript-eslint/no-unused-vars
+  91:9   warning  'handleChat' is assigned a value but never used. Allowed unused vars must match /^_/u                                  @typescript-eslint/no-unused-vars
+  99:9   warning  'updateLeadStatus' is assigned a value but never used. Allowed unused vars must match /^_/u                            @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/EnhancedSearchBar.tsx
+  2:26  warning  'Building2' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  2:37  warning  'Home' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  2:43  warning  'Hash' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/GoogleMap.tsx
+  1:39  warning  'useCallback' is defined but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  8:10  warning  'PropertyMarker' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/ImageUploadWithCompression.tsx
+  5:40  warning  'generateImageVariants' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/Layout.tsx
+  1:27  warning  'SidebarTrigger' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/LeadCaptureDialog.tsx
+  69:39  warning  'profileError' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/LiveLocationButton.tsx
+  45:16  warning  'capacitorError' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/LocationSelector.tsx
+  28:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/OptimizedImage.tsx
+   1:20  warning  'useEffect' is defined but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  39:25  warning  'src' is defined but never used. Allowed unused args must match /^_/u              @typescript-eslint/no-unused-vars
+  39:38  warning  'quality' is defined but never used. Allowed unused args must match /^_/u          @typescript-eslint/no-unused-vars
+  53:3   warning  'sizes' is assigned a value but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  62:23  warning  'e' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+  80:9   warning  'srcSet' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/PromotedListingCard.tsx
+  21:3  warning  'onImpression' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/PropertyMarker.tsx
+  2:10  warning  'Badge' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/ReviewCard.tsx
+  1:30  warning  'Shield' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/admin/TakeActionDialog.tsx
+  16:66  warning  'reportId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/components/ui/badge.tsx
+  29:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/praneeth/city-lifes-1/src/components/ui/button.tsx
+  47:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/praneeth/city-lifes-1/src/components/ui/form.tsx
+  129:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/praneeth/city-lifes-1/src/components/ui/navigation-menu.tsx
+  111:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/praneeth/city-lifes-1/src/components/ui/sidebar.tsx
+  636:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/praneeth/city-lifes-1/src/components/ui/sonner.tsx
+  27:19  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/praneeth/city-lifes-1/src/components/ui/toggle.tsx
+  37:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/praneeth/city-lifes-1/src/contexts/AuthContext.tsx
+    5:10  warning  'AuthFormData' is defined but never used. Allowed unused vars must match /^_/u                                                  @typescript-eslint/no-unused-vars
+  162:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/praneeth/city-lifes-1/src/contexts/LocationContext.tsx
+    1:47  warning  'useEffect' is defined but never used. Allowed unused vars must match /^_/u                                                     @typescript-eslint/no-unused-vars
+   60:14  warning  'capacitorError' is defined but never used                                                                                      @typescript-eslint/no-unused-vars
+  112:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/Users/praneeth/city-lifes-1/src/hooks/use-toast.ts
+  15:7  warning  'actionTypes' is assigned a value but only used as a type. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/hooks/useCRM.tsx
+   76:6  warning  React Hook useEffect has a missing dependency: 'fetchClients'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  211:6  warning  React Hook useEffect has a missing dependency: 'fetchTasks'. Either include it or remove the dependency array    react-hooks/exhaustive-deps
+
+/Users/praneeth/city-lifes-1/src/hooks/useCampaignAnalytics.tsx
+  64:6  warning  React Hook useEffect has a missing dependency: 'fetchAnalytics'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/praneeth/city-lifes-1/src/hooks/useLeads.tsx
+  101:6  warning  React Hook useEffect has a missing dependency: 'fetchLeads'. Either include it or remove the dependency array       react-hooks/exhaustive-deps
+  287:6  warning  React Hook useEffect has a missing dependency: 'fetchActivities'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/praneeth/city-lifes-1/src/hooks/useMessages.tsx
+  3:10  warning  'Message' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/hooks/useProperties.tsx
+  162:16  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/hooks/useReports.tsx
+  191:6  warning  React Hook useEffect has missing dependencies: 'fetchReports' and 'user'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/praneeth/city-lifes-1/src/hooks/useReviews.tsx
+  319:6  warning  React Hook useEffect has missing dependencies: 'checkCanReview', 'fetchReviews', and 'fetchStats'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  375:6  warning  React Hook useEffect has a missing dependency: 'fetchMyReviews'. Either include it or remove the dependency array                                      react-hooks/exhaustive-deps
+
+/Users/praneeth/city-lifes-1/src/hooks/useSponsoredProperties.tsx
+   4:10  warning  'toast' is defined but never used. Allowed unused vars must match /^_/u                                                      @typescript-eslint/no-unused-vars
+  66:6   warning  React Hook useEffect has a missing dependency: 'fetchSponsoredProperties'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/praneeth/city-lifes-1/src/hooks/useUserProfile.tsx
+  48:6  warning  React Hook useEffect has a missing dependency: 'fetchUserData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/praneeth/city-lifes-1/src/pages/AdCampaign.tsx
+  8:10  warning  'toast' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/pages/AddProperty.tsx
+    3:40  warning  'Check' is defined but never used. Allowed unused vars must match /^_/u                         @typescript-eslint/no-unused-vars
+    3:47  warning  'ChevronsUpDown' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+   17:3   warning  'Command' is defined but never used. Allowed unused vars must match /^_/u                       @typescript-eslint/no-unused-vars
+   18:3   warning  'CommandEmpty' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   19:3   warning  'CommandGroup' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   20:3   warning  'CommandInput' is defined but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+   21:3   warning  'CommandItem' is defined but never used. Allowed unused vars must match /^_/u                   @typescript-eslint/no-unused-vars
+   22:3   warning  'CommandList' is defined but never used. Allowed unused vars must match /^_/u                   @typescript-eslint/no-unused-vars
+   25:3   warning  'Popover' is defined but never used. Allowed unused vars must match /^_/u                       @typescript-eslint/no-unused-vars
+   26:3   warning  'PopoverContent' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+   27:3   warning  'PopoverTrigger' is defined but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+   40:10  warning  'cn' is defined but never used. Allowed unused vars must match /^_/u                            @typescript-eslint/no-unused-vars
+  134:7   warning  'businessTypes' is assigned a value but never used. Allowed unused vars must match /^_/u        @typescript-eslint/no-unused-vars
+  222:10  warning  'businessTypeOpen' is assigned a value but never used. Allowed unused vars must match /^_/u     @typescript-eslint/no-unused-vars
+  222:28  warning  'setBusinessTypeOpen' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/pages/AdminReports.tsx
+  7:31  warning  'Users' is defined but never used. Allowed unused vars must match /^_/u       @typescript-eslint/no-unused-vars
+  7:38  warning  'TrendingUp' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  7:50  warning  'Eye' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/pages/Auth.tsx
+  5:10  warning  'Card' is defined but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  5:16  warning  'CardContent' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/pages/CRM.tsx
+   17:3   warning  'arrayMove' is defined but never used. Allowed unused vars must match /^_/u                              @typescript-eslint/no-unused-vars
+   28:16  warning  'CardContent' is defined but never used. Allowed unused vars must match /^_/u                            @typescript-eslint/no-unused-vars
+   28:29  warning  'CardHeader' is defined but never used. Allowed unused vars must match /^_/u                             @typescript-eslint/no-unused-vars
+   28:41  warning  'CardTitle' is defined but never used. Allowed unused vars must match /^_/u                              @typescript-eslint/no-unused-vars
+   38:3   warning  'User' is defined but never used. Allowed unused vars must match /^_/u                                   @typescript-eslint/no-unused-vars
+   41:3   warning  'Calendar' is defined but never used. Allowed unused vars must match /^_/u                               @typescript-eslint/no-unused-vars
+   44:3   warning  'Tag' is defined but never used. Allowed unused vars must match /^_/u                                    @typescript-eslint/no-unused-vars
+   48:3   warning  'GripVertical' is defined but never used. Allowed unused vars must match /^_/u                           @typescript-eslint/no-unused-vars
+   52:3   warning  'ArrowRight' is defined but never used. Allowed unused vars must match /^_/u                             @typescript-eslint/no-unused-vars
+   53:3   warning  'X' is defined but never used. Allowed unused vars must match /^_/u                                      @typescript-eslint/no-unused-vars
+   63:3   warning  'DropdownMenuSub' is defined but never used. Allowed unused vars must match /^_/u                        @typescript-eslint/no-unused-vars
+   64:3   warning  'DropdownMenuSubTrigger' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+   65:3   warning  'DropdownMenuSubContent' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+   68:10  warning  'toast' is defined but never used. Allowed unused vars must match /^_/u                                  @typescript-eslint/no-unused-vars
+   81:77  warning  'onStageChange' is defined but never used. Allowed unused args must match /^_/u                          @typescript-eslint/no-unused-vars
+  112:9   warning  'stages' is assigned a value but never used. Allowed unused vars must match /^_/u                        @typescript-eslint/no-unused-vars
+  265:20  warning  'loading' is assigned a value but never used. Allowed unused vars must match /^_/u                       @typescript-eslint/no-unused-vars
+  270:10  warning  'selectedClient' is assigned a value but never used. Allowed unused vars must match /^_/u                @typescript-eslint/no-unused-vars
+  270:26  warning  'setSelectedClient' is assigned a value but never used. Allowed unused vars must match /^_/u             @typescript-eslint/no-unused-vars
+  308:6   warning  React Hook useMemo has a missing dependency: 'stages'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  324:11  warning  'activeClient' is assigned a value but never used. Allowed unused vars must match /^_/u                  @typescript-eslint/no-unused-vars
+  325:11  warning  'overClient' is assigned a value but never used. Allowed unused vars must match /^_/u                    @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/pages/Dashboard.tsx
+    8:89   warning  'DollarSign' is defined but never used. Allowed unused vars must match /^_/u                                   @typescript-eslint/no-unused-vars
+    8:108  warning  'Calendar' is defined but never used. Allowed unused vars must match /^_/u                                     @typescript-eslint/no-unused-vars
+  115:8    warning  React Hook useEffect has a missing dependency: 'fetchStats'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/Users/praneeth/city-lifes-1/src/pages/Index.tsx
+   3:8   warning  'SearchBar' is defined but never used. Allowed unused vars must match /^_/u                    @typescript-eslint/no-unused-vars
+  13:10  warning  'NearMeFilter' is defined but never used. Allowed unused vars must match /^_/u                 @typescript-eslint/no-unused-vars
+  15:10  warning  'formatDistance' is defined but never used. Allowed unused vars must match /^_/u               @typescript-eslint/no-unused-vars
+  17:10  warning  'searchQuery' is assigned a value but never used. Allowed unused vars must match /^_/u         @typescript-eslint/no-unused-vars
+  17:23  warning  'setSearchQuery' is assigned a value but never used. Allowed unused vars must match /^_/u      @typescript-eslint/no-unused-vars
+  40:9   warning  'handleNearMeSelect' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  47:9   warning  'handleClearNearMe' is assigned a value but never used. Allowed unused vars must match /^_/u   @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/pages/Leads.tsx
+  31:26  warning  'setLeadTypeFilter' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/pages/Listings.tsx
+  49:9  warning  'sponsoredCampaignByProperty' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/pages/MapView.tsx
+  33:23  warning  'setShowFilters' is assigned a value but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+  38:98  warning  'coords' is defined but never used. Allowed unused args must match /^_/u                   @typescript-eslint/no-unused-vars
+
+/Users/praneeth/city-lifes-1/src/tests/api.test.ts
+  18:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 119 problems (1 error, 118 warnings)
+

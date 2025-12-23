@@ -28,7 +28,7 @@ const Leads = () => {
   const [searchParams] = useSearchParams();
   const { leads, loading, updateLeadStatus, deleteLead } = useLeads();
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [leadTypeFilter, setLeadTypeFilter] = useState<string>('all');
+
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
 
   const handleCall = (phone: string) => {
@@ -45,12 +45,11 @@ const Leads = () => {
 
   const filteredLeads = leads.filter(lead => {
     const matchesStatus = statusFilter === 'all' || lead.status === statusFilter;
-    const matchesLeadType = leadTypeFilter === 'all' || lead.lead_type === leadTypeFilter;
     const matchesSearch =
       lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (lead.email && lead.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
       lead.phone.includes(searchQuery);
-    return matchesStatus && matchesLeadType && matchesSearch;
+    return matchesStatus && matchesSearch;
   });
 
   const getStatusBadge = (status: Lead['status']) => {
@@ -141,7 +140,7 @@ const Leads = () => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <div className="text-2xl font-bold text-green-600">
-                  🌱 {leads.filter(l => !l.campaign_id).length}
+                  🌱 {leads.filter(l => l.lead_type === 'organic' || (!l.lead_type && !l.campaign_id)).length}
                 </div>
                 <p className="text-sm text-muted-foreground">Organic Leads</p>
               </div>
@@ -153,7 +152,7 @@ const Leads = () => {
             <div className="grid grid-cols-3 gap-2 pt-4 border-t border-green-200/60">
               <div className="text-center">
                 <div className="text-lg font-semibold text-green-700">
-                  {leads.filter(l => !l.campaign_id && l.source === 'call').length}
+                  {leads.filter(l => (l.lead_type === 'organic' || (!l.lead_type && !l.campaign_id)) && l.source === 'call').length}
                 </div>
                 <div className="text-xs text-green-600 flex items-center justify-center gap-1">
                   <Phone className="h-3 w-3" /> Calls
@@ -161,7 +160,7 @@ const Leads = () => {
               </div>
               <div className="text-center border-l border-green-200/60">
                 <div className="text-lg font-semibold text-green-700">
-                  {leads.filter(l => !l.campaign_id && (l.source === 'chat' || l.source === 'whatsapp')).length}
+                  {leads.filter(l => (l.lead_type === 'organic' || (!l.lead_type && !l.campaign_id)) && (l.source === 'chat' || l.source === 'whatsapp')).length}
                 </div>
                 <div className="text-xs text-green-600 flex items-center justify-center gap-1">
                   <MessageCircle className="h-3 w-3" /> Chats
@@ -169,7 +168,7 @@ const Leads = () => {
               </div>
               <div className="text-center border-l border-green-200/60">
                 <div className="text-lg font-semibold text-green-700">
-                  {leads.filter(l => !l.campaign_id && l.source === 'listing').length}
+                  {leads.filter(l => (l.lead_type === 'organic' || (!l.lead_type && !l.campaign_id)) && l.source === 'listing').length}
                 </div>
                 <div className="text-xs text-green-600 flex items-center justify-center gap-1">
                   <Mail className="h-3 w-3" /> Forms
@@ -185,7 +184,7 @@ const Leads = () => {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <div className="text-2xl font-bold text-blue-600">
-                  💰 {leads.filter(l => !!l.campaign_id).length}
+                  💰 {leads.filter(l => l.lead_type === 'paid').length}
                 </div>
                 <p className="text-sm text-muted-foreground">Paid Leads</p>
               </div>
@@ -197,7 +196,7 @@ const Leads = () => {
             <div className="grid grid-cols-3 gap-2 pt-4 border-t border-blue-200/60">
               <div className="text-center">
                 <div className="text-lg font-semibold text-blue-700">
-                  {leads.filter(l => !!l.campaign_id && l.source === 'call').length}
+                  {leads.filter(l => l.lead_type === 'paid' && l.source === 'call').length}
                 </div>
                 <div className="text-xs text-blue-600 flex items-center justify-center gap-1">
                   <Phone className="h-3 w-3" /> Calls
@@ -205,7 +204,7 @@ const Leads = () => {
               </div>
               <div className="text-center border-l border-blue-200/60">
                 <div className="text-lg font-semibold text-blue-700">
-                  {leads.filter(l => !!l.campaign_id && (l.source === 'chat' || l.source === 'whatsapp')).length}
+                  {leads.filter(l => l.lead_type === 'paid' && (l.source === 'chat' || l.source === 'whatsapp')).length}
                 </div>
                 <div className="text-xs text-blue-600 flex items-center justify-center gap-1">
                   <MessageCircle className="h-3 w-3" /> Chats
@@ -213,7 +212,7 @@ const Leads = () => {
               </div>
               <div className="text-center border-l border-blue-200/60">
                 <div className="text-lg font-semibold text-blue-700">
-                  {leads.filter(l => !!l.campaign_id && l.source === 'listing').length}
+                  {leads.filter(l => l.lead_type === 'paid' && l.source === 'listing').length}
                 </div>
                 <div className="text-xs text-blue-600 flex items-center justify-center gap-1">
                   <Mail className="h-3 w-3" /> Forms

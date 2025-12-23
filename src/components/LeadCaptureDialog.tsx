@@ -66,7 +66,7 @@ export const LeadCaptureDialog = ({
           .eq('id', user.id)
           .maybeSingle();
 
-        const { data: profile, error: profileError } = profileResponse;
+        const { data: profile } = profileResponse;
 
         // Build comprehensive fallback data
         const emailName = user.email ? user.email.split('@')[0] : '';

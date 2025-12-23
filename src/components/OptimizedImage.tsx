@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
 
 interface OptimizedImageProps {
@@ -36,7 +36,7 @@ const getOptimizedUrl = (src: string, width?: number, quality: number = 70): str
 };
 
 // Generate srcset for responsive images - disabled for now to simplify
-const generateSrcSet = (src: string, quality: number): string => {
+const generateSrcSet = (_src: string, _quality: number): string => {
   // Return empty string to avoid srcset issues
   return '';
 };
@@ -59,7 +59,7 @@ export const OptimizedImage = ({
   const [error, setError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
-  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  const handleLoad = () => {
     setIsLoaded(true);
     onLoad?.();
   };
@@ -115,6 +115,8 @@ export const OptimizedImage = ({
         <img
           ref={imgRef}
           src={optimizedSrc}
+          srcSet={srcSet || undefined}
+          sizes={sizes}
           alt={alt}
           width={aspectRatio === 'square' ? 1 : width}
           height={aspectRatio === 'square' ? 1 : height}

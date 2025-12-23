@@ -22,7 +22,7 @@ export function useSubscription() {
             try {
                 // 1. Check Roles
                 const { data: hasAdmin } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                 
                 const { data: hasManager } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'manager' as any });
                 const isAdminOrManager = hasAdmin || hasManager;
 
@@ -43,7 +43,7 @@ export function useSubscription() {
 
                 if (subData) {
                     setSubscription(subData as unknown as Subscription);
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                     
                     setPlan((subData as any).plans as Plan);
                 }
 

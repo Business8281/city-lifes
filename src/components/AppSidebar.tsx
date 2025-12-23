@@ -1,4 +1,4 @@
-import { Home, Map, MessageCircle, Heart, User, Plus, FileText, Target, Users, ClipboardList, Flag, Star, Shield } from "lucide-react";
+import { LayoutDashboard, Users, User, FileText, Target, ClipboardList, Flag, Star, Shield, Map as MapIcon, MessageCircle, Heart, Plus } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -19,8 +19,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 
 const menuItems = [
-  { title: "Home", url: "/", icon: Map },
-  { title: "Map View", url: "/map", icon: Map },
+  { title: "Home", url: "/", icon: LayoutDashboard },
+  { title: "Map View", url: "/map", icon: MapIcon },
   { title: "Messages", url: "/messages", icon: MessageCircle },
   { title: "Favorites", url: "/favorites", icon: Heart },
   { title: "Profile", url: "/profile", icon: User },

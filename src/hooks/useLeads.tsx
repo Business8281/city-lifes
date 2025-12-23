@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -37,7 +37,7 @@ export const useLeads = () => {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchLeads = async () => {
+  const fetchLeads = useCallback(async () => {
     if (!user) {
       setLeads([]);
       setLoading(false);
@@ -49,7 +49,7 @@ export const useLeads = () => {
       const { data, error } = await supabase
         .from('leads')
         .select(`
-          *,
+          id, listing_id, owner_id, user_id, name, phone, email, message, status, source, lead_type, category, created_at, campaign_id,
           properties:listing_id (
             id,
             title,
@@ -69,7 +69,7 @@ export const useLeads = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchLeads();
@@ -98,7 +98,7 @@ export const useLeads = () => {
       console.log('🔕 Cleaning up leads subscription');
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, fetchLeads]);
 
   const createLead = async (leadData: any) => {
     try {
@@ -265,7 +265,7 @@ export const useLeadActivity = (leadId: string) => {
   const [activities, setActivities] = useState<LeadActivity[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('lead_activity')
@@ -280,11 +280,11 @@ export const useLeadActivity = (leadId: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [leadId]);
 
   useEffect(() => {
     fetchActivities();
-  }, [leadId]);
+  }, [leadId, fetchActivities]);
 
   const addActivity = async (actionType: LeadActivity['action_type'], note: string) => {
     try {

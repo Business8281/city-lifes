@@ -46,57 +46,78 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # -> Click on 'Sign in' to start login as listing owner.
+        # -> Click on 'Sign in' to login as listing owner.
         frame = context.pages[-1]
-        # Click on 'Sign in' link to open login form
+        # Click on 'Sign in' link to start login process as listing owner.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div/div/div[2]/div/div[2]/div/div/a').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Input email and password, then click Sign In button.
+        # -> Click on 'Continue with Email' to login with email as listing owner.
         frame = context.pages[-1]
-        # Input email for listing owner login
+        # Click on 'Continue with Email' button to proceed with email login.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Input email and password for listing owner and click Sign In.
+        frame = context.pages[-1]
+        # Input email for listing owner login.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('listingowner@example.com')
         
 
         frame = context.pages[-1]
-        # Input password for listing owner login
+        # Input password for listing owner login.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('securepassword123')
         
 
         frame = context.pages[-1]
-        # Click Sign In button to login as listing owner
+        # Click Sign In button to submit login form.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Retry login with correct credentials or verify login details.
+        # -> Click on 'Continue with Google' to attempt login as listing owner via Google.
         frame = context.pages[-1]
-        # Re-input email for listing owner login
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('listingowner@example.com')
+        # Click on 'Continue with Google' button to attempt login as listing owner via Google.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Input Google account email and click Next to proceed with Google login.
+        frame = context.pages[-1]
+        # Input Google account email for listing owner login.
+        elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[2]/div/div/div/form/span/section/div/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('listingowner@gmail.com')
         
 
         frame = context.pages[-1]
-        # Re-input password for listing owner login
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('securepassword123')
+        # Click Next button to proceed with Google login.
+        elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[3]/div/div/div/div/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Input Google account email and click Next to proceed with Google login.
+        frame = context.pages[-1]
+        # Input Google account email for listing owner login.
+        elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[2]/div/div/div/form/span/section/div/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('listingowner@gmail.com')
         
 
         frame = context.pages[-1]
-        # Click Sign In button to retry login as listing owner
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
+        # Click Next button to proceed with Google login.
+        elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[3]/div/div/div/div/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=Lead Status Updated Successfully').first).to_be_visible(timeout=30000)
+            await expect(frame.locator('text=Lead Status Updated Successfully').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError("Test case failed: Listing owners could not update lead statuses and add notes in the CRM system, or changes are not properly saved and displayed as required by the test plan.")
+            raise AssertionError("Test case failed: The lead status and notes update did not persist as expected in the CRM system. The test plan requires verifying that listing owners can update lead statuses and add notes, and that these changes are properly saved and displayed.")
         await asyncio.sleep(5)
     
     finally:

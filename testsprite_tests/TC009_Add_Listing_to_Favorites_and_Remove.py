@@ -46,89 +46,57 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # -> Click 'Sign in' to login as user.
+        # -> Click the 'Sign in' link to start login process.
         frame = context.pages[-1]
-        # Click 'Sign in' link to start login process
+        # Click 'Sign in' link to login as user.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div/div/div[2]/div/div[2]/div/div/a').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Click 'Sign In' button to login.
+        # -> Click 'Continue with Email' to proceed with email login.
         frame = context.pages[-1]
-        # Click 'Sign In' button to login
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
+        # Click 'Continue with Email' button to proceed with email login.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Input password and click 'Sign In' button to login.
+        # -> Input email and password, then click 'Sign In' button.
         frame = context.pages[-1]
-        # Input user password
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('password123')
-        
-
-        frame = context.pages[-1]
-        # Click 'Sign In' button to login
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Try clearing and re-inputting email and password fields, then click 'Sign In'.
-        frame = context.pages[-1]
-        # Click email input field to focus
+        # Input email for login.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        await page.wait_for_timeout(3000); await elem.fill('testuser@example.com')
         
 
         frame = context.pages[-1]
-        # Re-enter user email
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('user@example.com')
-        
-
-        frame = context.pages[-1]
-        # Click password input field to focus
+        # Input password for login.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        await page.wait_for_timeout(3000); await elem.fill('TestPassword123')
         
 
         frame = context.pages[-1]
-        # Input user password
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('password123')
-        
-
-        frame = context.pages[-1]
-        # Click 'Sign In' button to login
+        # Click 'Sign In' button to submit login form.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Check for alternative login options or retry login with correct credentials.
+        # -> Click 'Continue with Email' button to proceed to email login form.
         frame = context.pages[-1]
-        # Click 'Google' button to try alternative login method
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/button').nth(0)
+        # Click 'Continue with Email' button to proceed to email login form.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Input email and click 'Next' to continue Google login.
+        # -> Input email and password, then click 'Sign In' button.
         frame = context.pages[-1]
-        # Input email or phone for Google sign-in
-        elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[2]/div/div/div/form/span/section/div/div/div/div/div/div/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('user@example.com')
+        # Input email for login.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('testuser@example.com')
         
 
         frame = context.pages[-1]
-        # Click 'Next' button to proceed with Google sign-in
-        elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[3]/div/div/div/div/button').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Click 'Next' button to proceed with Google login.
-        frame = context.pages[-1]
-        # Click 'Next' button to proceed with Google login
-        elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[3]/div/div/div/div/button').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        # Input password for login.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('TestPassword123')
         
 
         # --> Assertions to verify final state
@@ -136,7 +104,7 @@ async def run_test():
         try:
             await expect(frame.locator('text=Listing successfully added to favorites!').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError("Test case failed: The test plan execution failed because the listing was not successfully added to or removed from the favorites list as expected.")
+            raise AssertionError("Test case failed: The test plan execution failed because the listing could not be added to the favorites list as expected.")
         await asyncio.sleep(5)
     
     finally:

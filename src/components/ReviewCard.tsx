@@ -1,4 +1,4 @@
-import { Star, CheckCircle2, Shield } from 'lucide-react';
+import { Star, CheckCircle2 } from "lucide-react";
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -16,7 +16,7 @@ interface ReviewCardProps {
 export function ReviewCard({ review, showActions, onEdit, onDelete }: ReviewCardProps) {
   const { user } = useAuth();
   const isOwnReview = user?.id === review.reviewer_id;
-  
+
   return (
     <Card className="p-3 md:p-4 space-y-2 md:space-y-3">
       <div className="flex items-start justify-between gap-3">
@@ -47,11 +47,10 @@ export function ReviewCard({ review, showActions, onEdit, onDelete }: ReviewCard
           {Array.from({ length: 5 }).map((_, i) => (
             <Star
               key={i}
-              className={`h-3.5 w-3.5 md:h-4 md:w-4 ${
-                i < review.rating
-                  ? 'fill-yellow-400 text-yellow-400'
-                  : 'text-muted-foreground'
-              }`}
+              className={`h - 3.5 w - 3.5 md: h - 4 md: w - 4 ${i < review.rating
+                ? 'fill-yellow-400 text-yellow-400'
+                : 'text-muted-foreground'
+                } `}
             />
           ))}
         </div>

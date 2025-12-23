@@ -3,7 +3,6 @@ import { ArrowLeft, Send, Search, MoreVertical, Trash2, Edit2, Check, X } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DropdownMenu,
@@ -49,14 +48,14 @@ const Messages = () => {
     if (scrollAreaRef.current) {
       const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
       if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        scrollContainer.scrollTo({ top: scrollContainer.scrollHeight, behavior });
       }
     }
   };
 
   const handleSendMessage = async () => {
     if (!messageText.trim() || !selectedConversation) return;
-    
+
     // Validate message input
     try {
       messageSchema.parse({
@@ -64,7 +63,7 @@ const Messages = () => {
         receiver_id: selectedConversation.user.id,
         property_id: selectedConversation.messages[0]?.property_id
       });
-      
+
       await sendMessage(
         selectedConversation.user.id,
         messageText,
@@ -138,12 +137,12 @@ const Messages = () => {
     const initChat = async () => {
       const targetUserId = searchParams.get('user');
       const propertyId = searchParams.get('property');
-      
+
       if (!targetUserId || !user || loadingNewChat) return;
-      
+
       // Check if conversation already exists
       const existingConv = conversations.find(c => c.user?.id === targetUserId);
-      
+
       if (existingConv) {
         setSelectedConversation(existingConv);
       } else {
@@ -155,9 +154,9 @@ const Messages = () => {
             .select('id, full_name, email')
             .eq('id', targetUserId)
             .single();
-          
+
           if (error) throw error;
-          
+
           if (profile) {
             // Create a new conversation object
             const newConv = {
@@ -167,7 +166,7 @@ const Messages = () => {
               unreadCount: 0
             };
             setSelectedConversation(newConv);
-            
+
             // Send initial greeting
             if (propertyId) {
               await sendMessage(targetUserId, "Hi! I'm interested in your property.", propertyId);
@@ -180,11 +179,11 @@ const Messages = () => {
           setLoadingNewChat(false);
         }
       }
-      
+
       // Clear URL params
       navigate('/messages', { replace: true });
     };
-    
+
     if (!loading && conversations.length >= 0) {
       initChat();
     }
@@ -232,9 +231,8 @@ const Messages = () => {
                 <button
                   key={conversation.user?.id}
                   onClick={() => setSelectedConversation(conversation)}
-                  className={`w-full p-4 hover:bg-muted transition-colors text-left ${
-                    selectedConversation?.user?.id === conversation.user?.id ? 'bg-muted' : ''
-                  }`}
+                  className={`w-full p-4 hover:bg-muted transition-colors text-left ${selectedConversation?.user?.id === conversation.user?.id ? 'bg-muted' : ''
+                    }`}
                 >
                   <div className="flex gap-3">
                     <Avatar className="h-12 w-12 shrink-0">
@@ -320,29 +318,27 @@ const Messages = () => {
                 {selectedConversation.messages.map((message: any) => {
                   const isOwn = message.sender_id === user?.id;
                   const isEditing = editingMessageId === message.id;
-                  
+
                   return (
                     <div
                       key={message.id}
                       className={`flex ${isOwn ? 'justify-end' : 'justify-start'} group`}
                     >
                       <div
-                        className={`max-w-[70%] rounded-lg p-3 relative ${
-                          isOwn
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
-                        }`}
+                        className={`max-w-[70%] rounded-lg p-3 relative ${isOwn
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
+                          }`}
                       >
                         {isEditing ? (
                           <div className="space-y-2">
                             <Input
                               value={editedText}
                               onChange={(e) => setEditedText(e.target.value)}
-                              className={`text-sm ${
-                                isOwn
-                                  ? 'bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20'
-                                  : 'bg-background'
-                              }`}
+                              className={`text-sm ${isOwn
+                                ? 'bg-primary-foreground/10 text-primary-foreground border-primary-foreground/20'
+                                : 'bg-background'
+                                }`}
                               autoFocus
                             />
                             <div className="flex gap-2">
@@ -374,9 +370,8 @@ const Messages = () => {
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      className={`h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity ${
-                                        isOwn ? 'hover:bg-primary-foreground/20' : ''
-                                      }`}
+                                      className={`h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity ${isOwn ? 'hover:bg-primary-foreground/20' : ''
+                                        }`}
                                     >
                                       <MoreVertical className="h-3 w-3" />
                                     </Button>
@@ -400,20 +395,18 @@ const Messages = () => {
                             </div>
                             <div className="flex items-center gap-2">
                               <p
-                                className={`text-xs mt-1 ${
-                                  isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                                }`}
+                                className={`text-xs mt-1 ${isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                                  }`}
                               >
-                                {new Date(message.created_at).toLocaleTimeString([], { 
-                                  hour: '2-digit', 
-                                  minute: '2-digit' 
+                                {new Date(message.created_at).toLocaleTimeString([], {
+                                  hour: '2-digit',
+                                  minute: '2-digit'
                                 })}
                               </p>
                               {message.edited && (
                                 <span
-                                  className={`text-xs italic ${
-                                    isOwn ? 'text-primary-foreground/50' : 'text-muted-foreground/70'
-                                  }`}
+                                  className={`text-xs italic ${isOwn ? 'text-primary-foreground/50' : 'text-muted-foreground/70'
+                                    }`}
                                 >
                                   (edited)
                                 </span>
@@ -447,8 +440,8 @@ const Messages = () => {
                 onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                 disabled={!selectedConversation?.user?.id}
               />
-              <Button 
-                onClick={handleSendMessage} 
+              <Button
+                onClick={handleSendMessage}
                 size="icon"
                 disabled={!messageText.trim() || !selectedConversation?.user?.id}
               >
@@ -479,7 +472,7 @@ const Messages = () => {
             <AlertDialogTitle>Delete Conversation</AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete this entire conversation with{" "}
-              <strong>{selectedConversation?.user?.full_name}</strong>? 
+              <strong>{selectedConversation?.user?.full_name}</strong>?
               This will permanently delete all messages and cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

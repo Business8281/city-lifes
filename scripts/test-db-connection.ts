@@ -23,7 +23,7 @@ async function testConnection() {
     try {
         // Try to fetch a single row from a public table, e.g., 'cities' or just check health if possible
         // We'll try 'cities' as it seems to be a core table based on previous context
-        const { data, error } = await supabase.from('cities').select('count', { count: 'exact', head: true });
+        const { error } = await supabase.from('properties').select('count', { count: 'exact', head: true });
 
         if (error) {
             console.error('Connection failed:', error.message);

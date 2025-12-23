@@ -53,12 +53,19 @@ async def run_test():
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
+        # -> Click on the 'Filters' button to open filter options and apply category and price range filters.
+        frame = context.pages[-1]
+        # Click on the 'Filters' button to open filter options.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/main/div/div/div/div/div[2]/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=No Listings Found in This Area')).to_be_visible(timeout=1000)
+            await expect(frame.locator('text=No Listings Available for $9999').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError("Test case failed: The map view did not display clustered listings with accurate price markers or update in real-time as filters were changed, as required by the test plan.")
+            raise AssertionError("Test case failed: The map view did not display clustered listings with accurate price markers or failed to update in real-time as filters were changed.")
         await asyncio.sleep(5)
     
     finally:

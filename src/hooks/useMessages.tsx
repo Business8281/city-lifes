@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Message } from '@/types/database';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { encryptMessage, decryptMessage } from '@/utils/encryption';
@@ -54,7 +53,7 @@ export function useMessages(userId: string | undefined) {
       const enrichedData = await Promise.all(
         (data || []).map(async (msg: any) => {
           let decryptedContent = msg.content;
-          
+
           // Decrypt message content
           try {
             decryptedContent = await decryptMessage(
@@ -65,7 +64,7 @@ export function useMessages(userId: string | undefined) {
           } catch (error) {
             console.error('Failed to decrypt message:', error);
           }
-          
+
           return {
             ...msg,
             content: decryptedContent,
@@ -95,7 +94,7 @@ export function useMessages(userId: string | undefined) {
 
       // Sort messages within each conversation (oldest first for chat display)
       Object.values(grouped).forEach((conv: any) => {
-        conv.messages.sort((a: any, b: any) => 
+        conv.messages.sort((a: any, b: any) =>
           new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         );
       });
@@ -168,7 +167,7 @@ export function useMessages(userId: string | undefined) {
         });
 
       if (error) throw error;
-      
+
       // Real-time subscription will handle the update automatically
     } catch (error: any) {
       if (error instanceof z.ZodError) {
@@ -205,7 +204,7 @@ export function useMessages(userId: string | undefined) {
 
     try {
       console.log('🗑️ Deleting message:', messageId);
-      
+
       // Hard delete - permanently remove from database
       const { error } = await supabase
         .from('messages')
@@ -217,12 +216,12 @@ export function useMessages(userId: string | undefined) {
         console.error('❌ Delete message error:', error);
         throw error;
       }
-      
+
       console.log('✅ Message deleted successfully');
       toast.success('Message deleted');
-      
+
       // Immediately update local state for instant UI update
-      setConversations(prevConvs => 
+      setConversations(prevConvs =>
         prevConvs.map(conv => ({
           ...conv,
           messages: conv.messages.filter((msg: any) => msg.id !== messageId),
@@ -269,7 +268,7 @@ export function useMessages(userId: string | undefined) {
 
       const { error } = await supabase
         .from('messages')
-        .update({ 
+        .update({
           content: encryptedContent,
           edited: true,
           edited_at: new Date().toISOString()
@@ -281,16 +280,16 @@ export function useMessages(userId: string | undefined) {
         console.error('❌ Edit message error:', error);
         throw error;
       }
-      
+
       console.log('✅ Message edited successfully');
       toast.success('Message updated');
-      
+
       // Immediately update local state for instant UI update
-      setConversations(prevConvs => 
+      setConversations(prevConvs =>
         prevConvs.map(conv => ({
           ...conv,
-          messages: conv.messages.map((msg: any) => 
-            msg.id === messageId 
+          messages: conv.messages.map((msg: any) =>
+            msg.id === messageId
               ? { ...msg, content: validatedData.content, edited: true, edited_at: new Date().toISOString() }
               : msg
           )
@@ -314,7 +313,7 @@ export function useMessages(userId: string | undefined) {
 
     try {
       console.log('🗑️ Deleting entire conversation with:', conversationUserId);
-      
+
       // Delete all messages where user is sender and other is receiver
       const { error: error1 } = await supabase
         .from('messages')
@@ -338,12 +337,12 @@ export function useMessages(userId: string | undefined) {
         console.error('❌ Delete conversation error (received messages):', error2);
         throw error2;
       }
-      
+
       console.log('✅ Conversation deleted successfully');
       toast.success('Conversation deleted');
-      
+
       // Immediately update local state to remove the conversation
-      setConversations(prevConvs => 
+      setConversations(prevConvs =>
         prevConvs.filter(conv => conv.user?.id !== conversationUserId)
       );
     } catch (error: any) {
@@ -352,14 +351,14 @@ export function useMessages(userId: string | undefined) {
     }
   };
 
-  return { 
-    conversations, 
-    loading, 
-    sendMessage, 
-    markAsRead, 
-    deleteMessage, 
-    editMessage, 
+  return {
+    conversations,
+    loading,
+    sendMessage,
+    markAsRead,
+    deleteMessage,
+    editMessage,
     deleteConversation,
-    refetch: fetchConversations 
+    refetch: fetchConversations
   };
 }

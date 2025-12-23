@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
-import { User, Plus, Trash2, Shield, ShieldAlert, CheckCircle } from 'lucide-react';
+import { Trash2, Plus } from 'lucide-react';
 
 export default function TeamManagement() {
     const { user } = useAuth();
@@ -28,7 +28,7 @@ export default function TeamManagement() {
             try {
                 // Fetch team owned by user
                 const { data: teamData, error: teamError } = await supabase
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                     .from('teams' as any)
                     .select('*')
                     .eq('owner_id', user.id)
@@ -44,7 +44,7 @@ export default function TeamManagement() {
 
                     // Fetch members
                     const { data: membersData, error: membersError } = await supabase
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                         .from('team_members' as any)
                         .select('*, profiles(full_name, email)')
                         .eq('team_id', team.id);
@@ -70,7 +70,7 @@ export default function TeamManagement() {
 
         try {
             const { data, error } = await supabase
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                 .from('teams' as any)
                 .insert({
                     owner_id: user.id,
@@ -100,7 +100,7 @@ export default function TeamManagement() {
         try {
             const currentTeam = team as unknown as Team;
             const { error } = await supabase
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                 .from('team_members' as any)
                 .insert({
                     team_id: currentTeam.id,
@@ -116,8 +116,8 @@ export default function TeamManagement() {
             setIsInviteOpen(false);
 
             // Refresh members
-            const { data: membersData, error: membersError } = await supabase
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { data: membersData, error: _membersError } = await supabase
+
                 .from('team_members' as any)
                 .select('*, profiles(full_name, email)')
                 .eq('team_id', currentTeam.id);
@@ -132,7 +132,7 @@ export default function TeamManagement() {
 
     const handleRemoveMember = async (memberId: string) => {
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             const { error } = await supabase
                 .from('team_members' as any)
                 .delete()
@@ -232,7 +232,7 @@ export default function TeamManagement() {
                                 {members.map((member) => (
                                     <TableRow key={member.id}>
                                         <TableCell className="font-medium">
-                                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                            { }
                                             {(member.profiles as any)?.full_name || 'Pending...'}
                                         </TableCell>
                                         <TableCell>{member.email}</TableCell>

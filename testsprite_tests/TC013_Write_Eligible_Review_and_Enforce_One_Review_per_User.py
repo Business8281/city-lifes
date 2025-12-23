@@ -48,102 +48,19 @@ async def run_test():
         # Interact with the page elements to simulate user flow
         # -> Click on 'Sign in' to login as eligible user who completed interaction with listing.
         frame = context.pages[-1]
-        # Click on 'Sign in' link to open login page or modal
+        # Click on 'Sign in' link to start login process as eligible user
         elem = frame.locator('xpath=html/body/div/div[2]/div/div/div/div[2]/div/div[2]/div/div/a').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Try clicking the password field to focus, then send keys for password input, then click Sign In.
+        # -> Click 'Continue with Email' to login as eligible user.
         frame = context.pages[-1]
-        # Click password input field to focus
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
+        # Click 'Continue with Email' button to proceed with email login
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        frame = context.pages[-1]
-        # Try inputting password again after focusing
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('correctpassword')
-        
-
-        frame = context.pages[-1]
-        # Click Sign In button to login
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Navigate to a listing page where the eligible user can write a review.
-        frame = context.pages[-1]
-        # Click on tab or menu to navigate to listings or search listings
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Try clicking email input field to focus, then send keys for email input, then click password field and send keys for password input, then click Sign In.
-        frame = context.pages[-1]
-        # Click email input field to focus
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        frame = context.pages[-1]
-        # Try inputting email after focusing
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('eligibleuser@example.com')
-        
-
-        frame = context.pages[-1]
-        # Click password input field to focus
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        frame = context.pages[-1]
-        # Try inputting password after focusing
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('correctpassword')
-        
-
-        frame = context.pages[-1]
-        # Click Sign In button to login
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Try login as ineligible user or check if there is a way to reset password or recover account to proceed with testing.
-        frame = context.pages[-1]
-        # Click on 'Sign Up' tab to check for alternative options or reset
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div/button[2]').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Retry login as ineligible user by inputting email and password, then clicking Sign In button.
-        frame = context.pages[-1]
-        # Input ineligible user email
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('ineligibleuser@example.com')
-        
-
-        frame = context.pages[-1]
-        # Input ineligible user password
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('wrongpassword')
-        
-
-        frame = context.pages[-1]
-        # Click Sign In button to attempt login as ineligible user
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Navigate back to listings or homepage to attempt review submission as ineligible user and verify prevention.
-        frame = context.pages[-1]
-        # Click on 'citylifes' logo or header to navigate to homepage or listings page
-        elem = frame.locator('xpath=html/body/div').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Try to login as eligible user by inputting email and password, then clicking Sign In button.
+        # -> Input eligible user email and password, then click 'Sign In'.
         frame = context.pages[-1]
         # Input eligible user email
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
@@ -157,7 +74,33 @@ async def run_test():
         
 
         frame = context.pages[-1]
-        # Click Sign In button to login
+        # Click 'Sign In' button to login as eligible user
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Click 'Continue with Email' button to proceed with email login.
+        frame = context.pages[-1]
+        # Click 'Continue with Email' button to proceed with email login
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Input eligible user email and password, then click 'Sign In' button.
+        frame = context.pages[-1]
+        # Input eligible user email
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('eligibleuser@example.com')
+        
+
+        frame = context.pages[-1]
+        # Input eligible user password
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('correctpassword')
+        
+
+        frame = context.pages[-1]
+        # Click 'Sign In' button to login as eligible user
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         

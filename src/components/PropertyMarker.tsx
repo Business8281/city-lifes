@@ -1,5 +1,4 @@
 import { AdvancedMarker } from '@vis.gl/react-google-maps';
-import { Badge } from './ui/badge';
 import { Home } from 'lucide-react';
 
 interface PropertyMarkerProps {

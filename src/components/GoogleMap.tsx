@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { APIProvider, Map, AdvancedMarker, useMap } from '@vis.gl/react-google-maps';
 import { Button } from './ui/button';
 import { Navigation, Layers } from 'lucide-react';
 import { OptimizedImage } from './OptimizedImage';
 import { Badge } from './ui/badge';
-import { useNavigate } from 'react-router-dom';
-import { PropertyMarker } from './PropertyMarker';
 
 interface GoogleMapProps {
     apiKey: string;

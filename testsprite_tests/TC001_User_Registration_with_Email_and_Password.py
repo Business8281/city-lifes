@@ -46,99 +46,138 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # -> Find a way to navigate to the registration page, possibly by scrolling or looking for hidden navigation elements.
-        await page.mouse.wheel(0, await page.evaluate('() => window.innerHeight'))
-        
-
-        # -> Try to open a new tab and navigate directly to the registration page URL if known or try to find a way to access registration.
-        await page.goto('http://127.0.0.1:8080/register', timeout=10000)
-        await asyncio.sleep(3)
-        
-
-        # -> Return to home page and look for any visible or hidden links or buttons that might lead to registration or sign up.
+        # -> Click on 'Sign in' to navigate to the registration or login page.
         frame = context.pages[-1]
-        # Click 'Go to Home' link to return to home page
-        elem = frame.locator('xpath=html/body/div/div[2]/div/a').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Click the 'Sign in' link to check if it provides an option to register a new user.
-        frame = context.pages[-1]
-        # Click the 'Sign in' link to access login and registration options
+        # Click on 'Sign in' link to go to login/registration page
         elem = frame.locator('xpath=html/body/div/div[2]/div/div/div/div[2]/div/div[2]/div/div/a').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Click the 'Sign Up' tab to ensure registration form is active, then input email and password again carefully, possibly clearing fields first or retrying input on password field.
+        # -> Click on 'Continue with Email' button to proceed with email registration.
         frame = context.pages[-1]
-        # Click the 'Sign Up' tab to activate registration form
+        # Click on 'Continue with Email' button to start email registration
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Click on 'Sign Up' tab to switch to registration form.
+        frame = context.pages[-1]
+        # Click on 'Sign Up' tab to switch to registration form
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
+        # -> Click on 'Continue with Email' button to try to reach the email login/sign-up form with registration option.
         frame = context.pages[-1]
-        # Input valid email address
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('testuser@example.com')
-        
-
-        frame = context.pages[-1]
-        # Input valid password
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('ValidPassword123!')
-        
-
-        frame = context.pages[-1]
-        # Click the 'Sign In' button to submit registration form
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/div[3]/input').nth(0)
+        # Click on 'Continue with Email' button to open email login/sign-up form
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Click the 'Create Account' button to submit the registration form and proceed to email verification prompt.
+        # -> Click on 'Sign Up' tab to switch to registration form.
         frame = context.pages[-1]
-        # Click the 'Create Account' button to submit registration form
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/button').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Click the 'Sign Up' tab to switch to registration form, then input a valid email and password to attempt registration again.
-        frame = context.pages[-1]
-        # Click the 'Sign Up' tab to switch to registration form
+        # Click on 'Sign Up' tab to switch to registration form
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
+        # -> Input valid Full Name, Email, Phone (optional), and Password, then click 'Create Account' to submit the registration form.
         frame = context.pages[-1]
-        # Input valid email address
+        # Input valid full name in Full Name field
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('Test User')
+        
+
+        frame = context.pages[-1]
+        # Input valid email address in Email field
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/div[2]/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('testuser@example.com')
         
 
         frame = context.pages[-1]
-        # Input valid password
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('ValidPassword123!')
+        # Input valid phone number in Phone (Optional) field
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/div[3]/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('1234567890')
         
 
         frame = context.pages[-1]
-        # Click the 'Sign In' button to submit registration form
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/div[3]/input').nth(0)
+        # Input valid password in Password field
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/div[4]/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('StrongPassword123!')
+        
+
+        # -> Click on 'Continue with Email' button to proceed to email login/sign-up form.
+        frame = context.pages[-1]
+        # Click on 'Continue with Email' button to proceed to email login/sign-up form
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Click the 'Create Account' button to submit the registration form and proceed to email verification prompt.
+        # -> Click on 'Sign Up' tab to switch to registration form.
         frame = context.pages[-1]
-        # Click the 'Create Account' button to submit registration form
+        # Click on 'Sign Up' tab to switch to registration form
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div/button[2]').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Click on 'Continue with Email' button to proceed to email login/sign-up form.
+        frame = context.pages[-1]
+        # Click on 'Continue with Email' button to proceed to email login/sign-up form
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Click on 'Sign Up' tab to switch to registration form.
+        frame = context.pages[-1]
+        # Click on 'Sign Up' tab to switch to registration form
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div/button[2]').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Input valid Full Name, Email, Phone (optional), and Password, then click 'Create Account' to submit the registration form.
+        frame = context.pages[-1]
+        # Input valid full name in Full Name field
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('Test User')
+        
+
+        frame = context.pages[-1]
+        # Input valid email address in Email field
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/div[2]/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('testuser@example.com')
+        
+
+        frame = context.pages[-1]
+        # Input valid phone number in Phone (Optional) field
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/div[3]/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('1234567890')
+        
+
+        frame = context.pages[-1]
+        # Input valid password in Password field
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/div[4]/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('StrongPassword123!')
+        
+
+        frame = context.pages[-1]
+        # Click 'Create Account' button to submit the registration form
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[3]/form/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Click on 'Continue with Email' button to proceed to email login/sign-up form.
+        frame = context.pages[-1]
+        # Click on 'Continue with Email' button to proceed to email login/sign-up form
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=Registration Successful! Welcome to your new account').first).to_be_visible(timeout=1000)
+            await expect(frame.locator('text=Registration Complete! Welcome to Your New Account').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError("Test case failed: The registration process did not complete successfully. The user did not receive the expected email verification prompt or complete profile setup as per the test plan.")
+            raise AssertionError("Test case failed: The registration process did not complete successfully as expected. The user did not receive the email verification prompt, was not prompted to complete profile setup, or was not redirected to the homepage after registration.")
         await asyncio.sleep(5)
     
     finally:

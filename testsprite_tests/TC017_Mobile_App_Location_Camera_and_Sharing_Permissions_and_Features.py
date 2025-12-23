@@ -48,17 +48,37 @@ async def run_test():
         # Interact with the page elements to simulate user flow
         # -> Verify app requests permission for location access.
         frame = context.pages[-1]
-        # Click on Profile to check for location permission request or related settings.
+        # Click on Profile to check for location permission request or settings.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div/div/div[2]/div/div[2]/div[3]/div/ul/li[5]/a').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Attempt to login using 'Continue with Google' to proceed and trigger location permission request.
+        frame = context.pages[-1]
+        # Click 'Continue with Google' to login and proceed.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Input email to proceed with Google login and continue testing permission requests.
+        frame = context.pages[-1]
+        # Input email for Google sign-in.
+        elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[2]/div/div/div/form/span/section/div/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('testuser@example.com')
+        
+
+        frame = context.pages[-1]
+        # Click Next button to proceed with Google sign-in.
+        elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[3]/div/div/div/div/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=Permission Granted Successfully').first).to_be_visible(timeout=30000)
+            await expect(frame.locator('text=Permission Granted for GPS, Camera, and Sharing').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError("Test case failed: The mobile app did not correctly request or handle native permissions for GPS, camera, and sharing features as specified in the test plan.")
+            raise AssertionError("Test case failed: The mobile app did not correctly request and handle native permissions for GPS, camera, and sharing features as required by the test plan.")
         await asyncio.sleep(5)
     
     finally:

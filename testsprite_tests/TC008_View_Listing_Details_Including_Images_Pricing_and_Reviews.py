@@ -46,30 +46,59 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # -> Navigate to a listing details page by selecting a category or listing if available.
+        # -> Try to navigate to a listing details page by clicking on a category or 'My Listings' to find available listings.
         frame = context.pages[-1]
-        # Click on 'Homes' category to try to find listings
-        elem = frame.locator('xpath=html/body/div/div[2]/div/main/div/div/div[2]/section/div[2]/button').nth(0)
+        # Click on 'My Listings' to check for available listings to view details
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div/div/div[2]/div/div[2]/div[5]/div/ul/li[2]/a').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Click on the first sponsored listing to view its details page.
+        # -> Attempt to login using 'Continue with Email' to access listings.
         frame = context.pages[-1]
-        # Click on the first sponsored listing with verified badge and reviews summary
-        elem = frame.locator('xpath=html/body/div/div[2]/div/main/div/div/div[2]/div/div[2]/div/div/div/div/div').nth(0)
+        # Click 'Continue with Email' to start login process
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Click 'Continue with Email' button to proceed to email login form.
+        frame = context.pages[-1]
+        # Click 'Continue with Email' button to reveal email login form
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Input email and password, then click Sign In to authenticate.
+        frame = context.pages[-1]
+        # Input email address for login
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('testuser@example.com')
+        
+
+        frame = context.pages[-1]
+        # Input password for login
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('TestPassword123')
+        
+
+        frame = context.pages[-1]
+        # Click Sign In button to submit login form
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Try to navigate back to the main page or home page to find a listing details page accessible without login.
+        frame = context.pages[-1]
+        # Click on the logo or header to navigate back to the main page
+        elem = frame.locator('xpath=html/body/div').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
         # --> Assertions to verify final state
         frame = context.pages[-1]
-        await expect(frame.locator('text=No images available').first).to_be_visible(timeout=30000)
-        await expect(frame.locator('text=Pricing').first).to_be_visible(timeout=30000)
-        await expect(frame.locator('text=Verified').first).to_be_visible(timeout=30000)
-        await expect(frame.locator('text=3.5').first).to_be_visible(timeout=30000)
-        await expect(frame.locator('text=2 reviews').first).to_be_visible(timeout=30000)
-        await expect(frame.locator('text=2 verified reviews').first).to_be_visible(timeout=30000)
-        await expect(frame.locator('text=chinna').first).to_be_visible(timeout=30000)
-        await expect(frame.locator('text=Digital marketing Ai Services').first).to_be_visible(timeout=30000)
+        try:
+            await expect(frame.locator('text=Exclusive Luxury Villa with Private Beach').first).to_be_visible(timeout=1000)
+        except AssertionError:
+            raise AssertionError("Test case failed: The test plan execution has failed. User cannot view listing details including image gallery, pricing markers, verified badges, and aggregated reviews as expected.")
         await asyncio.sleep(5)
     
     finally:

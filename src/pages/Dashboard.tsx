@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAdminCheck } from '@/hooks/useAdminCheck';
 import { useSubscription } from '@/hooks/useSubscription';
 import { supabase } from '@/integrations/supabase/client';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
-import { Users, FileText, Eye, MessageSquare, Heart, TrendingUp, ShieldAlert, UserPlus, DollarSign, Crown, Calendar, ArrowRight } from 'lucide-react';
+import { Users, FileText, Eye, MessageSquare, Heart, TrendingUp, ShieldAlert, UserPlus, Crown, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -33,19 +33,25 @@ export default function Dashboard() {
     const [topProperties, setTopProperties] = useState<Property[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchStats = async () => {
+    // Define isOwner early so it can be used in effects
+    const isOwner = isPro || isBusiness || (stats?.active_listings || 0) > 0;
+
+    const [adminStats, setAdminStats] = useState<{ totalUsers: number; pendingReports: number } | null>(null);
+
+    const fetchStats = useCallback(async () => {
         if (!user) return;
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             const { data, error } = await supabase.rpc('get_dashboard_stats' as any, { user_id: user.id });
             if (error) throw error;
-            setStats(data as unknown as DashboardStats);
+            const dashboardStats = data as unknown as DashboardStats;
+            setStats(dashboardStats);
 
-            // Fetch recent leads for owners
+            // Fetch recent leads for owners - Use LEFT JOIN to ensure leads show even if profile deleted
             if (isPro || isBusiness || isAdmin) {
                 const { data: leadsData } = await supabase
                     .from('leads' as any)
-                    .select('*, profiles(full_name, email)')
+                    .select('*, profiles!left(full_name, email)')
                     .eq('owner_id', user.id)
                     .order('created_at', { ascending: false })
                     .limit(5);
@@ -56,7 +62,7 @@ export default function Dashboard() {
             // Fetch recent messages
             const { data: messagesData } = await supabase
                 .from('messages')
-                .select('*, sender:profiles!sender_id(full_name, email, avatar_url)')
+                .select('*, sender:profiles!fk_messages_sender_profiles(full_name, email, avatar_url)')
                 .eq('receiver_id', user.id)
                 .order('created_at', { ascending: false })
                 .limit(5);
@@ -64,7 +70,7 @@ export default function Dashboard() {
             if (messagesData) setRecentMessages(messagesData as unknown as Message[]);
 
             // Fetch top properties
-            if (isPro || isBusiness || (stats?.active_listings || 0) > 0) {
+            if (isPro || isBusiness || (dashboardStats?.active_listings || 0) > 0) {
                 const { data: propertiesData } = await supabase
                     .from('properties')
                     .select('*')
@@ -75,13 +81,26 @@ export default function Dashboard() {
                 if (propertiesData) setTopProperties(propertiesData as unknown as Property[]);
             }
 
+            // Fetch Admin Stats
+            if (isAdmin) {
+                const [usersResponse, reportsResponse] = await Promise.all([
+                    supabase.from('profiles').select('*', { count: 'exact', head: true }),
+                    supabase.from('reports').select('*', { count: 'exact', head: true }).or('status.eq.new,status.eq.in_review')
+                ]);
+
+                setAdminStats({
+                    totalUsers: usersResponse.count || 0,
+                    pendingReports: reportsResponse.count || 0
+                });
+            }
+
         } catch (error) {
             console.error('Error fetching dashboard stats:', error);
             toast.error('Failed to load dashboard stats');
         } finally {
             setLoading(false);
         }
-    };
+    }, [user, isPro, isBusiness, isAdmin]);
 
     useEffect(() => {
         fetchStats();
@@ -106,19 +125,22 @@ export default function Dashboard() {
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'properties', filter: `user_id=eq.${user.id}` }, () => {
                     fetchStats();
                 })
-                .subscribe()
+                .subscribe(),
+            // Admin channel for reports and users
+            ...(isAdmin ? [
+                supabase.channel('admin-stats')
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, fetchStats)
+                    .on('postgres_changes', { event: '*', schema: 'public', table: 'reports' }, fetchStats)
+                    .subscribe()
+            ] : [])
         ];
 
         return () => {
             channels.forEach(channel => supabase.removeChannel(channel));
         };
-    }, [user, isPro, isBusiness, isAdmin]);
+    }, [user, fetchStats, isAdmin]);
 
-    if (loading) {
-        return <div className="flex justify-center items-center h-screen">Loading dashboard...</div>;
-    }
 
-    const isOwner = isPro || isBusiness || (stats?.active_listings || 0) > 0;
 
     return (
         <DashboardLayout
@@ -177,14 +199,14 @@ export default function Dashboard() {
                     <>
                         <StatCard
                             title="Total Users"
-                            value={1234} // Placeholder
+                            value={adminStats?.totalUsers || 0}
                             icon={Users}
                             description="Registered users"
                             className="border-blue-200 bg-blue-50"
                         />
                         <StatCard
                             title="Pending Reports"
-                            value={5} // Placeholder
+                            value={adminStats?.pendingReports || 0}
                             icon={ShieldAlert}
                             description="Requires moderation"
                             className="border-red-200 bg-red-50"
@@ -305,7 +327,7 @@ export default function Dashboard() {
                                         {recentLeads.map((lead) => (
                                             <div key={lead.id} className="flex items-center justify-between border-b pb-2 last:border-0">
                                                 <div>
-                                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                                    { }
                                                     <p className="font-medium">{(lead.profiles as any)?.full_name || 'Anonymous'}</p>
                                                     <p className="text-xs text-muted-foreground">{lead.status}</p>
                                                 </div>

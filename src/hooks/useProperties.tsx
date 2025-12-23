@@ -14,6 +14,8 @@ interface PropertyFilters {
   latitude?: number;
   longitude?: number;
   radiusKm?: number;
+  searchQuery?: string;
+  sortBy?: 'recent' | 'price-low' | 'price-high';
 }
 
 export function useProperties(filters?: PropertyFilters) {
@@ -24,10 +26,10 @@ export function useProperties(filters?: PropertyFilters) {
   const fetchProperties = useCallback(async () => {
     try {
       setLoading(true);
-      
+
       // Use location context if no filters provided
-      const effectiveFilters = filters || {};
-      
+      const effectiveFilters = { ...filters };
+
       // Apply location context
       if (location.method === 'city' && location.value) {
         effectiveFilters.city = location.value;
@@ -43,6 +45,8 @@ export function useProperties(filters?: PropertyFilters) {
 
       // Location-aware querying
       // 1) If we have live coordinates, use the geospatial RPC for distance filtering
+      // (Note: RPC needs update to support text search if we want robust search + geo, 
+      // but standard approach: filter by geo first)
       if (effectiveFilters.latitude && effectiveFilters.longitude) {
         const { data, error } = await supabase.rpc('search_properties_by_location', {
           search_city: effectiveFilters.city || null,
@@ -55,15 +59,40 @@ export function useProperties(filters?: PropertyFilters) {
         });
 
         if (error) throw error;
-        setProperties((data || []) as unknown as Property[]);
+        // Client-side sort/filter for RPC results (limitation of current RPC)
+        let filtered = (data || []) as unknown as Property[];
+
+        if (effectiveFilters.searchQuery) {
+          const q = effectiveFilters.searchQuery.toLowerCase();
+          filtered = filtered.filter(p =>
+            p.title.toLowerCase().includes(q) ||
+            p.city.toLowerCase().includes(q) ||
+            p.area.toLowerCase().includes(q)
+          );
+        }
+
+        if (effectiveFilters.sortBy) {
+          if (effectiveFilters.sortBy === 'price-low') filtered.sort((a, b) => a.price - b.price);
+          else if (effectiveFilters.sortBy === 'price-high') filtered.sort((a, b) => b.price - a.price);
+          // recent is default
+        }
+
+        setProperties(filtered);
       }
-      // 2) If we only have textual filters (city/area/pincode), use ILIKE/equals directly
-      else if (effectiveFilters.city || effectiveFilters.area || effectiveFilters.pinCode) {
+      // 2) Standard Database Query
+      else {
         let query = supabase
           .from('properties')
-          .select('*')
+          .select('id, title, price, price_type, city, area, pin_code, property_type, status, available, verified, images, bedrooms, bathrooms, area_sqft, created_at, latitude, longitude')
           .eq('status', 'active')
           .eq('available', true);
+
+        // Text Search (Server Side)
+        if (effectiveFilters.searchQuery) {
+          const q = effectiveFilters.searchQuery;
+          // Use search across multiple columns
+          query = query.or(`title.ilike.%${q}%,city.ilike.%${q}%,area.ilike.%${q}%,pin_code.ilike.%${q}%`);
+        }
 
         if (effectiveFilters.city) {
           query = query.ilike('city', `%${(effectiveFilters.city || '').trim()}%`);
@@ -72,7 +101,6 @@ export function useProperties(filters?: PropertyFilters) {
           query = query.ilike('area', `%${(effectiveFilters.area || '').trim()}%`);
         }
         if (effectiveFilters.pinCode) {
-          // Pin code should be an exact match, but allow partial starts-with
           const pin = (effectiveFilters.pinCode || '').trim();
           query = pin.length === 6 ? query.eq('pin_code', pin) : query.ilike('pin_code', `${pin}%`);
         }
@@ -80,21 +108,16 @@ export function useProperties(filters?: PropertyFilters) {
           query = query.eq('property_type', effectiveFilters.propertyType);
         }
 
-        const { data, error } = await query
-          .order('created_at', { ascending: false })
-          .limit(100);
+        // Sorting
+        if (effectiveFilters.sortBy === 'price-low') {
+          query = query.order('price', { ascending: true });
+        } else if (effectiveFilters.sortBy === 'price-high') {
+          query = query.order('price', { ascending: false });
+        } else {
+          query = query.order('created_at', { ascending: false });
+        }
 
-        if (error) throw error;
-        setProperties((data || []) as unknown as Property[]);
-      } else {
-        // Optimized query: only fetch necessary fields, add limit for initial load
-        const { data, error } = await supabase
-          .from('properties')
-          .select('*')
-          .eq('status', 'active')
-          .eq('available', true)
-          .order('created_at', { ascending: false })
-          .limit(50); // Load first 50 properties quickly, implement pagination if needed
+        const { data, error } = await query.limit(100);
 
         if (error) throw error;
         setProperties((data || []) as unknown as Property[]);
@@ -109,7 +132,7 @@ export function useProperties(filters?: PropertyFilters) {
     location.method,
     location.value,
     location.coordinates,
-    filters,
+    filters, // Re-fetch when filters change
   ]);
 
   useEffect(() => {
@@ -136,7 +159,7 @@ export function useProperties(filters?: PropertyFilters) {
             if (isActive) fetchProperties();
           });
         }
-      } catch (error) {
+      } catch {
         console.log('App listener not available (web environment)');
       }
     };
@@ -161,7 +184,7 @@ export function useProperties(filters?: PropertyFilters) {
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('online', onOnline);
       if (removeAppListener) {
-        removeAppListener.remove().catch(() => {});
+        removeAppListener.remove().catch(() => { });
       }
       supabase.removeChannel(channel);
     };
@@ -223,7 +246,7 @@ export function useMyListings(userId: string | undefined) {
       setLoading(true);
       const { data, error } = await supabase
         .from('properties')
-        .select('*')
+        .select('id, title, price, price_type, city, area, property_type, status, available, verified, images, views, created_at')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
@@ -244,30 +267,30 @@ export function useMyListings(userId: string | undefined) {
   const deleteProperty = async (propertyId: string) => {
     try {
       console.log('🗑️ deleteProperty called with ID:', propertyId);
-      
+
       // Check current user
       const { data: { user } } = await supabase.auth.getUser();
       console.log('Current user:', user?.id, user?.email);
-      
+
       // Check property ownership
       const { data: property, error: fetchError } = await supabase
         .from('properties')
         .select('id, title, user_id')
         .eq('id', propertyId)
         .single();
-      
+
       if (fetchError) {
         console.error('❌ Error fetching property:', fetchError);
         throw new Error(`Cannot find property: ${fetchError.message}`);
       }
-      
+
       console.log('Property to delete:', property);
       console.log('Ownership check:', {
         propertyUserId: property.user_id,
         currentUserId: user?.id,
         matches: property.user_id === user?.id
       });
-      
+
       // Attempt delete
       console.log('Attempting to delete property:', propertyId);
       const { error, data } = await supabase
@@ -286,7 +309,7 @@ export function useMyListings(userId: string | undefined) {
         });
         throw error;
       }
-      
+
       console.log('✅ Delete successful:', data);
       toast.success('Property deleted successfully! All related data has been removed.');
       fetchMyListings();

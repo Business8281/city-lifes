@@ -146,7 +146,7 @@ export const propertySchema = z.object({
     .or(z.literal('')),
   isAgent: z.boolean(),
   amenities: z.array(z.string()).optional(),
-  images: z.array(z.string()).optional(),
+  images: z.array(z.string()).min(1, { message: 'At least one image is required' }),
   // Business-specific fields
   businessCategory: z.string().optional(),
   yearEstablished: z.string().optional(),

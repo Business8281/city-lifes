@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import BottomNav from "@/components/BottomNav";
-import { toast } from "sonner";
 import { useAdCampaigns } from "@/hooks/useAdCampaigns";
 import { useMyListings } from "@/hooks/useProperties";
 import { useAuth } from "@/contexts/AuthContext";
@@ -223,8 +222,8 @@ const AdCampaign = () => {
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <h3 className="text-lg font-semibold">{campaign.title}</h3>
                       {getStatusBadge(campaign.status)}
-                      <Badge 
-                        variant="secondary" 
+                      <Badge
+                        variant="secondary"
                         className="bg-green-500/10 text-green-700 border-green-500/20"
                       >
                         🎯 {campaign.leads_generated || 0} Leads
@@ -286,8 +285,8 @@ const AdCampaign = () => {
                 </div>
 
                 {/* Paid Leads Management Section */}
-                <CampaignLeadsSection 
-                  campaignId={campaign.id} 
+                <CampaignLeadsSection
+                  campaignId={campaign.id}
                   campaignTitle={campaign.title}
                   initialLeadCount={campaign.leads_generated || 0}
                 />

@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import {
   ChevronDown,
   ChevronUp,
@@ -24,13 +24,13 @@ interface CampaignLeadsSectionProps {
   initialLeadCount?: number;
 }
 
-const CampaignLeadsSection = ({ campaignId, campaignTitle, initialLeadCount = 0 }: CampaignLeadsSectionProps) => {
+const CampaignLeadsSection = ({ campaignId, initialLeadCount = 0 }: CampaignLeadsSectionProps) => {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchCampaignLeads = async () => {
+  const fetchCampaignLeads = useCallback(async () => {
     if (!expanded) return;
 
     try {
@@ -59,7 +59,7 @@ const CampaignLeadsSection = ({ campaignId, campaignTitle, initialLeadCount = 0 
     } finally {
       setLoading(false);
     }
-  };
+  }, [expanded, campaignId]);
 
   useEffect(() => {
     if (expanded) {
@@ -82,35 +82,9 @@ const CampaignLeadsSection = ({ campaignId, campaignTitle, initialLeadCount = 0 
         supabase.removeChannel(channel);
       };
     }
-  }, [expanded, campaignId]);
+  }, [expanded, campaignId, fetchCampaignLeads]);
 
-  const handleCall = (phone: string) => {
-    window.location.href = `tel:${phone}`;
-  };
 
-  const handleChat = (lead: Lead) => {
-    if (!lead.user_id) {
-      toast.error('Cannot start chat: Lead user is not registered');
-      return;
-    }
-    navigate(`/messages?user=${lead.user_id}&property=${lead.listing_id || ''}`);
-  };
-
-  const updateLeadStatus = async (leadId: string, status: Lead['status']) => {
-    try {
-      const { error } = await supabase
-        .from('leads')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', leadId);
-
-      if (error) throw error;
-      toast.success(`Lead status updated to "${status.replace('_', ' ')}"`);
-      fetchCampaignLeads();
-    } catch (error: any) {
-      console.error('Error updating lead status:', error);
-      toast.error('Failed to update lead status');
-    }
-  };
 
   const getStatusBadge = (status: Lead['status']) => {
     const variants: Record<Lead['status'], string> = {

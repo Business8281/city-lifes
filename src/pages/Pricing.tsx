@@ -61,7 +61,7 @@ export default function Pricing() {
             trialEndDate.setMonth(trialEndDate.getMonth() + 1);
 
             const { error } = await supabase
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                 
                 .from('subscriptions' as any)
                 .insert({
                     user_id: user.id,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -45,9 +45,9 @@ export function useUserProfile(userId: string | undefined) {
     }
 
     fetchUserData();
-  }, [userId]);
+  }, [userId, fetchUserData]);
 
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     if (!userId) return;
 
     try {
@@ -116,7 +116,7 @@ export function useUserProfile(userId: string | undefined) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   return {
     profile,

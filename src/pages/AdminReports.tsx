@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useAdminReports } from '@/hooks/useAdminReports';
 import { format } from 'date-fns';
-import { AlertCircle, Shield, Users, TrendingUp, Eye } from 'lucide-react';
+import { AlertCircle, Shield } from "lucide-react";
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -255,7 +255,7 @@ export default function AdminReports() {
                 <SelectTrigger id="action" className="w-full">
                   <SelectValue placeholder="Select an action" />
                 </SelectTrigger>
-                <SelectContent 
+                <SelectContent
                   position="popper"
                   sideOffset={5}
                   className="max-h-[300px] overflow-y-auto"

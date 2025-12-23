@@ -2,38 +2,74 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import BottomNav from "@/components/BottomNav";
 import EnhancedSearchBar from "@/components/EnhancedSearchBar";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Navigation, List, SlidersHorizontal } from "lucide-react";
+import { List, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "@/contexts/LocationContext";
 import { useAdvancedSearch, type SearchFilters } from "@/hooks/useAdvancedSearch";
 import { useMapClusters, type MapBounds } from "@/hooks/useMapClusters";
-import type { AutocompleteResult } from "@/hooks/useAutocomplete";
+
 import { propertyTypes } from "@/data/propertyTypes";
 import PropertyCard from "@/components/PropertyCard";
-import MapFilters from "@/components/MapFilters";
-import { OptimizedImage } from "@/components/OptimizedImage";
 import { LeafletMap } from '@/components/LeafletMap';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { LocationSelectDialog } from "@/components/LocationSelectDialog";
 
 const MapView = () => {
   const navigate = useNavigate();
-  const { location, getCurrentLocation } = useLocation();
+  const { location, getCurrentLocation, setLocationMethod, setLocationValue } = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   const [mapCenter, setMapCenter] = useState({ lat: 20.5937, lng: 78.9629 }); // India center
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
   const [showList, setShowList] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
+
+
+  const [showLocationDialog, setShowLocationDialog] = useState(false);
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({});
   const [searchAsMove, setSearchAsMove] = useState(true);
+
+  const handleLocationMethodSelect = (type: 'live' | 'city' | 'area' | 'pincode', value: string) => {
+    // Sync with global context
+    setLocationMethod(type);
+    setLocationValue(value);
+
+    // Reset filters and applying new location logic
+    const newFilters: SearchFilters = {};
+
+    if (type === 'live') {
+      // Live location is handled by context/getCurrentLocation usually, but here we can just ensure we trigger search
+      // The dialog calls getCurrentLocation which updates context.coordinates
+      // The useEffect [location.coordinates] in MapView will pick this up and update mapCenter + userLat/Lng
+      // So we might not need to do much here other than close dialog
+      return;
+    } else if (type === 'city') {
+      newFilters.city = value;
+    } else if (type === 'area') {
+      newFilters.area = value;
+    } else if (type === 'pincode') {
+      newFilters.pincode = value;
+    }
+
+    if (Object.keys(newFilters).length > 0) {
+      setSearchFilters(prev => ({
+        ...prev,
+        ...newFilters,
+        // Clear conflicting location filters
+        city: type === 'city' ? value : undefined,
+        area: type === 'area' ? value : undefined,
+        pincode: type === 'pincode' ? value : undefined,
+
+        userLat: undefined,
+        userLng: undefined,
+        minLat: undefined,
+        minLng: undefined,
+        maxLat: undefined,
+        maxLng: undefined,
+        radiusKm: undefined
+      }));
+      setSearchQuery(value);
+    }
+  };
 
   const { data: searchResults = [], isLoading } = useAdvancedSearch(searchFilters, true);
   const { data: clusters = [] } = useMapClusters(
@@ -109,9 +145,7 @@ const MapView = () => {
     }));
   }, [location.coordinates, searchAsMove]);
 
-  const formatPrice = (price: number, priceType: string) => {
-    return `₹${price.toLocaleString("en-IN")}${priceType === "monthly" ? "/mo" : priceType === "daily" ? "/day" : ""}`;
-  };
+
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
@@ -130,7 +164,7 @@ const MapView = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setShowFilters(!showFilters)}
+              onClick={() => setShowLocationDialog(true)}
               className="flex items-center gap-2"
             >
               <SlidersHorizontal className="h-4 w-4" />
@@ -138,44 +172,14 @@ const MapView = () => {
             </Button>
           </div>
 
+          <LocationSelectDialog
+            open={showLocationDialog}
+            onOpenChange={setShowLocationDialog}
+            onLocationSelect={handleLocationMethodSelect}
+          />
+
           {/* Filters Panel (Inline for Desktop) */}
-          {showFilters && (
-            <div className="pt-2 animate-in slide-in-from-top-2">
-              <div className="flex gap-2 w-full sm:w-auto overflow-x-auto pb-2 sm:pb-0 no-scrollbar">
-                <Select
-                  value={searchFilters.radiusKm?.toString() || "5"}
-                  onValueChange={(value) => setSearchFilters(prev => ({ ...prev, radiusKm: Number(value) }))}
-                >
-                  <SelectTrigger className="w-[100px] bg-background">
-                    <SelectValue placeholder="Radius" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1">1 km</SelectItem>
-                    <SelectItem value="3">3 km</SelectItem>
-                    <SelectItem value="5">5 km</SelectItem>
-                    <SelectItem value="10">10 km</SelectItem>
-                    <SelectItem value="20">20 km</SelectItem>
-                    <SelectItem value="50">50 km</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <MapFilters
-                category={searchFilters.category}
-                minPrice={searchFilters.minPrice}
-                maxPrice={searchFilters.maxPrice}
-                onCategoryChange={(value) => setSearchFilters(prev => ({ ...prev, category: value === "all" ? undefined : value }))}
-                onMinPriceChange={(value) => setSearchFilters(prev => ({ ...prev, minPrice: value }))}
-                onMaxPriceChange={(value) => setSearchFilters(prev => ({ ...prev, maxPrice: value }))}
-                onPriceTypeChange={(value) => setSearchFilters(prev => ({ ...prev, priceType: value || undefined }))}
-                onClear={() => setSearchFilters(prev => ({
-                  ...prev,
-                  category: undefined,
-                  minPrice: undefined,
-                  maxPrice: undefined
-                }))}
-              />
-            </div>
-          )}
+
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -235,32 +239,14 @@ const MapView = () => {
             size="icon"
             variant="secondary"
             className="shrink-0 h-10 w-10 bg-background shadow-lg"
-            onClick={() => setShowFilters(!showFilters)}
+            onClick={() => setShowLocationDialog(true)}
           >
             <SlidersHorizontal className="h-5 w-5" />
           </Button>
         </div>
 
         {/* Mobile Filters Overlay */}
-        {showFilters && (
-          <div className="md:hidden absolute top-16 left-4 right-4 z-20 bg-background p-4 rounded-lg shadow-xl animate-in fade-in zoom-in-95">
-            <MapFilters
-              category={searchFilters.category}
-              minPrice={searchFilters.minPrice}
-              maxPrice={searchFilters.maxPrice}
-              onCategoryChange={(value) => setSearchFilters(prev => ({ ...prev, category: value || undefined }))}
-              onMinPriceChange={(value) => setSearchFilters(prev => ({ ...prev, minPrice: value }))}
-              onMaxPriceChange={(value) => setSearchFilters(prev => ({ ...prev, maxPrice: value }))}
-              onPriceTypeChange={(value) => setSearchFilters(prev => ({ ...prev, priceType: value || undefined }))}
-              onClear={() => setSearchFilters(prev => ({
-                ...prev,
-                category: undefined,
-                minPrice: undefined,
-                maxPrice: undefined
-              }))}
-            />
-          </div>
-        )}
+
 
         {/* Search as I move Toggle & Property Count */}
         <div className="absolute top-20 md:top-4 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2">
@@ -325,7 +311,7 @@ const MapView = () => {
 
         {/* Mobile List Drawer (Overlay) */}
         {showList && (
-          <div className="md:hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" onClick={() => setShowList(false)}>
+          <div className="md:hidden fixed inset-0 z-[60] bg-background/80 backdrop-blur-sm" onClick={() => setShowList(false)}>
             <div
               className="absolute bottom-0 left-0 right-0 h-[60vh] bg-background rounded-t-xl shadow-2xl flex flex-col animate-in slide-in-from-bottom"
               onClick={e => e.stopPropagation()}

@@ -17,7 +17,7 @@ async function verifyLogin() {
 
     for (const u of users) {
         console.log(`Testing login for: ${u.email}`);
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
             email: u.email,
             password: u.password,
         });

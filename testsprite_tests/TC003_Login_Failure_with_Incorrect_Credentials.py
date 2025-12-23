@@ -46,40 +46,42 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # -> Click the 'Sign in' link to go to the login page.
+        # -> Navigate to login page by clicking the 'Sign in' link.
         frame = context.pages[-1]
         # Click the 'Sign in' link to navigate to the login page.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div/div/div[2]/div/div[2]/div/div/a').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Input incorrect email and password, then click Sign In button.
+        # -> Click 'Continue with Email' to proceed to email/password login form.
         frame = context.pages[-1]
-        # Focus on the email input field
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
+        # Click the 'Continue with Email' button to open the email/password login form.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
+        # -> Click 'Continue with Email' button to open the email/password login form.
         frame = context.pages[-1]
-        # Input incorrect email
+        # Click the 'Continue with Email' button to open the email/password login form.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Input incorrect email and password, then click the 'Sign In' button.
+        frame = context.pages[-1]
+        # Input incorrect email in the email field.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('wrongemail@example.com')
         
 
         frame = context.pages[-1]
-        # Focus on the password input field
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        frame = context.pages[-1]
-        # Input incorrect password
+        # Input incorrect password in the password field.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('wrongpassword')
         
 
         frame = context.pages[-1]
-        # Click the Sign In button to attempt login with incorrect credentials
+        # Click the 'Sign In' button to attempt login with incorrect credentials.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         

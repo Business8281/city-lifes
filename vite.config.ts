@@ -3,13 +3,24 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
+import { sentryVitePlugin } from "@sentry/vite-plugin";
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
     host: "0.0.0.0",
     port: 8080,
   },
-  plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  plugins: [
+    react(),
+    mode === "development" && componentTagger(),
+    process.env.SENTRY_AUTH_TOKEN && sentryVitePlugin({
+      org: "my-org",
+      project: "my-project",
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      telemetry: false,
+    })
+  ].filter((p): p is any => Boolean(p)),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -39,7 +50,7 @@ export default defineConfig(({ mode }) => ({
       }
     },
     cssCodeSplit: true,
-    sourcemap: false,
+    sourcemap: true, // Needed for Sentry
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom'],

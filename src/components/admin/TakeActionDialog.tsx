@@ -10,10 +10,9 @@ interface TakeActionDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onAction: (action: string, notes: string) => Promise<void>;
-    reportId: string;
 }
 
-export function TakeActionDialog({ open, onOpenChange, onAction, reportId }: TakeActionDialogProps) {
+export function TakeActionDialog({ open, onOpenChange, onAction }: TakeActionDialogProps) {
     const [action, setAction] = useState<string>("");
     const [notes, setNotes] = useState("");
     const [loading, setLoading] = useState(false);

@@ -42,7 +42,7 @@ export const LiveLocationButton = ({
           timeout: 10000,
           maximumAge: 0,
         });
-      } catch (capacitorError) {
+      } catch {
         // Fallback to browser geolocation
         position = await new Promise<GeolocationPosition>((resolve, reject) => {
           if (!navigator.geolocation) {

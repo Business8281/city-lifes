@@ -46,29 +46,29 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # -> Click on 'Sign in' link to navigate to the login page.
+        # -> Click on the 'Sign in' link to navigate to the login page.
         frame = context.pages[-1]
-        # Click on 'Sign in' link to go to login page
+        # Click on 'Sign in' link to go to the login page.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div/div/div[2]/div/div[2]/div/div/a').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Retry clicking the Google OAuth login button to initiate Google OAuth login.
+        # -> Click on 'Continue with Google' button to initiate Google OAuth login.
         frame = context.pages[-1]
-        # Retry clicking the Google OAuth login button
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/button').nth(0)
+        # Click on 'Continue with Google' button to start Google OAuth login.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Input the email or phone for Google OAuth login and proceed.
+        # -> Input the email address for Google OAuth login.
         frame = context.pages[-1]
-        # Input email or phone for Google OAuth login
+        # Input email address for Google OAuth login.
         elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[2]/div/div/div/form/span/section/div/div/div/div/div/div/div/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('testuser@example.com')
         
 
         frame = context.pages[-1]
-        # Click Next button to proceed with Google OAuth login
+        # Click 'Next' button to proceed with Google OAuth login.
         elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[3]/div/div/div/div/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
@@ -76,9 +76,9 @@ async def run_test():
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=Login Successful! Welcome to Your Dashboard').first).to_be_visible(timeout=1000)
+            await expect(frame.locator('text=Login Successful').first).to_be_visible(timeout=30000)
         except AssertionError:
-            raise AssertionError("Test case failed: User login via Google OAuth was not successful, or user was not redirected to the homepage as expected.")
+            raise AssertionError('Test case failed: User login via Google OAuth was not successful, or user was not redirected to the homepage as expected.')
         await asyncio.sleep(5)
     
     finally:

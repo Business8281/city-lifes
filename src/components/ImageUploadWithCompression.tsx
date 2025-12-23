@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Upload, X, AlertCircle } from 'lucide-react';
-import { compressImage, validateImage, generateImageVariants } from '@/utils/imageOptimization';
+import { compressImage, validateImage } from '@/utils/imageOptimization';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -26,9 +26,9 @@ export const ImageUploadWithCompression = ({
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
+
     if (files.length === 0) return;
-    
+
     if (files.length > maxFiles) {
       toast.error(`Maximum ${maxFiles} images allowed`);
       return;
@@ -42,7 +42,7 @@ export const ImageUploadWithCompression = ({
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        
+
         // Validate
         const validation = validateImage(file);
         if (!validation.valid) {
@@ -59,14 +59,14 @@ export const ImageUploadWithCompression = ({
         const compressed = await compressImage(file, 1600, 0.8);
         compressedFiles.push(compressed.file);
         newPreviews.push(compressed.dataUrl);
-        
+
         setProgress(((i + 1) / files.length) * 100);
       }
 
       setPreviews(newPreviews);
       await onUpload(compressedFiles);
       toast.success(`${compressedFiles.length} images compressed and uploaded!`);
-      
+
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('Failed to upload images');
@@ -120,7 +120,7 @@ export const ImageUploadWithCompression = ({
           className="hidden"
           disabled={uploading}
         />
-        
+
         <div className="flex flex-col items-center gap-2">
           <Upload className="w-12 h-12 text-muted-foreground" />
           <div>

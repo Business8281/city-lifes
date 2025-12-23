@@ -46,32 +46,52 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # -> Click on 'Lead Management' to attempt access as unauthenticated user and verify access denial.
+        # -> Attempt to access listings and leads as an unauthenticated user by clicking 'My Listings' or 'Lead Management'.
         frame = context.pages[-1]
-        # Click on Lead Management to attempt access as unauthenticated user
+        # Click on 'My Listings' to attempt access as unauthenticated user.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div/div/div[2]/div/div[2]/div[5]/div/ul/li[2]/a').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Click on 'Lead Management' to verify access denial for unauthenticated users.
+        frame = context.pages[-1]
+        # Click on 'Lead Management' to attempt access as unauthenticated user.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div/div/div[2]/div/div[2]/div[5]/div/ul/li[5]/a').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Input normal user credentials and sign in.
+        # -> Click 'Continue with Email' to proceed with normal user login.
         frame = context.pages[-1]
-        # Input email for normal user login
+        # Click 'Continue with Email' to start normal user login.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Input normal user email and password, then click 'Sign In' to login.
+        frame = context.pages[-1]
+        # Input normal user email
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('normaluser@example.com')
         
 
         frame = context.pages[-1]
-        # Input password for normal user login
+        # Input normal user password
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('normalpassword')
+        
+
+        frame = context.pages[-1]
+        # Click 'Sign In' button to login as normal user
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=Access Granted to Unauthorized User').first).to_be_visible(timeout=3000)
+            await expect(frame.locator('text=Unauthorized Data Access Detected').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError("Test case failed: Row level security policies and data access control are not properly enforced. Unauthorized access was denied as expected, but this assertion forces failure to indicate test plan execution failure.")
+            raise AssertionError("Test failed: Row level security policies and data access controls are not enforced properly. Unauthorized data access was not denied as expected.")
         await asyncio.sleep(5)
     
     finally:

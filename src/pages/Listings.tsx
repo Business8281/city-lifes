@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import SearchBar from "@/components/SearchBar";
 import PropertyCard from "@/components/PropertyCard";
-import BottomNav from "@/components/BottomNav";
 import LocationSelector from "@/components/LocationSelector";
 import { propertyTypes } from "@/data/propertyTypes";
 import { ArrowLeft, MapPin } from "lucide-react";
@@ -29,21 +28,36 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 const Listings = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const typeParam = searchParams.get("type");
+
+  // Redirect legacy category links to new separate pages
+  useEffect(() => {
+    if (typeParam && typeParam !== 'all') {
+      navigate(`/category/${typeParam}`, { replace: true });
+    }
+  }, [typeParam, navigate]);
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState(searchParams.get("type") || "all");
+  const [selectedType, setSelectedType] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const [displayedCount, setDisplayedCount] = useState(12);
-  const { properties, loading } = useProperties();
+  const filters = useMemo(() => ({
+    searchQuery: searchQuery,
+    propertyType: selectedType === 'all' ? undefined : selectedType,
+    sortBy: sortBy as 'recent' | 'price-low' | 'price-high'
+  }), [searchQuery, selectedType, sortBy]);
+
+  const { properties, loading } = useProperties(filters);
   const { location } = useLocation();
-  const { sponsoredProperties, loading: sponsoredLoading, incrementClicks, incrementImpressions } = useSponsoredProperties(location);
+  const { sponsoredProperties: rawSponsoredProperties, loading: sponsoredLoading, incrementClicks, incrementImpressions } = useSponsoredProperties(location);
   const sponsoredRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const trackedImpressions = useRef<Set<string>>(new Set());
   const loadMoreRef = useRef<HTMLDivElement>(null);
-  const sponsoredCampaignByProperty = new Map(
-    sponsoredProperties
-      .filter((p) => !!p.campaign_id)
-      .map((p) => [p.id, p.campaign_id as string])
+
+  // Filter sponsored properties based on selected category
+  const sponsoredProperties = rawSponsoredProperties.filter(property =>
+    selectedType === 'all' || property.property_type === selectedType
   );
 
   // Track impressions for sponsored properties using IntersectionObserver
@@ -80,60 +94,20 @@ const Listings = () => {
     }
   }, []);
 
-  const filteredProperties = properties.filter((property) => {
-    // Business-specific search
-    const matchesSearch =
-      searchQuery === "" ||
-      property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      property.area.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      property.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      property.pin_code?.includes(searchQuery) ||
-      (selectedType === 'business' && (property.business_metadata as any)?.businessName?.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Client-side filtering removed in favor of Server-Side Search (for scalability)
+  // We strictly rely on 'properties' returned from the hook which now respects filters.
 
-    const matchesType = selectedType === "all" || property.property_type === selectedType;
+  // Local pagination (slicing) just for UI rendering performance (infinite scroll)
+  // Ideally this should also be server-side, but cutting to client-side limit of 100 first.
+  const displayedProperties = properties.slice(0, displayedCount);
 
-    // Location filter
-    let matchesLocation = true;
-    if (location.method && location.value) {
-      const searchValue = location.value.toLowerCase();
-
-      switch (location.method) {
-        case 'city':
-          matchesLocation = property.city?.toLowerCase().includes(searchValue);
-          break;
-        case 'area':
-          matchesLocation = property.area?.toLowerCase().includes(searchValue);
-          break;
-        case 'pincode':
-          matchesLocation = property.pin_code?.includes(location.value);
-          break;
-        case 'live':
-          matchesLocation = true; // Show all for live location
-          break;
-      }
-    }
-
-    return matchesSearch && matchesType && matchesLocation;
-  });
-
-  const sortedProperties = [...filteredProperties].sort((a, b) => {
-    if (sortBy === "price-low") {
-      return a.price - b.price;
-    }
-    if (sortBy === "price-high") {
-      return b.price - a.price;
-    }
-    return 0; // recent (default order from DB)
-  });
-
-  const displayedProperties = sortedProperties.slice(0, displayedCount);
 
   // Infinite scroll observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && displayedCount < sortedProperties.length) {
-          setDisplayedCount(prev => Math.min(prev + 12, sortedProperties.length));
+        if (entries[0].isIntersecting && displayedCount < properties.length) {
+          setDisplayedCount(prev => Math.min(prev + 12, properties.length));
         }
       },
       { threshold: 0.1 }
@@ -144,7 +118,7 @@ const Listings = () => {
     }
 
     return () => observer.disconnect();
-  }, [displayedCount, sortedProperties.length]);
+  }, [displayedCount, properties.length]);
 
   // Reset displayed count when filters change
   useEffect(() => {
@@ -152,7 +126,7 @@ const Listings = () => {
   }, [selectedType, searchQuery, sortBy, location.value]);
 
   return (
-    <div className="min-h-screen bg-background pb-20 md:pb-0 overflow-x-hidden max-w-full">
+    <div className="min-h-screen bg-background pb-4 md:pb-0 overflow-x-hidden max-w-full">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background border-b border-border max-w-full overflow-x-hidden">
         <div className="max-w-7xl mx-auto px-4 py-4 space-y-4 overflow-x-hidden">
@@ -252,7 +226,7 @@ const Listings = () => {
           </div>
 
           <p className="text-sm text-muted-foreground px-1">
-            {loading ? 'Loading...' : `Showing ${displayedProperties.length} of ${sortedProperties.length} properties`}
+            {loading ? 'Loading...' : `Showing ${displayedProperties.length} of ${properties.length} properties`}
           </p>
         </div>
       </div>
@@ -354,7 +328,7 @@ const Listings = () => {
             </div>
 
             {/* Load More Trigger */}
-            {displayedCount < sortedProperties.length && (
+            {displayedCount < properties.length && (
               <div ref={loadMoreRef} className="py-8 text-center flex justify-center">
                 <LoadingSpinner size={24} />
               </div>
@@ -377,7 +351,6 @@ const Listings = () => {
         )}
       </div>
 
-      <BottomNav />
     </div>
   );
 };

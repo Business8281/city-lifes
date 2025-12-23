@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -35,7 +35,7 @@ export function useReviews(ownerId?: string, reviewType: 'business' | 'profile' 
   const [loading, setLoading] = useState(true);
   const [canReview, setCanReview] = useState(false);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
     if (!ownerId && !listingId) {
       setLoading(false);
       return;
@@ -58,7 +58,7 @@ export function useReviews(ownerId?: string, reviewType: 'business' | 'profile' 
       const { data, error } = await query;
 
       if (error) throw error;
-      
+
       // Fetch reviewer profiles separately
       const reviewsWithProfiles = await Promise.all(
         (data || []).map(async (review) => {
@@ -67,19 +67,19 @@ export function useReviews(ownerId?: string, reviewType: 'business' | 'profile' 
             .select('full_name, avatar_url')
             .eq('id', review.reviewer_id)
             .single();
-          
+
           return {
             ...review,
             reviewer: profileData || { full_name: null, avatar_url: null }
           };
         })
       );
-      
+
       setReviews(reviewsWithProfiles as any);
 
       // Check if user has already reviewed this owner
       if (user && ownerId) {
-        const existingReview = reviewsWithProfiles.find((r: any) => 
+        const existingReview = reviewsWithProfiles.find((r: any) =>
           r.reviewer_id === user.id && r.owner_id === ownerId && r.review_type === reviewType
         );
         setUserReview(existingReview as any || null);
@@ -90,9 +90,9 @@ export function useReviews(ownerId?: string, reviewType: 'business' | 'profile' 
     } finally {
       setLoading(false);
     }
-  };
+  }, [ownerId, listingId, reviewType, user]);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     if (!ownerId) return;
 
     try {
@@ -132,9 +132,9 @@ export function useReviews(ownerId?: string, reviewType: 'business' | 'profile' 
         verified_reviews: 0,
       });
     }
-  };
+  }, [ownerId, reviewType]);
 
-  const checkCanReview = async () => {
+  const checkCanReview = useCallback(async () => {
     if (!user || !ownerId) {
       setCanReview(false);
       return;
@@ -175,7 +175,7 @@ export function useReviews(ownerId?: string, reviewType: 'business' | 'profile' 
       console.error('Error checking review eligibility:', error);
       setCanReview(false);
     }
-  };
+  }, [user, ownerId, reviewType]);
 
   const createReview = async (input: {
     owner_id: string;
@@ -314,7 +314,7 @@ export function useReviews(ownerId?: string, reviewType: 'business' | 'profile' 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, ownerId, reviewType, listingId]);
+  }, [user, ownerId, reviewType, listingId, fetchReviews, fetchStats, checkCanReview]);
 
   return {
     reviews,
@@ -338,7 +338,7 @@ export function useMyReviews() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchMyReviews = async () => {
+  const fetchMyReviews = useCallback(async () => {
     if (!user) {
       setReviews([]);
       setLoading(false);
@@ -365,11 +365,11 @@ export function useMyReviews() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchMyReviews();
-  }, [user]);
+  }, [user, fetchMyReviews]);
 
   return { reviews, loading, refetch: fetchMyReviews };
 }

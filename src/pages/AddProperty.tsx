@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Upload, X, MapPin, Check, ChevronsUpDown } from "lucide-react";
+import { ArrowLeft, Upload, X, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,19 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 // import { useToast } from "@/hooks/use-toast";
 import { toast as sonnerToast } from "sonner";
@@ -37,7 +24,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Geolocation } from "@capacitor/geolocation";
 import { propertySchema } from "@/schemas/validationSchemas";
 import { z } from "zod";
-import { cn } from "@/lib/utils";
+
 import { BusinessProfileForm } from "@/components/BusinessProfileForm";
 import { useSubscription } from "@/hooks/useSubscription";
 
@@ -131,82 +118,6 @@ const categoryConfigs = {
   },
 };
 
-const businessTypes = [
-  { value: "Retail Store", label: "🛍️ Retail Store" },
-  { value: "E-commerce", label: "🛒 E-commerce / Online Store" },
-  { value: "Supermarket", label: "🏪 Supermarket / Grocery" },
-  { value: "Restaurant", label: "🍽️ Restaurant / Fine Dining" },
-  { value: "Fast Food", label: "🍔 Fast Food / Quick Service" },
-  { value: "Cafe", label: "☕ Cafe / Coffee Shop" },
-  { value: "Bakery", label: "🥖 Bakery / Confectionery" },
-  { value: "Cloud Kitchen", label: "🍱 Cloud Kitchen / Ghost Kitchen" },
-  { value: "Hotel", label: "🏨 Hotel / Hospitality" },
-  { value: "Resort", label: "🏖️ Resort / Vacation Property" },
-  { value: "Salon", label: "💇 Salon / Beauty Parlor" },
-  { value: "Spa", label: "💆 Spa / Wellness Center" },
-  { value: "Gym", label: "💪 Gym / Fitness Center" },
-  { value: "Yoga Studio", label: "🧘 Yoga Studio / Meditation Center" },
-  { value: "Hospital", label: "🏥 Hospital / Medical Center" },
-  { value: "Clinic", label: "⚕️ Clinic / Diagnostic Center" },
-  { value: "Pharmacy", label: "💊 Pharmacy / Medical Store" },
-  { value: "Dental Clinic", label: "🦷 Dental Clinic" },
-  { value: "Veterinary", label: "🐾 Veterinary Clinic / Pet Care" },
-  { value: "School", label: "🏫 School / Educational Institute" },
-  { value: "Coaching Center", label: "📚 Coaching / Training Center" },
-  { value: "Daycare", label: "👶 Daycare / Preschool" },
-  { value: "Manufacturing", label: "🏭 Manufacturing Unit" },
-  { value: "Factory", label: "⚙️ Factory / Production Unit" },
-  { value: "Warehouse", label: "📦 Warehouse / Storage Facility" },
-  { value: "Logistics", label: "🚚 Logistics / Transportation" },
-  { value: "IT Services", label: "💻 IT Services / Software Company" },
-  { value: "Digital Marketing", label: "📱 Digital Marketing Agency" },
-  { value: "Consulting", label: "📊 Consulting / Advisory Services" },
-  { value: "Real Estate", label: "🏘️ Real Estate Agency" },
-  { value: "Construction", label: "🏗️ Construction / Civil Works" },
-  { value: "Interior Design", label: "🎨 Interior Design / Architecture" },
-  { value: "Event Management", label: "🎉 Event Management / Planning" },
-  { value: "Photography", label: "📸 Photography Studio" },
-  { value: "Printing Press", label: "🖨️ Printing Press / Graphics" },
-  { value: "Laundry", label: "🧺 Laundry / Dry Cleaning" },
-  { value: "Car Wash", label: "🚗 Car Wash / Detailing" },
-  { value: "Auto Repair", label: "🔧 Auto Repair / Garage" },
-  { value: "Electronics Repair", label: "📱 Electronics Repair" },
-  { value: "Jewellery", label: "💎 Jewellery Store" },
-  { value: "Furniture", label: "🛋️ Furniture Store / Showroom" },
-  { value: "Electronics Store", label: "📺 Electronics / Appliances Store" },
-  { value: "Fashion Boutique", label: "👗 Fashion Boutique / Clothing" },
-  { value: "Footwear", label: "👟 Footwear / Shoe Store" },
-  { value: "Books", label: "📖 Book Store / Stationery" },
-  { value: "Toys", label: "🧸 Toys / Kids Store" },
-  { value: "Sports Shop", label: "⚽ Sports Equipment / Fitness Store" },
-  { value: "Hardware Store", label: "🔨 Hardware / Building Materials" },
-  { value: "Paint Shop", label: "🎨 Paint / Hardware Store" },
-  { value: "Gas Station", label: "⛽ Petrol Pump / Gas Station" },
-  { value: "Travel Agency", label: "✈️ Travel Agency / Tours" },
-  { value: "Insurance", label: "🛡️ Insurance Agency" },
-  { value: "Bank Branch", label: "🏦 Bank Branch / Financial Services" },
-  { value: "Co-working", label: "💼 Co-working Space" },
-  { value: "Call Center", label: "📞 Call Center / BPO" },
-  { value: "Security Services", label: "🔐 Security Services" },
-  { value: "Pest Control", label: "🐜 Pest Control Services" },
-  { value: "Cleaning Services", label: "🧹 Cleaning / Housekeeping Services" },
-  { value: "Courier", label: "📮 Courier / Delivery Services" },
-  { value: "Farm", label: "🌾 Farm / Agriculture Business" },
-  { value: "Dairy", label: "🥛 Dairy / Milk Products" },
-  { value: "Poultry", label: "🐔 Poultry Farm" },
-  { value: "Fish Farm", label: "🐟 Fish Farm / Aquaculture" },
-  { value: "Solar Energy", label: "☀️ Solar Energy / Renewable Energy" },
-  { value: "Water Plant", label: "💧 Water Plant / Purification" },
-  { value: "Recycling", label: "♻️ Recycling / Waste Management" },
-  { value: "Theater", label: "🎭 Theater / Entertainment" },
-  { value: "Gaming Arcade", label: "🎮 Gaming Arcade / Esports" },
-  { value: "Pub", label: "🍻 Pub / Bar / Lounge" },
-  { value: "Night Club", label: "🎵 Night Club / Disco" },
-  { value: "Franchise", label: "🏢 Franchise Business" },
-  { value: "Online Business", label: "🌐 Online Business / Startup" },
-  { value: "Other", label: "📋 Other Business" },
-];
-
 const AddProperty = () => {
   const navigate = useNavigate();
   // const { toast } = useToast(); // unused
@@ -219,7 +130,7 @@ const AddProperty = () => {
   const [submitting, setSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [loading, setLoading] = useState(!!editPropertyId);
-  const [businessTypeOpen, setBusinessTypeOpen] = useState(false);
+
   const [formData, setFormData] = useState({
     title: "",
     type: "",
@@ -951,7 +862,7 @@ const AddProperty = () => {
     }
   };
 
-  const isStep1Valid = true; // Images are optional
+  const _isStep1Valid = images.length > 0;
 
   // Step 2 validation: Basic fields + category-specific required fields
   const isStep2Valid = (() => {
@@ -1090,9 +1001,14 @@ const AddProperty = () => {
 
               <Button
                 id="next-button-step-1"
-                onClick={() => setStep(2)}
+                onClick={() => {
+                  if (images.length === 0) {
+                    sonnerToast.error("Please upload at least one image to proceed");
+                    return;
+                  }
+                  setStep(2);
+                }}
                 className="w-full"
-                disabled={!isStep1Valid}
               >
                 Next
               </Button>

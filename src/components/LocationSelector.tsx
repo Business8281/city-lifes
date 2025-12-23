@@ -25,7 +25,7 @@ const LocationSelector = ({ open, onOpenChange }: LocationSelectorProps) => {
       await getCurrentLocation();
       toast.success('Location detected successfully');
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       toast.error('Failed to get your location. Please enable location services.');
     }
   };
@@ -96,11 +96,10 @@ const LocationSelector = ({ open, onOpenChange }: LocationSelectorProps) => {
                       handleLiveLocation();
                     }
                   }}
-                  className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
-                    selectedMethod === method.id
+                  className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${selectedMethod === method.id
                       ? 'border-primary bg-primary/5'
                       : 'border-border hover:border-primary/50'
-                  }`}
+                    }`}
                 >
                   <Icon className="w-6 h-6" />
                   <div className="text-center">
@@ -129,14 +128,14 @@ const LocationSelector = ({ open, onOpenChange }: LocationSelectorProps) => {
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent 
-                  className="w-[var(--radix-popover-trigger-width)] p-0 bg-background border shadow-md z-50" 
+                <PopoverContent
+                  className="w-[var(--radix-popover-trigger-width)] p-0 bg-background border shadow-md z-50"
                   align="start"
                   side="bottom"
                   sideOffset={4}
                 >
                   <Command shouldFilter={true}>
-                    <CommandInput 
+                    <CommandInput
                       placeholder={`Type to search ${selectedMethod}...`}
                       className="h-9"
                     />

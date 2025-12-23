@@ -1,16 +1,14 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { AuthFormData } from '@/schemas/validationSchemas';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
   signInWithGoogle: () => Promise<{ error: AuthError | null }>;
-  signInWithPassword: (data: AuthFormData) => Promise<{ error: AuthError | null }>;
-  signUpWithPassword: (data: AuthFormData & { phone?: string }) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
   updatePhone: (phone: string) => Promise<{ error: unknown | null }>;
 }
@@ -117,28 +115,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signInWithPassword = async ({ email, password }: AuthFormData) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
-  };
-
-  const signUpWithPassword = async ({ email, password, fullName, phone }: AuthFormData & { phone?: string }) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          phone: phone,
-        },
-      },
-    });
-    return { error };
-  };
-
   const signOut = async () => {
     // Sign out from Supabase and ensure local state is cleared across platforms
     await supabase.auth.signOut();
@@ -175,8 +151,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session,
       loading,
       signInWithGoogle,
-      signInWithPassword,
-      signUpWithPassword,
       signOut,
       updatePhone
     }}>
@@ -185,7 +159,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

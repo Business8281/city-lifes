@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -44,7 +44,7 @@ export function useReports() {
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     if (!user) {
       setReports([]);
       setLoading(false);
@@ -53,7 +53,7 @@ export function useReports() {
 
     try {
       setLoading(true);
-      
+
       // Fetch reports
       const { data: reportsData, error: reportsError } = await supabase
         .from('reports')
@@ -89,7 +89,7 @@ export function useReports() {
       // Map data together
       const profilesMap = new Map<string, any>();
       profilesData?.forEach(p => profilesMap.set(p.id, p));
-      
+
       const listingsMap = new Map<string, any>();
       listingsData?.forEach((l: any) => listingsMap.set(l.id, l));
 
@@ -107,7 +107,7 @@ export function useReports() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const createReport = async (input: CreateReportInput) => {
     if (!user) {
@@ -156,18 +156,18 @@ export function useReports() {
     // Real-time subscription for instant updates
     const channel = supabase
       .channel(`user-reports-${user.id}`)
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
         table: 'reports',
         filter: `reporter_id=eq.${user.id}`
       }, (payload) => {
         console.log('New report created in real-time:', payload);
         fetchReports(); // Instant update
       })
-      .on('postgres_changes', { 
-        event: 'UPDATE', 
-        schema: 'public', 
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
         table: 'reports',
         filter: `reporter_id=eq.${user.id}`
       }, (payload) => {
@@ -187,7 +187,7 @@ export function useReports() {
       console.log('Cleaning up reports subscription');
       supabase.removeChannel(channel);
     };
-  }, [user?.id]);
+  }, [user, fetchReports]);
 
   return { reports, loading, createReport, refetch: fetchReports };
 }

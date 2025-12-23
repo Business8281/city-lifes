@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Search, MapPin, Building2, Home, Hash, X } from "lucide-react";
+import { Search, MapPin, X } from "lucide-react";
 import { Input } from "./ui/input";
 import { useMapsLibrary } from "@vis.gl/react-google-maps";
 import { cn } from "@/lib/utils";

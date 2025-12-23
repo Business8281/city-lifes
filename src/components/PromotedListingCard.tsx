@@ -15,11 +15,10 @@ interface PromotedListingCardProps {
   onClick?: () => void;
 }
 
-export const PromotedListingCard = ({ 
-  property, 
+export const PromotedListingCard = ({
+  property,
   campaignId,
-  onImpression,
-  onClick 
+  onClick
 }: PromotedListingCardProps) => {
   const navigate = useNavigate();
   const [leadDialogOpen, setLeadDialogOpen] = useState(false);
@@ -98,7 +97,7 @@ export const PromotedListingCard = ({
                 <Eye className="w-4 h-4" />
                 <span>{property.views || 0} views</span>
               </div>
-              <Button 
+              <Button
                 onClick={handleContactClick}
                 className="bg-primary hover:bg-primary/90 text-sm sm:text-base h-9 sm:h-10 px-4 sm:px-6"
               >

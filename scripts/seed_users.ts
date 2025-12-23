@@ -21,7 +21,7 @@ async function seedUsers() {
 
     for (const u of users) {
         console.log(`Creating user: ${u.email}`);
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
             email: u.email,
             password: u.password,
             options: {

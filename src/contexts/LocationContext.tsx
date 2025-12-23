@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState, ReactNode } from 'react';
 import { Geolocation } from '@capacitor/geolocation';
 
 export type LocationMethod = 'live' | 'city' | 'area' | 'pincode';
@@ -46,22 +47,24 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         timeout: 10000,
         maximumAge: 0,
       });
-      
+
       const coords = {
         lat: position.coords.latitude,
         lng: position.coords.longitude,
       };
-      
+
       setLocation({
         method: 'live',
         value: 'Current Location',
         coordinates: coords,
       });
-    } catch (capacitorError) {
+    } catch (error: any) {
+      console.warn('Capacitor geolocation failed:', error);
+
       // Fallback to browser geolocation for web
       return new Promise<void>((resolve, reject) => {
         if (!navigator.geolocation) {
-          reject(new Error('Geolocation is not supported'));
+          reject(new Error('Geolocation is not supported by your browser'));
           return;
         }
 
@@ -78,8 +81,25 @@ export function LocationProvider({ children }: { children: ReactNode }) {
             });
             resolve();
           },
-          (error) => {
-            reject(error);
+          (webError) => {
+            let errorMessage = 'Failed to get location';
+            switch (webError.code) {
+              case 1: // PERMISSION_DENIED
+                errorMessage = 'Location permission denied. Please enable it in your browser settings.';
+                break;
+              case 2: // POSITION_UNAVAILABLE
+                errorMessage = 'Location information is unavailable.';
+                break;
+              case 3: // TIMEOUT
+                errorMessage = 'Request to get user location timed out.';
+                break;
+            }
+            reject(new Error(errorMessage));
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
           }
         );
       });

@@ -6,6 +6,8 @@ ALTER FUNCTION public.search_properties_nearby(numeric, numeric, numeric, intege
 
 -- Fix rls_disabled_in_public
 -- Enable RLS on spatial_ref_sys if it exists and is in public
+-- COMMENTED OUT: Caused 'must be owner of table spatial_ref_sys' error. Use standard permissions instead.
+/* 
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'spatial_ref_sys') THEN
@@ -16,3 +18,4 @@ BEGIN
         END IF;
     END IF;
 END $$;
+*/

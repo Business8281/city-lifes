@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -34,9 +34,9 @@ export const useCRM = () => {
   const [clients, setClients] = useState<CRMClient[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async () => {
     if (!user) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('crm_clients')
@@ -52,7 +52,7 @@ export const useCRM = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchClients();
@@ -73,11 +73,11 @@ export const useCRM = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, fetchClients]);
 
   const createClient = async (clientData: any) => {
     if (!user) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('crm_clients')
@@ -160,9 +160,9 @@ export const useCRMTasks = (clientId?: string) => {
   const [tasks, setTasks] = useState<CRMTask[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     if (!user) return;
-    
+
     try {
       let query = supabase
         .from('crm_tasks')
@@ -183,7 +183,7 @@ export const useCRMTasks = (clientId?: string) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, clientId]);
 
   useEffect(() => {
     fetchTasks();
@@ -204,11 +204,11 @@ export const useCRMTasks = (clientId?: string) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, clientId]);
+  }, [user, clientId, fetchTasks]);
 
   const createTask = async (taskData: any) => {
     if (!user) return;
-    
+
     try {
       const { data, error } = await supabase
         .from('crm_tasks')

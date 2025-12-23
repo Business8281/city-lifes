@@ -46,70 +46,28 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # -> Click on 'Sign in' to start user login.
+        # -> Click on Sign in to login as user
         frame = context.pages[-1]
-        # Click on 'Sign in' link to initiate user login
+        # Click on Sign in to login as user
         elem = frame.locator('xpath=html/body/div/div[2]/div/div/div/div[2]/div/div[2]/div/div/a').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Try alternative input method for password field or clear and input password again, then click 'Sign In'.
+        # -> Click 'Continue with Email' to proceed with user login
         frame = context.pages[-1]
-        # Click password field to focus
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
+        # Click 'Continue with Email' to login as user
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
+        # -> Click 'Continue with Email' button to proceed to email login form
         frame = context.pages[-1]
-        # Try inputting password again after focusing field
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('userpassword')
-        
-
-        frame = context.pages[-1]
-        # Click 'Sign In' button to attempt login after input
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
+        # Click 'Continue with Email' button to proceed to email login form
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Clear password field, re-input password carefully, then click 'Sign In' again to attempt login.
-        frame = context.pages[-1]
-        # Click password field to focus
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        frame = context.pages[-1]
-        # Clear password field by inputting empty string
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('')
-        
-
-        frame = context.pages[-1]
-        # Re-input password carefully
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('userpassword')
-        
-
-        frame = context.pages[-1]
-        # Click 'Sign In' button to attempt login again
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Try to login as user again by clearing fields and re-inputting credentials carefully, then submit login form.
-        frame = context.pages[-1]
-        # Clear email field
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('')
-        
-
-        frame = context.pages[-1]
-        # Clear password field
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('')
-        
-
+        # -> Input user email and password, then click Sign In button to login as user
         frame = context.pages[-1]
         # Input user email
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
@@ -123,35 +81,17 @@ async def run_test():
         
 
         frame = context.pages[-1]
-        # Click 'Sign In' button to attempt login again
+        # Click Sign In button to login as user
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Try to input password using keyboard events or check if password field is interactable before input.
-        frame = context.pages[-1]
-        # Click password field to focus
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        frame = context.pages[-1]
-        # Click 'Sign In' button to attempt login after typing password
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
-        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
-        
-
-        # -> Try alternative approach: open a new tab and navigate to user dashboard or chat page directly to check if user is already logged in or to bypass login form.
-        await page.goto('http://127.0.0.1:8080/user/dashboard', timeout=10000)
-        await asyncio.sleep(3)
         
 
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=Real-time chat with listing owner is active').first).to_be_visible(timeout=1000)
+            await expect(frame.locator('text=Chat session successfully established with lead ID 12345').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError("Test case failed: Real-time chat functionality verification failed as the test plan execution did not complete successfully. Users and listing owners cannot communicate through real-time chat that maintains history and correctly links messages to leads.")
+            raise AssertionError("Test case failed: Real-time chat functionality verification failed. The chat session was not successfully established or linked to the correct lead as required by the test plan.")
         await asyncio.sleep(5)
     
     finally:

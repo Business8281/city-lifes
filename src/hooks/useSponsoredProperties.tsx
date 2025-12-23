@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Property } from '@/types/database';
-import { toast } from 'sonner';
 import { App as CapacitorApp } from '@capacitor/app';
 import type { PluginListenerHandle } from '@capacitor/core';
 
@@ -23,50 +22,7 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
   const [sponsoredProperties, setSponsoredProperties] = useState<SponsoredProperty[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Fetch once on mount or when basic location filter changes if future logic needs it
-    fetchSponsoredProperties();
-
-    // Refresh when tab/app becomes active again or when network returns
-    const onVisibility = () => {
-      if (document.visibilityState === 'visible') {
-        fetchSponsoredProperties();
-      }
-    };
-    const onOnline = () => fetchSponsoredProperties();
-    document.addEventListener('visibilitychange', onVisibility);
-    window.addEventListener('online', onOnline);
-
-    // Native builds foreground
-    let appHandle: PluginListenerHandle | undefined;
-    if (CapacitorApp.addListener) {
-      appHandle = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-        if (isActive) fetchSponsoredProperties();
-      }) as unknown as PluginListenerHandle;
-    }
-
-    // Live updates from campaigns table
-    const channel = supabase
-      .channel('ad-campaigns-live')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'ad_campaigns' },
-        () => fetchSponsoredProperties()
-      )
-      .subscribe();
-
-    return () => {
-      document.removeEventListener('visibilitychange', onVisibility);
-      window.removeEventListener('online', onOnline);
-      if (appHandle?.remove) {
-        appHandle.remove();
-      }
-      supabase.removeChannel(channel);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location?.method, location?.value]);
-
-  const fetchSponsoredProperties = async () => {
+  const fetchSponsoredProperties = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -112,10 +68,10 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
         setSponsoredProperties((data || []) as unknown as SponsoredProperty[]);
       } catch (rpcError) {
         console.warn('RPC failed, using direct query fallback:', rpcError);
-        
+
         // Fallback: Query active campaigns directly with client-side filtering
         const now = new Date().toISOString();
-        let query = supabase
+        const query = supabase
           .from('ad_campaigns')
           .select(`
             id,
@@ -133,20 +89,20 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
         if (campaignsError) throw campaignsError;
 
         let sponsoredProps = (campaigns || [])
-          .map(campaign => ({
-            ...(campaign.properties as any),
+          .map((campaign: any) => ({
+            ...(campaign.properties || {}),
             campaign_id: campaign.id
           }))
-          .filter(prop => prop && prop.id && prop.status === 'active' && prop.available) as SponsoredProperty[];
+          .filter((prop: any) => prop && prop.id && prop.status === 'active' && prop.available) as SponsoredProperty[];
 
         // Apply client-side location filtering if needed
         if (filterCity) {
-          sponsoredProps = sponsoredProps.filter(p => 
+          sponsoredProps = sponsoredProps.filter(p =>
             p.city?.toLowerCase().includes(filterCity.toLowerCase())
           );
         }
         if (filterArea) {
-          sponsoredProps = sponsoredProps.filter(p => 
+          sponsoredProps = sponsoredProps.filter(p =>
             p.area?.toLowerCase().includes(filterArea.toLowerCase())
           );
         }
@@ -163,7 +119,49 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [location]);
+
+  useEffect(() => {
+    // Fetch once on mount or when basic location filter changes if future logic needs it
+    fetchSponsoredProperties();
+
+    // Refresh when tab/app becomes active again or when network returns
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchSponsoredProperties();
+      }
+    };
+    const onOnline = () => fetchSponsoredProperties();
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('online', onOnline);
+
+    // Native builds foreground
+    let appHandle: PluginListenerHandle | undefined;
+    if (CapacitorApp.addListener) {
+      appHandle = CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+        if (isActive) fetchSponsoredProperties();
+      }) as unknown as PluginListenerHandle;
+    }
+
+    // Live updates from campaigns table
+    const channel = supabase
+      .channel('ad-campaigns-live')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'ad_campaigns' },
+        () => fetchSponsoredProperties()
+      )
+      .subscribe();
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('online', onOnline);
+      if (appHandle?.remove) {
+        appHandle.remove();
+      }
+      supabase.removeChannel(channel);
+    };
+  }, [fetchSponsoredProperties]);
 
   const incrementImpressions = (campaignId: string) => {
     // Fire and forget - don't await to prevent blocking UI

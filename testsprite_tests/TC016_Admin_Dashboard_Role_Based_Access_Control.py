@@ -46,86 +46,87 @@ async def run_test():
                 pass
         
         # Interact with the page elements to simulate user flow
-        # -> Click on 'Sign in' to open the login form for admin user login.
+        # -> Click on 'Sign in' to start login as admin user with limited permissions.
         frame = context.pages[-1]
-        # Click on 'Sign in' link to open login form
+        # Click on 'Sign in' to initiate login process for admin user with limited permissions.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div/div/div[2]/div/div[2]/div/div/a').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Input email and password for admin user with limited permissions and click Sign In.
+        # -> Click on 'Continue with Email' to proceed with email login for admin user with limited permissions.
         frame = context.pages[-1]
-        # Input email for admin user with limited permissions
+        # Click on 'Continue with Email' to proceed with email login for admin user with limited permissions.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Input admin user email and password, then click Sign In to login.
+        frame = context.pages[-1]
+        # Input admin user email with limited permissions
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('admin_limited@example.com')
         
 
         frame = context.pages[-1]
-        # Input password for admin user with limited permissions
+        # Input admin user password with limited permissions
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('password123')
         
 
         frame = context.pages[-1]
-        # Click Sign In button to login as admin user with limited permissions
+        # Click Sign In button to submit login form for admin user with limited permissions
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Re-input the password correctly and click Sign In again to successfully login as admin user with limited permissions.
+        # -> Click on 'Continue with Email' to proceed with email login for admin user with limited permissions.
         frame = context.pages[-1]
-        # Re-input password for admin user with limited permissions
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('password123')
-        
-
-        frame = context.pages[-1]
-        # Click Sign In button to login as admin user with limited permissions
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
+        # Click on 'Continue with Email' to proceed with email login for admin user with limited permissions.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Input email and password for admin user with limited permissions and click Sign In.
+        # -> Input admin user email and password, then click Sign In to login.
         frame = context.pages[-1]
-        # Input email for admin user with limited permissions
+        # Input admin user email with limited permissions
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('admin_limited@example.com')
         
 
         frame = context.pages[-1]
-        # Input password for admin user with limited permissions
+        # Input admin user password with limited permissions
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('password123')
         
 
         frame = context.pages[-1]
-        # Click Sign In button to login as admin user with limited permissions
+        # Click Sign In button to submit login form for admin user with limited permissions
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Check for any available options to reset password, recover account, or verify credentials for admin user with limited permissions, or try to login as super admin if limited admin login fails.
+        # -> Click on 'Continue with Email' to proceed with email login for admin user with limited permissions.
         frame = context.pages[-1]
-        # Click on 'Sign Up' to check if there is any option for account recovery or help with login credentials
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div/button[2]').nth(0)
+        # Click on 'Continue with Email' to proceed with email login for admin user with limited permissions.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Input super admin email and password into the login form and click Sign In to attempt login.
+        # -> Input correct admin user email and password, then click Sign In to login.
         frame = context.pages[-1]
-        # Input email for super admin user
+        # Input correct admin user email with limited permissions
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('superadmin@example.com')
+        await page.wait_for_timeout(3000); await elem.fill('admin_limited_correct@example.com')
         
 
         frame = context.pages[-1]
-        # Input password for super admin user
+        # Input correct admin user password with limited permissions
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('superpassword123')
+        await page.wait_for_timeout(3000); await elem.fill('correct_password123')
         
 
         frame = context.pages[-1]
-        # Click Sign In button to login as super admin
+        # Click Sign In button to submit login form for admin user with limited permissions
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
@@ -133,9 +134,9 @@ async def run_test():
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=Access Denied: Unauthorized Module').first).to_be_visible(timeout=1000)
+            await expect(frame.locator('text=Access to all admin dashboard modules granted').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError("Test failed: Admin users must have access only to allowed management features based on their roles and permissions, but this condition was not met.")
+            raise AssertionError("Test failed: Admin users should have restricted access based on roles and permissions, but full access was not granted as expected.")
         await asyncio.sleep(5)
     
     finally:

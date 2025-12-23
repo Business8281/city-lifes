@@ -48,43 +48,63 @@ async def run_test():
         # Interact with the page elements to simulate user flow
         # -> Click on 'Sign in' to login as listing owner.
         frame = context.pages[-1]
-        # Click on 'Sign in' link to start login process
+        # Click on 'Sign in' link to start login process as listing owner.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div/div/div[2]/div/div[2]/div/div/a').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Input email and password, then click 'Sign In' button to login as listing owner.
+        # -> Click on 'Continue with Email' to proceed with email login.
         frame = context.pages[-1]
-        # Input email for listing owner login
+        # Click on 'Continue with Email' button to proceed with email login.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button[2]').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Input email and password, then click 'Sign In' to login as listing owner.
+        frame = context.pages[-1]
+        # Input email for listing owner login.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div/input').nth(0)
         await page.wait_for_timeout(3000); await elem.fill('owner@example.com')
         
 
         frame = context.pages[-1]
-        # Input password for listing owner login
+        # Input password for listing owner login.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/div[2]/input').nth(0)
-        await page.wait_for_timeout(3000); await elem.fill('securePassword123')
+        await page.wait_for_timeout(3000); await elem.fill('OwnerPass123')
         
 
         frame = context.pages[-1]
-        # Click 'Sign In' button to submit login form
+        # Click 'Sign In' button to submit login form.
         elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div[2]/form/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
-        # -> Check for alternative login options or retry login with correct credentials.
+        # -> Click on 'Continue with Google' to attempt login as listing owner using Google authentication.
         frame = context.pages[-1]
-        # Click 'Sign Up' to check if registration or password reset options are available
-        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/div/button[2]').nth(0)
+        # Click on 'Continue with Google' button to attempt login using Google authentication.
+        elem = frame.locator('xpath=html/body/div/div[2]/div/div[2]/div/div/button').nth(0)
+        await page.wait_for_timeout(3000); await elem.click(timeout=5000)
+        
+
+        # -> Input Google account email and click 'Next' to proceed with Google authentication.
+        frame = context.pages[-1]
+        # Input Google account email for listing owner login.
+        elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[2]/div/div/div/form/span/section/div/div/div/div/div/div/div/input').nth(0)
+        await page.wait_for_timeout(3000); await elem.fill('owner@gmail.com')
+        
+
+        frame = context.pages[-1]
+        # Click 'Next' button to proceed with Google authentication.
+        elem = frame.locator('xpath=html/body/div[2]/div/div/div[2]/c-wiz/main/div[3]/div/div/div/div/button').nth(0)
         await page.wait_for_timeout(3000); await elem.click(timeout=5000)
         
 
         # --> Assertions to verify final state
         frame = context.pages[-1]
         try:
-            await expect(frame.locator('text=Listing creation failed due to missing required fields').first).to_be_visible(timeout=1000)
+            await expect(frame.locator('text=Listing created successfully').first).to_be_visible(timeout=1000)
         except AssertionError:
-            raise AssertionError("Test case failed: The listing creation process did not complete successfully as required fields tailored to the selected category were not properly handled or saved.")
+            raise AssertionError("Test case failed: The listing creation process did not complete successfully as required by the test plan. The listing owner was unable to create a new listing with all required fields and image compression.")
         await asyncio.sleep(5)
     
     finally:

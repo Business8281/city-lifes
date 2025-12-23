@@ -34,17 +34,18 @@ export function useAdCampaigns(businessOnly: boolean = false) {
     try {
       setLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         setCampaigns([]);
         return;
       }
 
-      let query = supabase
+      const query = supabase
         .from('ad_campaigns')
         .select(`
           *,
-          properties (
+          *,
+          properties:properties!ad_campaigns_property_id_fkey (
             id,
             title,
             property_type,
@@ -60,7 +61,7 @@ export function useAdCampaigns(businessOnly: boolean = false) {
       if (error) throw error;
 
       let filteredData = data || [];
-      
+
       // Filter for business-only campaigns if requested
       if (businessOnly && filteredData.length > 0) {
         filteredData = filteredData.filter(
@@ -155,30 +156,30 @@ export function useAdCampaigns(businessOnly: boolean = false) {
   const deleteCampaign = async (campaignId: string) => {
     try {
       console.log('🗑️ deleteCampaign called with ID:', campaignId);
-      
+
       // Check current user
       const { data: { user } } = await supabase.auth.getUser();
       console.log('Current user:', user?.id, user?.email);
-      
+
       // Check campaign ownership
       const { data: campaign, error: fetchError } = await supabase
         .from('ad_campaigns')
         .select('id, title, user_id')
         .eq('id', campaignId)
         .single();
-      
+
       if (fetchError) {
         console.error('❌ Error fetching campaign:', fetchError);
         throw new Error(`Cannot find campaign: ${fetchError.message}`);
       }
-      
+
       console.log('Campaign to delete:', campaign);
       console.log('Ownership check:', {
         campaignUserId: campaign?.user_id,
         currentUserId: user?.id,
         matches: campaign?.user_id === user?.id
       });
-      
+
       // Attempt delete
       console.log('Attempting to delete campaign:', campaignId);
       const { error, data } = await supabase
@@ -197,7 +198,7 @@ export function useAdCampaigns(businessOnly: boolean = false) {
         });
         throw error;
       }
-      
+
       console.log('✅ Campaign delete successful:', data);
       toast.success('Campaign deleted successfully!');
       fetchCampaigns();

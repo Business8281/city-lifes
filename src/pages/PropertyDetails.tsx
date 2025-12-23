@@ -1,11 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Heart, Share2, MapPin, Phone, MessageCircle, Calendar, Tag, Home, AlertCircle, Flag, Edit } from "lucide-react";
+import { ArrowLeft, Heart, Share2, MapPin, Phone, MessageCircle, Calendar, Tag, AlertCircle, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import BottomNav from "@/components/BottomNav";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import ListingGallery from '@/components/ListingGallery';
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -19,7 +19,6 @@ import { propertyTypes } from "@/data/propertyTypes";
 import { Share } from '@capacitor/share';
 import { LeadCaptureDialog } from '@/components/LeadCaptureDialog';
 import { ReportUserDialog } from '@/components/ReportUserDialog';
-import { PropertySchema, BreadcrumbSchema } from '@/components/SEOSchema';
 import { ReviewForm } from '@/components/ReviewForm';
 import { ReviewsList } from '@/components/ReviewsList';
 import { supabase } from '@/integrations/supabase/client';
@@ -45,20 +44,16 @@ const PropertyDetails = () => {
     userReview,
     stats,
     loading: reviewsLoading,
-    canReview,
     createReview,
     updateReview,
     deleteReview,
     refetch
   } = useReviews(property?.user_id, reviewType, id);
-  const [currentImage, setCurrentImage] = useState(0);
   const [leadDialogOpen, setLeadDialogOpen] = useState(false);
   const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<'call' | 'chat' | null>(null);
   const [leadSource, setLeadSource] = useState<'listing' | 'call' | 'chat'>('listing');
-  const touchStartX = useRef<number | null>(null);
-  const touchEndX = useRef<number | null>(null);
 
   // Auto-create review interaction when user views property
   useEffect(() => {
@@ -91,7 +86,7 @@ const PropertyDetails = () => {
     };
 
     createViewInteraction();
-  }, [user, property]);
+  }, [user, property, refetch]);
 
   const handleContactAction = async (action: 'call' | 'chat') => {
     if (!property) return;
@@ -149,36 +144,6 @@ const PropertyDetails = () => {
     }
   };
 
-  const goPrev = () => {
-    setCurrentImage(prev => {
-      const total = property?.images?.length || 0;
-      if (total <= 1) return prev;
-      return (prev - 1 + total) % total;
-    });
-  };
-  const goNext = () => {
-    setCurrentImage(prev => {
-      const total = property?.images?.length || 0;
-      if (total <= 1) return prev;
-      return (prev + 1) % total;
-    });
-  };
-  const onTouchStart: React.TouchEventHandler<HTMLDivElement> = e => {
-    touchStartX.current = e.changedTouches[0].clientX;
-  };
-  const onTouchEnd: React.TouchEventHandler<HTMLDivElement> = e => {
-    touchEndX.current = e.changedTouches[0].clientX;
-    if (touchStartX.current === null || touchEndX.current === null) return;
-    const delta = touchEndX.current - touchStartX.current;
-    const threshold = 50; // px
-    if (delta > threshold) {
-      goPrev();
-    } else if (delta < -threshold) {
-      goNext();
-    }
-    touchStartX.current = null;
-    touchEndX.current = null;
-  };
   const isFavorite = id ? favoriteIds.has(id) : false;
   const getPropertyTypeInfo = () => {
     return propertyTypes.find(pt => pt.type === property?.property_type);
@@ -706,15 +671,18 @@ const PropertyDetails = () => {
       leadType={property.campaign_id ? 'paid' : 'organic'}
       sourcePage="listing_page"
       category={property.property_type}
+      campaignId={property.campaign_id}
       source={leadSource}
       onSuccess={async () => {
         // If user is logged in, try to fetch contact info
         if (user) {
           try {
             // @ts-expect-error - RPC not in types yet
-            const { data, error } = await supabase.rpc('reveal_contact_info', { p_property_id: id });
-            if (!error && data && (data as any[]).length > 0) {
-              const contact = (data as any[])[0];
+            const { data, error } = await supabase.rpc('reveal_property_contact', { p_property_id: id });
+
+            if (!error && data) {
+              // RPC returns a single JSON object, not an array
+              const contact = data as any;
               // Update property object locally with revealed info
               property.contact_phone = contact.contact_phone;
               property.contact_email = contact.contact_email;

@@ -14,7 +14,6 @@ import {
   DropAnimation,
 } from '@dnd-kit/core';
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
@@ -25,7 +24,7 @@ import { useCRM, useCRMTasks, CRMClient } from '@/hooks/useCRM';
 import { useLeads } from '@/hooks/useLeads';
 import { useSubscription } from '@/hooks/useSubscription';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -35,22 +34,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  User,
   Phone,
   Mail,
-  Calendar,
   Plus,
   Circle,
-  Tag,
   Trash2,
   Monitor,
   Laptop,
-  GripVertical,
   MoreHorizontal,
   Search,
   Pencil,
-  ArrowRight,
-  X
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -60,12 +53,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
   DropdownMenuLabel
 } from '@/components/ui/dropdown-menu';
-import { toast } from 'sonner';
+
+// --- Constants ---
+const STAGES: CRMClient['stage'][] = ['prospect', 'hot', 'warm', 'cold', 'closed'];
 
 // --- Components ---
 
@@ -78,7 +70,7 @@ interface ClientCardProps {
   onStageChange?: (clientId: string, stage: CRMClient['stage']) => void;
 }
 
-const ClientCard = ({ client, isOverlay = false, onClick, onEdit, onDelete, onStageChange }: ClientCardProps) => {
+const ClientCard = ({ client, isOverlay = false, onClick, onEdit, onDelete }: ClientCardProps) => {
   const {
     setNodeRef,
     attributes,
@@ -108,8 +100,6 @@ const ClientCard = ({ client, isOverlay = false, onClick, onEdit, onDelete, onSt
       />
     );
   }
-
-  const stages: CRMClient['stage'][] = ['prospect', 'hot', 'warm', 'cold', 'closed'];
 
   return (
     <div
@@ -262,12 +252,11 @@ const StageColumn = ({
 // --- Main Page ---
 
 const CRM = () => {
-  const { clients, loading, updateClientStage, createClient, updateClient, deleteClient } = useCRM();
+  const { clients, updateClientStage, createClient, updateClient, deleteClient } = useCRM();
   const { leads } = useLeads();
   const [leadSearch, setLeadSearch] = useState('');
   const { tasks, createTask, updateTask, deleteTask } = useCRMTasks();
   const { isPro, isBusiness } = useSubscription();
-  const [selectedClient, setSelectedClient] = useState<CRMClient | null>(null);
   const [newClientDialog, setNewClientDialog] = useState(false);
   const [editingClient, setEditingClient] = useState<CRMClient | null>(null);
   const [newTaskDialog, setNewTaskDialog] = useState(false);
@@ -294,11 +283,9 @@ const CRM = () => {
     })
   );
 
-  const stages: CRMClient['stage'][] = ['prospect', 'hot', 'warm', 'cold', 'closed'];
-
   const clientsByStage = useMemo(() => {
     const grouped: Record<string, CRMClient[]> = {};
-    stages.forEach(stage => grouped[stage] = []);
+    STAGES.forEach(stage => grouped[stage] = []);
     clients.forEach(client => {
       if (grouped[client.stage]) {
         grouped[client.stage].push(client);
@@ -321,8 +308,8 @@ const CRM = () => {
     if (activeId === overId) return;
 
     // Find the containers
-    const activeClient = clients.find(c => c.id === activeId);
-    const overClient = clients.find(c => c.id === overId);
+    // const activeClient = clients.find(c => c.id === activeId);
+    // const overClient = clients.find(c => c.id === overId);
 
     // If dragging over another client, we might want to reorder (visual only for now as we sort by date)
     // But mainly we care about dropping into a column (stage)
@@ -341,7 +328,7 @@ const CRM = () => {
     if (!activeClient) return;
 
     // Check if dropped on a column
-    if (stages.includes(overId as any)) {
+    if (STAGES.includes(overId as any)) {
       if (activeClient.stage !== overId) {
         updateClientStage(activeId, overId as CRMClient['stage']);
       }
@@ -559,7 +546,7 @@ const CRM = () => {
               onDragEnd={onDragEnd}
             >
               <div className="flex h-full gap-4 min-w-max">
-                {stages.map((stage) => (
+                {STAGES.map((stage) => (
                   <StageColumn
                     key={stage}
                     id={stage}

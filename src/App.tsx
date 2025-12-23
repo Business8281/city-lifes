@@ -14,6 +14,7 @@ import { LoadingSpinner } from "./components/ui/loading-spinner";
 // Route-based code splitting
 const Index = lazy(() => import("./pages/Index"));
 const Listings = lazy(() => import("./pages/Listings"));
+const PropertyCategory = lazy(() => import("./pages/PropertyCategory"));
 const PropertyDetails = lazy(() => import("./pages/PropertyDetails"));
 const Favorites = lazy(() => import("./pages/Favorites"));
 const MapView = lazy(() => import("./pages/MapView"));
@@ -68,6 +69,7 @@ const App = () => {
                     <Route path="dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
                     <Route index element={<Index />} />
                     <Route path="listings" element={<Listings />} />
+                    <Route path="category/:type" element={<PropertyCategory />} />
                     <Route path="property/:id" element={<PropertyDetails />} />
                     <Route path="user/:userId" element={<UserProfile />} />
                     <Route path="favorites" element={<RequireAuth><Favorites /></RequireAuth>} />
