@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import BottomNav from "@/components/BottomNav";
+
 import { TakeActionDialog } from "@/components/admin/TakeActionDialog";
 
 const AdminDashboard = () => {
@@ -607,13 +607,12 @@ const AdminDashboard = () => {
         </Tabs>
       </div>
 
-      <BottomNav />
+
       {selectedReportId && (
         <TakeActionDialog
           open={!!selectedReportId}
           onOpenChange={(open) => !open && setSelectedReportId(null)}
           onAction={(action, notes) => applyAdminAction(selectedReportId, action as any, notes)}
-          reportId={selectedReportId}
         />
       )}
     </div>

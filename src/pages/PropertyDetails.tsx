@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import BottomNav from "@/components/BottomNav";
 import { useState, useEffect } from "react";
 import ListingGallery from '@/components/ListingGallery';
 import { cn } from "@/lib/utils";
@@ -740,7 +739,6 @@ const PropertyDetails = () => {
       isEdit={!!userReview}
     />
 
-    <BottomNav />
   </div>;
 };
 export default PropertyDetails;

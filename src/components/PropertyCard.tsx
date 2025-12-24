@@ -50,7 +50,7 @@ const PropertyCard = ({
   const { user } = useAuth();
   const { favoriteIds, toggleFavorite: toggleFavoriteInDb } = useFavorites(user?.id);
   const isFavorite = favoriteIds.has(id);
-  
+
   // Fetch rating for business listings
   const { rating } = useOwnerRating(propertyType === 'business' ? userId : undefined);
 
@@ -68,8 +68,8 @@ const PropertyCard = ({
       onClick={onClick}
       className={cn(
         "bg-card rounded-lg overflow-hidden border cursor-pointer transition-all duration-300 hover:shadow-lg max-w-full relative",
-        sponsored 
-          ? "border-amber-400 dark:border-amber-600 shadow-md hover:shadow-amber-200 dark:hover:shadow-amber-900/50 ring-2 ring-amber-300 dark:ring-amber-700 shadow-amber-100 dark:shadow-amber-900/30" 
+        sponsored
+          ? "border-amber-400 dark:border-amber-600 shadow-md hover:shadow-amber-200 dark:hover:shadow-amber-900/50 ring-2 ring-amber-300 dark:ring-amber-700 shadow-amber-100 dark:shadow-amber-900/30"
           : "border-border hover:border-primary",
         className
       )}
@@ -98,9 +98,9 @@ const PropertyCard = ({
         <button
           onClick={handleToggleFavorite}
           className={cn(
-            "absolute top-3 right-3 p-2 rounded-full backdrop-blur-sm transition-all active:scale-90 z-10",
-            isFavorite 
-              ? "bg-destructive/20 hover:bg-destructive/30" 
+            "absolute top-3 right-3 p-2 rounded-full backdrop-blur-sm transition-all duration-200 active:scale-75 z-20 cursor-pointer shadow-sm",
+            isFavorite
+              ? "bg-destructive/10 hover:bg-destructive/20"
               : "bg-background/80 hover:bg-background"
           )}
           aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
@@ -108,8 +108,8 @@ const PropertyCard = ({
           <Heart
             className={cn(
               "h-5 w-5 transition-transform",
-              isFavorite 
-                ? "fill-destructive text-destructive scale-110" 
+              isFavorite
+                ? "fill-destructive text-destructive scale-110"
                 : "text-foreground"
             )}
           />
@@ -122,13 +122,13 @@ const PropertyCard = ({
           )}
         </div>
       </div>
-      
+
       <div className="p-4 space-y-2 overflow-hidden">
         <div className="flex items-start justify-between gap-2 min-w-0">
           <h3 className="font-semibold text-foreground line-clamp-1 min-w-0 flex-1">{title}</h3>
           <span className="text-sm text-muted-foreground shrink-0">{type}</span>
         </div>
-        
+
         <div className="flex items-center gap-1 text-sm text-muted-foreground min-w-0">
           <MapPin className="h-4 w-4 shrink-0" />
           <span className="line-clamp-1 min-w-0 flex-1">{location}</span>
@@ -162,7 +162,7 @@ const PropertyCard = ({
             )}
           </div>
         )}
-        
+
         {propertyType !== 'business' && (
           <div className="pt-2 flex items-center justify-between">
             <span className="text-2xl font-bold text-primary">{price}</span>
@@ -177,7 +177,7 @@ const PropertyCard = ({
             )}
           </div>
         )}
-        
+
         {propertyType === 'business' && (
           <div className="pt-2 space-y-2">
             <Badge variant="secondary">Business Listing</Badge>

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import BottomNav from "@/components/BottomNav";
+
 import EnhancedSearchBar from "@/components/EnhancedSearchBar";
 import { Badge } from "@/components/ui/badge";
 import { List, SlidersHorizontal } from "lucide-react";
@@ -348,7 +348,7 @@ const MapView = () => {
       </div>
 
       <div className="md:hidden">
-        <BottomNav />
+
       </div>
     </div>
   );

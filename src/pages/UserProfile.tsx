@@ -9,7 +9,6 @@ import { ReportUserDialog } from '@/components/ReportUserDialog';
 import { LeadCaptureDialog } from '@/components/LeadCaptureDialog';
 import { ReviewsList } from '@/components/ReviewsList';
 import { useReviews } from '@/hooks/useReviews';
-import BottomNav from '@/components/BottomNav';
 import {
   ArrowLeft,
   Phone,
@@ -327,7 +326,7 @@ export default function UserProfile() {
       </div>
 
       {/* Bottom Navigation */}
-      <BottomNav />
+
 
       {/* Review Dialog */}
       <WriteReviewDialog

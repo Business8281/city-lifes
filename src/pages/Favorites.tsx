@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import PropertyCard from "@/components/PropertyCard";
-import BottomNav from "@/components/BottomNav";
+
 import { Button } from "@/components/ui/button";
 import { useFavorites } from "@/hooks/useFavorites";
 import { useAuth } from "@/contexts/AuthContext";
@@ -60,7 +60,7 @@ const Favorites = () => {
         )}
       </div>
 
-      <BottomNav />
+
     </div>
   );
 };

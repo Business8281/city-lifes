@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, User, FileText, Target, ClipboardList, Flag, Star, Shield, Map as MapIcon, MessageCircle, Heart, Plus } from "lucide-react";
+import { LayoutDashboard, Users, User, FileText, Target, ClipboardList, Flag, Star, Shield, Map as MapIcon, MessageCircle, Heart, Plus, LogOut } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -45,7 +45,7 @@ const adminItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
-  const { user, loading } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const { isAdmin } = useAdminCheck();
   const isCollapsed = state === "collapsed";
   const [profile, setProfile] = useState<{ full_name: string | null; phone: string | null } | null>(null);
@@ -164,6 +164,14 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              {user && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton onClick={() => signOut()} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20">
+                    <LogOut className="h-5 w-5" />
+                    <span>Logout</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

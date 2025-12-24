@@ -4,7 +4,7 @@ import { ArrowLeft, Plus, TrendingUp, Eye, MousePointerClick, DollarSign, PlayCi
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import BottomNav from "@/components/BottomNav";
+
 import { useAdCampaigns } from "@/hooks/useAdCampaigns";
 import { useMyListings } from "@/hooks/useProperties";
 import { useAuth } from "@/contexts/AuthContext";
@@ -321,7 +321,7 @@ const AdCampaign = () => {
         onCreateCampaign={handleCreateCampaign}
       />
 
-      <BottomNav />
+
     </div>
   );
 };

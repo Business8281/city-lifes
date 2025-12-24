@@ -31,7 +31,7 @@ export default function Dashboard() {
     const [recentLeads, setRecentLeads] = useState<Lead[]>([]);
     const [recentMessages, setRecentMessages] = useState<Message[]>([]);
     const [topProperties, setTopProperties] = useState<Property[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [_loading, setLoading] = useState(true);
 
     // Define isOwner early so it can be used in effects
     const isOwner = isPro || isBusiness || (stats?.active_listings || 0) > 0;

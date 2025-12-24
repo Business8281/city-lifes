@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import BottomNav from "@/components/BottomNav";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { User, Home, TrendingUp, Settings, Shield, ChevronRight, LogOut, Users, ClipboardList, AlertCircle, LayoutDashboard } from "lucide-react";
@@ -147,7 +147,7 @@ const Profile = () => {
         </Button>
       </div>
 
-      <BottomNav />
+
     </div>
   );
 };

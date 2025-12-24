@@ -48,9 +48,9 @@ export function useFavorites(userId: string | undefined) {
         .eq('user_id', userId);
 
       if (error) throw error;
-      
-  setFavorites((data || []) as unknown as Favorite[]);
-  setFavoriteIds(new Set(((data || []) as any[]).map((f: any) => f.property_id)));
+
+      setFavorites((data || []) as unknown as Favorite[]);
+      setFavoriteIds(new Set(((data || []) as any[]).map((f: any) => f.property_id)));
     } catch (error: unknown) {
       console.error('Error fetching favorites:', error);
       toast.error('Failed to load favorites');
@@ -71,7 +71,7 @@ export function useFavorites(userId: string | undefined) {
     window.addEventListener('online', onOnline);
 
     let appStateHandle: PluginListenerHandle | undefined;
-    
+
     // Setup Capacitor app state listener if available
     if (CapacitorApp?.addListener) {
       CapacitorApp.addListener('appStateChange', ({ isActive }) => {
@@ -86,13 +86,13 @@ export function useFavorites(userId: string | undefined) {
     // Live updates when favorites table changes for this user
     const channel = userId
       ? supabase
-          .channel('favorites-live')
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'favorites', filter: `user_id=eq.${userId}` },
-            () => fetchFavorites()
-          )
-          .subscribe()
+        .channel('favorites-live')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'favorites', filter: `user_id=eq.${userId}` },
+          () => fetchFavorites()
+        )
+        .subscribe()
       : null;
 
     return () => {
@@ -111,8 +111,27 @@ export function useFavorites(userId: string | undefined) {
       return;
     }
 
+    // Optimistic Update
+    const isCurrentlyFavorite = favoriteIds.has(propertyId);
+    const previousFavorites = [...favorites];
+    const previousFavoriteIds = new Set(favoriteIds);
+
+    // Update state immediately
+    if (isCurrentlyFavorite) {
+      const newIds = new Set(favoriteIds);
+      newIds.delete(propertyId);
+      setFavoriteIds(newIds);
+      setFavorites(prev => prev.filter(f => f.property_id !== propertyId));
+    } else {
+      const newIds = new Set(favoriteIds);
+      newIds.add(propertyId);
+      setFavoriteIds(newIds);
+      // We can't add the full favorite object yet as we don't have the DB ID or property details,
+      // but UI relying on favoriteIds will update instantly.
+    }
+
     try {
-      if (favoriteIds.has(propertyId)) {
+      if (isCurrentlyFavorite) {
         const { error } = await supabase
           .from('favorites')
           .delete()
@@ -130,10 +149,15 @@ export function useFavorites(userId: string | undefined) {
         toast.success('Added to favorites');
       }
 
+      // We still fetch to sync with server and get full objects
       fetchFavorites();
     } catch (error: unknown) {
       console.error('Error toggling favorite:', error);
       toast.error('Failed to update favorites');
+
+      // Revert optimistic update on error
+      setFavoriteIds(previousFavoriteIds);
+      setFavorites(previousFavorites);
     }
   };
 

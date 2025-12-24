@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -14,7 +14,7 @@ export const useCampaignAnalytics = (campaignId: string | null) => {
   const [analytics, setAnalytics] = useState<CampaignAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     if (!campaignId) {
       setLoading(false);
       return;
@@ -22,12 +22,12 @@ export const useCampaignAnalytics = (campaignId: string | null) => {
 
     try {
       const { data, error } = await (supabase.rpc as any)(
-        'get_campaign_analytics', 
+        'get_campaign_analytics',
         { p_campaign_id: campaignId }
       );
 
       if (error) throw error;
-      
+
       if (data && Array.isArray(data) && data.length > 0) {
         setAnalytics(data[0] as unknown as CampaignAnalytics);
       }
@@ -37,7 +37,7 @@ export const useCampaignAnalytics = (campaignId: string | null) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [campaignId]);
 
   useEffect(() => {
     fetchAnalytics();
@@ -60,7 +60,7 @@ export const useCampaignAnalytics = (campaignId: string | null) => {
         supabase.removeChannel(channel);
       };
     }
-  }, [campaignId]);
+  }, [campaignId, fetchAnalytics]);
 
   return {
     analytics,

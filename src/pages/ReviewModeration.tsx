@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import BottomNav from '@/components/BottomNav';
+
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -144,8 +144,8 @@ export default function ReviewModeration() {
                         <Star
                           key={i}
                           className={`h-4 w-4 ${i < review.rating
-                              ? 'fill-yellow-400 text-yellow-400'
-                              : 'text-muted-foreground'
+                            ? 'fill-yellow-400 text-yellow-400'
+                            : 'text-muted-foreground'
                             }`}
                         />
                       ))}
@@ -194,7 +194,7 @@ export default function ReviewModeration() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-      <BottomNav />
+
     </>
   );
 }

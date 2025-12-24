@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
-import BottomNav from "@/components/BottomNav";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -303,7 +303,7 @@ const EditProfile = () => {
         </Card>
       </div>
 
-      <BottomNav />
+
     </div>
   );
 };
