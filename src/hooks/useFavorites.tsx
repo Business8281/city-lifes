@@ -79,7 +79,7 @@ export function useFavorites(userId: string | undefined) {
       }).then((handle) => {
         appStateHandle = handle;
       }).catch((err) => {
-        console.log('Capacitor App listener not available:', err);
+
       });
     }
 

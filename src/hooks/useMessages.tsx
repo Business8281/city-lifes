@@ -203,7 +203,7 @@ export function useMessages(userId: string | undefined) {
     }
 
     try {
-      console.log('🗑️ Deleting message:', messageId);
+
 
       // Hard delete - permanently remove from database
       const { error } = await supabase
@@ -217,7 +217,7 @@ export function useMessages(userId: string | undefined) {
         throw error;
       }
 
-      console.log('✅ Message deleted successfully');
+
       toast.success('Message deleted');
 
       // Immediately update local state for instant UI update
@@ -247,7 +247,7 @@ export function useMessages(userId: string | undefined) {
         receiver_id: userId, // Dummy value for validation
       });
 
-      console.log('✏️ Editing message:', messageId);
+
 
       // Encrypt new content
       const { data: messageData } = await supabase
@@ -281,7 +281,7 @@ export function useMessages(userId: string | undefined) {
         throw error;
       }
 
-      console.log('✅ Message edited successfully');
+
       toast.success('Message updated');
 
       // Immediately update local state for instant UI update
@@ -312,7 +312,7 @@ export function useMessages(userId: string | undefined) {
     }
 
     try {
-      console.log('🗑️ Deleting entire conversation with:', conversationUserId);
+
 
       // Delete all messages where user is sender and other is receiver
       const { error: error1 } = await supabase
@@ -338,7 +338,7 @@ export function useMessages(userId: string | undefined) {
         throw error2;
       }
 
-      console.log('✅ Conversation deleted successfully');
+
       toast.success('Conversation deleted');
 
       // Immediately update local state to remove the conversation

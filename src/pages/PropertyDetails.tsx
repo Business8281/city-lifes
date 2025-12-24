@@ -74,13 +74,13 @@ const PropertyDetails = () => {
         if (error && !error.message.includes('duplicate')) {
           console.error('Error creating view interaction:', error);
         } else if (!error) {
-          console.log('View interaction created successfully');
+
           // Refresh review eligibility after creating interaction
           refetch();
         }
       } catch (error) {
         // Silently fail - constraint will prevent duplicates
-        console.log('View interaction error:', error);
+        console.error('View interaction error:', error);
       }
     };
 

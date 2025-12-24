@@ -162,7 +162,7 @@ export function useReports() {
         table: 'reports',
         filter: `reporter_id=eq.${user.id}`
       }, (payload) => {
-        console.log('New report created in real-time:', payload);
+
         fetchReports(); // Instant update
       })
       .on('postgres_changes', {
@@ -171,12 +171,12 @@ export function useReports() {
         table: 'reports',
         filter: `reporter_id=eq.${user.id}`
       }, (payload) => {
-        console.log('Report updated in real-time:', payload);
+
         fetchReports(); // Instant update when admin changes status
       })
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log('Real-time reports subscription active for user:', user.id);
+
         }
         if (status === 'CHANNEL_ERROR') {
           console.error('Real-time reports subscription error');
@@ -184,7 +184,7 @@ export function useReports() {
       });
 
     return () => {
-      console.log('Cleaning up reports subscription');
+
       supabase.removeChannel(channel);
     };
   }, [user, fetchReports]);

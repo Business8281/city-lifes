@@ -61,7 +61,7 @@ export default function Pricing() {
             trialEndDate.setMonth(trialEndDate.getMonth() + 1);
 
             const { error } = await supabase
-                 
+
                 .from('subscriptions' as any)
                 .insert({
                     user_id: user.id,
@@ -86,7 +86,7 @@ export default function Pricing() {
 
         // TODO: Integrate Razorpay here
         toast.info('Payment integration coming soon!');
-        console.log('Subscribe to:', plan.name, billingCycle);
+
     };
 
     if (loading) {

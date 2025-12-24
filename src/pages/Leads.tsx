@@ -352,7 +352,7 @@ const Leads = () => {
                     <Select
                       value={lead.status}
                       onValueChange={async (value) => {
-                        console.log('🔄 Status change triggered:', { leadId: lead.id, oldStatus: lead.status, newStatus: value });
+
                         await updateLeadStatus(lead.id, value as Lead['status']);
                       }}
                     >

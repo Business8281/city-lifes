@@ -24,7 +24,7 @@ export const useAppInitialize = () => {
 
         // Handle app state changes
         CapacitorApp.addListener('appStateChange', ({ isActive }) => {
-          console.log('App state changed. Is active:', isActive);
+
         });
 
         // Handle back button on Android
@@ -37,12 +37,12 @@ export const useAppInitialize = () => {
         });
 
         CapacitorApp.addListener('appUrlOpen', async (event: URLOpenListenerEvent) => {
-          console.log('[AppUrlOpen] Received URL:', event.url);
+
 
           try {
             // Handle citylife:// deep link for OAuth callback
             if (event.url.startsWith('citylife://auth-callback')) {
-              console.log('[AppUrlOpen] OAuth callback detected');
+
 
               // Parse URL to extract code and error parameters
               const url = new URL(event.url.replace('citylife://', 'https://'));
@@ -59,12 +59,12 @@ export const useAppInitialize = () => {
 
               // Guard: only process if code is present
               if (!code) {
-                console.log('[AppUrlOpen] No code parameter, redirecting to auth');
+
                 window.location.replace('/auth');
                 return;
               }
 
-              console.log('[AppUrlOpen] Exchanging code for session');
+
 
               // Exchange code for session using the full callback URL
               const { data, error: exchangeError } = await supabase.auth.exchangeCodeForSession(event.url);
@@ -76,7 +76,7 @@ export const useAppInitialize = () => {
               }
 
               if (data?.session) {
-                console.log('[AppUrlOpen] Session established successfully');
+
                 const user = data.session.user;
                 const meta = (user.user_metadata as Record<string, any>) || {};
 
@@ -94,14 +94,14 @@ export const useAppInitialize = () => {
                     onConflict: 'id'
                   });
 
-                  console.log('[AppUrlOpen] Profile updated with OAuth data');
+
                 } catch (profileError) {
                   console.error('[AppUrlOpen] Profile upsert error:', profileError);
                 }
 
                 // Check if profile is already completed
                 if (meta.profile_completed === true) {
-                  console.log('[AppUrlOpen] Profile already completed, redirecting to home');
+
                   window.location.replace('/');
                   return;
                 }
@@ -117,7 +117,7 @@ export const useAppInitialize = () => {
                   console.error('[AppUrlOpen] Profile fetch error:', pErr);
                   const status = (pErr as any)?.status;
                   if (status === 406 || status === 404) {
-                    console.log('[AppUrlOpen] Profile not found, redirecting to setup');
+
                     window.location.replace('/setup-profile');
                     return;
                   }
@@ -129,7 +129,7 @@ export const useAppInitialize = () => {
                 const needsName = !profile?.full_name || profile.full_name.trim() === '';
 
                 if (needsPhone || needsName) {
-                  console.log('[AppUrlOpen] Profile incomplete, redirecting to setup');
+
                   window.location.replace('/setup-profile');
                   return;
                 }
@@ -139,10 +139,10 @@ export const useAppInitialize = () => {
                   data: { profile_completed: true }
                 });
 
-                console.log('[AppUrlOpen] Profile complete, redirecting to home');
+
                 window.location.replace('/');
               } else {
-                console.log('[AppUrlOpen] No session data received');
+
                 window.location.replace('/auth');
               }
             }

@@ -155,11 +155,11 @@ export function useAdCampaigns(businessOnly: boolean = false) {
 
   const deleteCampaign = async (campaignId: string) => {
     try {
-      console.log('🗑️ deleteCampaign called with ID:', campaignId);
+
 
       // Check current user
       const { data: { user } } = await supabase.auth.getUser();
-      console.log('Current user:', user?.id, user?.email);
+
 
       // Check campaign ownership
       const { data: campaign, error: fetchError } = await supabase
@@ -173,15 +173,11 @@ export function useAdCampaigns(businessOnly: boolean = false) {
         throw new Error(`Cannot find campaign: ${fetchError.message}`);
       }
 
-      console.log('Campaign to delete:', campaign);
-      console.log('Ownership check:', {
-        campaignUserId: campaign?.user_id,
-        currentUserId: user?.id,
-        matches: campaign?.user_id === user?.id
-      });
+
+
 
       // Attempt delete
-      console.log('Attempting to delete campaign:', campaignId);
+
       const { error, data } = await supabase
         .from('ad_campaigns')
         .delete()
@@ -199,7 +195,7 @@ export function useAdCampaigns(businessOnly: boolean = false) {
         throw error;
       }
 
-      console.log('✅ Campaign delete successful:', data);
+
       toast.success('Campaign deleted successfully!');
       fetchCampaigns();
     } catch (error: any) {

@@ -37,18 +37,18 @@ const MyListings = () => {
   const [localStatus, setLocalStatus] = useState<Record<string, 'available' | 'rented' | 'unavailable'>>({});
 
   const handleDelete = async () => {
-    console.log('🗑️ handleDelete called, deleteDialog:', deleteDialog);
+
     if (deleteDialog) {
-      console.log('✅ deleteDialog is truthy, calling deleteProperty...');
+
       try {
         await deleteProperty(deleteDialog);
-        console.log('✅ deleteProperty completed successfully');
+
         setDeleteDialog(null);
       } catch (error) {
         console.error('❌ Error in handleDelete:', error);
       }
     } else {
-      console.log('❌ deleteDialog is falsy, not calling deleteProperty');
+
     }
   };
 
@@ -176,53 +176,53 @@ const MyListings = () => {
                               {/* Status Change */}
                               <div className="text-xs font-semibold text-muted-foreground px-1">Change Status</div>
                               <button
-                                  disabled={updatingStatus === listing.id}
-                                  onClick={() => handleStatusChange(listing.id, 'available')}
-                                  className={`w-full flex items-center gap-3 rounded-md px-3 py-3 text-left ${getCurrentStatus(listing) === 'available' ? 'bg-green-500/10' : 'hover:bg-accent'}`}
-                                >
-                                  {updatingStatus === listing.id && getCurrentStatus(listing) !== 'available' ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Circle className="h-4 w-4 fill-green-500 text-green-500" />
-                                  )}
-                                  <div className="flex flex-col">
-                                    <span className="font-medium text-green-700 dark:text-green-400">Available</span>
-                                    <span className="text-xs text-muted-foreground">Live - Visible to users</span>
-                                  </div>
-                                  {getCurrentStatus(listing) === 'available' && <span className="ml-auto">✓</span>}
-                                </button>
+                                disabled={updatingStatus === listing.id}
+                                onClick={() => handleStatusChange(listing.id, 'available')}
+                                className={`w-full flex items-center gap-3 rounded-md px-3 py-3 text-left ${getCurrentStatus(listing) === 'available' ? 'bg-green-500/10' : 'hover:bg-accent'}`}
+                              >
+                                {updatingStatus === listing.id && getCurrentStatus(listing) !== 'available' ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Circle className="h-4 w-4 fill-green-500 text-green-500" />
+                                )}
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-green-700 dark:text-green-400">Available</span>
+                                  <span className="text-xs text-muted-foreground">Live - Visible to users</span>
+                                </div>
+                                {getCurrentStatus(listing) === 'available' && <span className="ml-auto">✓</span>}
+                              </button>
                               <button
-                                  disabled={updatingStatus === listing.id}
-                                  onClick={() => handleStatusChange(listing.id, 'rented')}
-                                  className={`w-full flex items-center gap-3 rounded-md px-3 py-3 text-left ${getCurrentStatus(listing) === 'rented' ? 'bg-orange-500/10' : 'hover:bg-accent'}`}
-                                >
-                                  {updatingStatus === listing.id && getCurrentStatus(listing) !== 'rented' ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Circle className="h-4 w-4 fill-orange-500 text-orange-500" />
-                                  )}
-                                  <div className="flex flex-col">
-                                    <span className="font-medium text-orange-700 dark:text-orange-400">Rented</span>
-                                    <span className="text-xs text-muted-foreground">Hidden from users</span>
-                                  </div>
-                                  {getCurrentStatus(listing) === 'rented' && <span className="ml-auto">✓</span>}
-                                </button>
+                                disabled={updatingStatus === listing.id}
+                                onClick={() => handleStatusChange(listing.id, 'rented')}
+                                className={`w-full flex items-center gap-3 rounded-md px-3 py-3 text-left ${getCurrentStatus(listing) === 'rented' ? 'bg-orange-500/10' : 'hover:bg-accent'}`}
+                              >
+                                {updatingStatus === listing.id && getCurrentStatus(listing) !== 'rented' ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Circle className="h-4 w-4 fill-orange-500 text-orange-500" />
+                                )}
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-orange-700 dark:text-orange-400">Rented</span>
+                                  <span className="text-xs text-muted-foreground">Hidden from users</span>
+                                </div>
+                                {getCurrentStatus(listing) === 'rented' && <span className="ml-auto">✓</span>}
+                              </button>
                               <button
-                                  disabled={updatingStatus === listing.id}
-                                  onClick={() => handleStatusChange(listing.id, 'unavailable')}
-                                  className={`w-full flex items-center gap-3 rounded-md px-3 py-3 text-left ${getCurrentStatus(listing) === 'unavailable' ? 'bg-gray-500/10' : 'hover:bg-accent'}`}
-                                >
-                                  {updatingStatus === listing.id && getCurrentStatus(listing) !== 'unavailable' ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <Circle className="h-4 w-4 fill-gray-500 text-gray-500" />
-                                  )}
-                                  <div className="flex flex-col">
-                                    <span className="font-medium text-gray-700 dark:text-gray-400">Unavailable</span>
-                                    <span className="text-xs text-muted-foreground">Draft - Hidden</span>
-                                  </div>
-                                  {getCurrentStatus(listing) === 'unavailable' && <span className="ml-auto">✓</span>}
-                                </button>
+                                disabled={updatingStatus === listing.id}
+                                onClick={() => handleStatusChange(listing.id, 'unavailable')}
+                                className={`w-full flex items-center gap-3 rounded-md px-3 py-3 text-left ${getCurrentStatus(listing) === 'unavailable' ? 'bg-gray-500/10' : 'hover:bg-accent'}`}
+                              >
+                                {updatingStatus === listing.id && getCurrentStatus(listing) !== 'unavailable' ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Circle className="h-4 w-4 fill-gray-500 text-gray-500" />
+                                )}
+                                <div className="flex flex-col">
+                                  <span className="font-medium text-gray-700 dark:text-gray-400">Unavailable</span>
+                                  <span className="text-xs text-muted-foreground">Draft - Hidden</span>
+                                </div>
+                                {getCurrentStatus(listing) === 'unavailable' && <span className="ml-auto">✓</span>}
+                              </button>
 
                               <div className="my-2 h-px bg-border" />
 
@@ -248,7 +248,7 @@ const MyListings = () => {
                               <SheetClose asChild>
                                 <button
                                   onClick={() => {
-                                    console.log('🗑️ Delete button clicked for property:', listing.id, listing.title);
+
                                     setDeleteDialog(listing.id);
                                   }}
                                   className="w-full flex items-center gap-3 rounded-md px-3 py-3 text-left text-destructive hover:bg-destructive/10"
@@ -288,7 +288,7 @@ const MyListings = () => {
                               </div>
                               {getDisplayStatus(listing) === 'available' && <span className="ml-2">✓</span>}
                             </DropdownMenuItem>
-                            
+
                             <DropdownMenuItem
                               onSelect={() => handleStatusChange(listing.id, 'rented')}
                               disabled={updatingStatus === listing.id}
@@ -305,7 +305,7 @@ const MyListings = () => {
                               </div>
                               {getDisplayStatus(listing) === 'rented' && <span className="ml-2">✓</span>}
                             </DropdownMenuItem>
-                            
+
                             <DropdownMenuItem
                               onSelect={() => handleStatusChange(listing.id, 'unavailable')}
                               disabled={updatingStatus === listing.id}
@@ -322,9 +322,9 @@ const MyListings = () => {
                               </div>
                               {getDisplayStatus(listing) === 'unavailable' && <span className="ml-2">✓</span>}
                             </DropdownMenuItem>
-                            
+
                             <div className="my-1 h-px bg-border" />
-                            
+
                             {/* Other Options */}
                             <DropdownMenuItem
                               onSelect={() => navigate(`/property/${listing.id}`)}
@@ -338,7 +338,7 @@ const MyListings = () => {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onSelect={() => {
-                                console.log('🗑️ Delete button clicked for property:', listing.id, listing.title);
+
                                 setDeleteDialog(listing.id);
                               }}
                               className="text-destructive"

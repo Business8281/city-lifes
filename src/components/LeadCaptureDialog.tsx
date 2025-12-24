@@ -245,7 +245,7 @@ export const LeadCaptureDialog = ({
       const result = await submitWithRetry(leadData);
 
       if (result?.data) {
-        console.log('✅ Lead submitted successfully:', result.data.id);
+
 
         // Show prominent success message
         toast.success('✅ Inquiry Sent Successfully!', {

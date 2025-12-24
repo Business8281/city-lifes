@@ -160,7 +160,7 @@ export function useProperties(filters?: PropertyFilters) {
           });
         }
       } catch {
-        console.log('App listener not available (web environment)');
+
       }
     };
     setupAppListener();
@@ -266,11 +266,11 @@ export function useMyListings(userId: string | undefined) {
 
   const deleteProperty = async (propertyId: string) => {
     try {
-      console.log('🗑️ deleteProperty called with ID:', propertyId);
+
 
       // Check current user
       const { data: { user } } = await supabase.auth.getUser();
-      console.log('Current user:', user?.id, user?.email);
+
 
       // Check property ownership
       const { data: property, error: fetchError } = await supabase
@@ -284,15 +284,11 @@ export function useMyListings(userId: string | undefined) {
         throw new Error(`Cannot find property: ${fetchError.message}`);
       }
 
-      console.log('Property to delete:', property);
-      console.log('Ownership check:', {
-        propertyUserId: property.user_id,
-        currentUserId: user?.id,
-        matches: property.user_id === user?.id
-      });
+
+
 
       // Attempt delete
-      console.log('Attempting to delete property:', propertyId);
+
       const { error, data } = await supabase
         .from('properties')
         .delete()
@@ -310,7 +306,7 @@ export function useMyListings(userId: string | undefined) {
         throw error;
       }
 
-      console.log('✅ Delete successful:', data);
+
       toast.success('Property deleted successfully! All related data has been removed.');
       fetchMyListings();
     } catch (error) {

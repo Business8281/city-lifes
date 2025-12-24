@@ -76,7 +76,7 @@ export const useLeads = () => {
 
     if (!user) return;
 
-    console.log('🔔 Setting up real-time subscription for leads, user:', user.id);
+
 
     // Realtime subscription for instant updates
     const channel = supabase
@@ -87,15 +87,15 @@ export const useLeads = () => {
         table: 'leads',
         filter: `owner_id=eq.${user.id}`
       }, (payload) => {
-        console.log('🔔 Real-time lead update received:', payload);
+
         fetchLeads();
       })
       .subscribe((status) => {
-        console.log('🔔 Subscription status:', status);
+
       });
 
     return () => {
-      console.log('🔕 Cleaning up leads subscription');
+
       supabase.removeChannel(channel);
     };
   }, [user, fetchLeads]);
@@ -164,7 +164,7 @@ export const useLeads = () => {
 
   const updateLeadStatus = async (leadId: string, status: Lead['status']) => {
     try {
-      console.log('🔄 updateLeadStatus called:', { leadId, status, userId: user?.id });
+
 
       // Verify user is authenticated
       if (!user) {
@@ -178,11 +178,10 @@ export const useLeads = () => {
         prevLeads.map(lead =>
           lead.id === leadId
             ? { ...lead, status, updated_at: new Date().toISOString() }
+
             : lead
         )
       );
-
-      console.log('📤 Sending update request to Supabase...');
 
       // Update in database
       const { data, error } = await supabase
@@ -195,7 +194,7 @@ export const useLeads = () => {
         .select()
         .single();
 
-      console.log('📥 Supabase response:', { data, error });
+
 
       if (error) {
         // Revert optimistic update
@@ -217,13 +216,13 @@ export const useLeads = () => {
       }
 
       if (!data) {
-        console.warn('⚠️ No data returned');
+
         fetchLeads();
         toast.error('Update failed. Please try again.');
         return;
       }
 
-      console.log('✅ Lead updated successfully');
+
       toast.success(`Status changed to "${status.replace('_', ' ')}"`, {
         duration: 2000,
       });

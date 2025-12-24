@@ -64,7 +64,7 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
         });
 
         if (error) throw error;
-        console.log('Sponsored properties from RPC:', data);
+
         setSponsoredProperties((data || []) as unknown as SponsoredProperty[]);
       } catch (rpcError) {
         console.warn('RPC failed, using direct query fallback:', rpcError);
@@ -110,7 +110,7 @@ export const useSponsoredProperties = (location?: LocationFilter) => {
           sponsoredProps = sponsoredProps.filter(p => p.pin_code === filterPinCode);
         }
 
-        console.log('Sponsored properties from fallback:', sponsoredProps);
+
         setSponsoredProperties(sponsoredProps);
       }
     } catch (error) {
