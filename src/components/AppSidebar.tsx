@@ -1,6 +1,7 @@
 import { LayoutDashboard, Users, User, FileText, Target, ClipboardList, Flag, Star, Shield, Map as MapIcon, MessageCircle, Heart, Plus, LogOut } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import {
   Sidebar,
   SidebarContent,
@@ -45,6 +46,7 @@ const adminItems = [
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
   const { isAdmin } = useAdminCheck();
   const isCollapsed = state === "collapsed";
@@ -74,6 +76,17 @@ export function AppSidebar() {
 
     loadProfile();
   }, [user]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast.success("Logged out successfully");
+      navigate("/auth");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Failed to log out");
+    }
+  };
 
   const isActive = (path: string) => {
     if (path === "/") {
@@ -166,7 +179,10 @@ export function AppSidebar() {
               ))}
               {user && (
                 <SidebarMenuItem>
-                  <SidebarMenuButton onClick={() => signOut()} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20">
+                  <SidebarMenuButton
+                    onClick={handleLogout}
+                    className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 cursor-pointer w-full justify-start"
+                  >
                     <LogOut className="h-5 w-5" />
                     <span>Logout</span>
                   </SidebarMenuButton>
