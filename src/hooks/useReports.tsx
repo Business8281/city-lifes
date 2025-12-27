@@ -161,7 +161,7 @@ export function useReports() {
         schema: 'public',
         table: 'reports',
         filter: `reporter_id=eq.${user.id}`
-      }, (payload) => {
+      }, (_payload) => {
 
         fetchReports(); // Instant update
       })
@@ -170,7 +170,7 @@ export function useReports() {
         schema: 'public',
         table: 'reports',
         filter: `reporter_id=eq.${user.id}`
-      }, (payload) => {
+      }, (_payload) => {
 
         fetchReports(); // Instant update when admin changes status
       })

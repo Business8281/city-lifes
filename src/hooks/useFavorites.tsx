@@ -78,7 +78,7 @@ export function useFavorites(userId: string | undefined) {
         if (isActive) fetchFavorites();
       }).then((handle) => {
         appStateHandle = handle;
-      }).catch((err) => {
+      }).catch((_err) => {
 
       });
     }

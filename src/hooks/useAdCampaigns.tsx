@@ -158,11 +158,11 @@ export function useAdCampaigns(businessOnly: boolean = false) {
 
 
       // Check current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user: _user } } = await supabase.auth.getUser();
 
 
       // Check campaign ownership
-      const { data: campaign, error: fetchError } = await supabase
+      const { data: _campaign, error: fetchError } = await supabase
         .from('ad_campaigns')
         .select('id, title, user_id')
         .eq('id', campaignId)
@@ -178,7 +178,7 @@ export function useAdCampaigns(businessOnly: boolean = false) {
 
       // Attempt delete
 
-      const { error, data } = await supabase
+      const { error } = await supabase
         .from('ad_campaigns')
         .delete()
         .eq('id', campaignId)

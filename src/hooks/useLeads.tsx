@@ -86,11 +86,11 @@ export const useLeads = () => {
         schema: 'public',
         table: 'leads',
         filter: `owner_id=eq.${user.id}`
-      }, (payload) => {
+      }, (_payload) => {
 
         fetchLeads();
       })
-      .subscribe((status) => {
+      .subscribe((_status) => {
 
       });
 

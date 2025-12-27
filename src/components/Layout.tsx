@@ -1,10 +1,20 @@
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import BottomNav from "./BottomNav";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { UserStatusAlert } from "./UserStatusAlert";
+import { useEffect, useRef } from "react";
 
 export function Layout() {
+  const { pathname } = useLocation();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0;
+    }
+  }, [pathname]);
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex h-screen w-screen fixed inset-0 overflow-hidden">
@@ -17,6 +27,7 @@ export function Layout() {
         <SidebarInset className="flex-1 flex flex-col overflow-hidden">
           {/* Page Content - scrollable */}
           <div
+            ref={scrollRef}
             className="flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain touch-pan-y px-safe-edge pt-safe-edge mobile-page"
             style={{ WebkitOverflowScrolling: 'touch' }}
           >

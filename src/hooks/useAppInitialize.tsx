@@ -23,7 +23,7 @@ export const useAppInitialize = () => {
         await SplashScreen.hide();
 
         // Handle app state changes
-        CapacitorApp.addListener('appStateChange', ({ isActive }) => {
+        CapacitorApp.addListener('appStateChange', ({ isActive: _isActive }) => {
 
         });
 

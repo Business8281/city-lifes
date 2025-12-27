@@ -10,6 +10,7 @@ import { Layout } from "./components/Layout";
 import { RequireAuth } from "./components/RequireAuth";
 import { useAppInitialize } from "./hooks/useAppInitialize";
 import { LoadingSpinner } from "./components/ui/loading-spinner";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Route-based code splitting
 const Index = lazy(() => import("./pages/Index"));
@@ -60,6 +61,7 @@ const App = () => {
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <ScrollToTop />
               <Suspense fallback={<LoadingSpinner size={40} />}>
                 <Routes>
                   <Route path="/auth" element={<Auth />} />

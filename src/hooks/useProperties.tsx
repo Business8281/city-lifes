@@ -269,11 +269,11 @@ export function useMyListings(userId: string | undefined) {
 
 
       // Check current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user: _user } } = await supabase.auth.getUser();
 
 
       // Check property ownership
-      const { data: property, error: fetchError } = await supabase
+      const { data: _property, error: fetchError } = await supabase
         .from('properties')
         .select('id, title, user_id')
         .eq('id', propertyId)
@@ -289,7 +289,7 @@ export function useMyListings(userId: string | undefined) {
 
       // Attempt delete
 
-      const { error, data } = await supabase
+      const { error } = await supabase
         .from('properties')
         .delete()
         .eq('id', propertyId)
